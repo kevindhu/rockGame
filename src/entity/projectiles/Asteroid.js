@@ -108,7 +108,7 @@ Asteroid.prototype.updatePosition = function () {
 Asteroid.prototype.updateChunk = function () {
     var newChunk = EntityFunctions.findChunk(this.gameServer, this);
     if (newChunk !== this.chunk) {
-        //delete old chunk shard
+        //delete old chunk asteroid
         delete this.gameServer.CHUNKS[this.chunk].ASTEROID_LIST[this.id];
 
         this.chunk = newChunk;
@@ -184,8 +184,8 @@ Asteroid.prototype.updateQuadItem = function () {
         maxy: this.y + this.radius
     };
 
-    this.gameServer.shardTree.remove(this.quadItem);
-    this.gameServer.shardTree.insert(this.quadItem);
+    this.gameServer.asteroidTree.remove(this.quadItem);
+    this.gameServer.asteroidTree.insert(this.quadItem);
 };
 
 function onBoundary(coord) {

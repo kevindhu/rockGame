@@ -15,23 +15,15 @@ function GameServer() {
 
     this.CONTROLLER_LIST = {};
 
-    this.STATIC_SHARD_LIST = {};
-    this.SHOOTING_SHARD_LIST = {};
-    this.PLAYER_SHARD_LIST = {};
-    this.HOME_SHARD_LIST = {};
-
     this.ASTEROID_LIST = {};
 
-    this.FACTION_LIST = {};
     this.TILE_LIST = {};
     this.HOME_LIST = {};
     this.LASER_LIST = {};
 
     //these are all updaters (updated every tick of server loop until deleted)
-    this.QUEUE_LIST = {};
 
     this.controllerTree = null;
-    this.shardTree = null;
     this.homeTree = null;
     this.tileTree = null;
     this.towerTree = null;
@@ -77,30 +69,9 @@ GameServer.prototype.initControllers = function () {
     });
 };
 
-GameServer.prototype.initShards = function () {
-    this.shootingShardTree = new QuadNode({
-        minx: this.minx,
-        miny: this.miny,
-        maxx: this.maxx,
-        maxy: this.maxy
-    });
-
-    this.shardTree = new QuadNode({
-        minx: this.minx,
-        miny: this.miny,
-        maxx: this.maxx,
-        maxy: this.maxy
-    });
-
-    for (var i = 0; i < entityConfig.SHARDS; i++) {
-        this.createEmptyShard();
-    }
-};
-
 
 
 GameServer.prototype.initAsteroids = function () {
-    console.log("INITING ASTEROIDS");
     this.asteroidTree = new QuadNode({
         minx: this.minx,
         miny: this.miny,
@@ -122,14 +93,6 @@ GameServer.prototype.initHomes = function () {
     });
 };
 
-GameServer.prototype.initTowers = function () {
-    this.towerTree = new QuadNode({
-        minx: this.minx,
-        miny: this.miny,
-        maxx: this.maxx,
-        maxy: this.maxy
-    });
-};
 
 GameServer.prototype.initNewClients = function () {
     for (var id in this.INIT_SOCKET_LIST) {
@@ -180,9 +143,9 @@ GameServer.prototype.initNewClients = function () {
 };
 
 /** UPDATE METHODS **/
-GameServer.prototype.spawnShards = function () {
-    if (Object.size(this.STATIC_SHARD_LIST) < entityConfig.SHARDS) {
-        this.createEmptyShard();
+GameServer.prototype.spawnAsteroids = function () {
+    if (Object.size(this.ASTEROID_LIST) < entityConfig.SHARDS) {
+        this.createAsteroid();
     }
 };
 
@@ -201,27 +164,6 @@ GameServer.prototype.getEntityTile = function (entity) {
     return ret;
 };
 
-GameServer.prototype.checkShardCollision = function (shard) {
-    var shardBound = {
-        minx: shard.x - entityConfig.SHARD_WIDTH,
-        miny: shard.y - entityConfig.SHARD_WIDTH,
-        maxx: shard.x + entityConfig.SHARD_WIDTH,
-        maxy: shard.y + entityConfig.SHARD_WIDTH
-    };
-
-    //shard + home collision
-    this.homeTree.find(shardBound, function (home) {
-        if (home.faction === shard.faction) {
-            if (shard.owner) { //is shot by player
-                home.addShard(shard);
-            }
-        }
-        else if (shard.faction) { //not the same faction
-            shard.onDelete();
-            home.decreaseHealth(1);
-        }
-    }.bind(this));
-};
 
 GameServer.prototype.checkControllerCollision = function (controller) {
     var controllerBound = {
@@ -232,61 +174,21 @@ GameServer.prototype.checkControllerCollision = function (controller) {
     };
 
     if (controller.type === "Player") {
-        //player + static/player shard collision
-        this.shardTree.find(controllerBound, function (shard) {
-            if (controller.faction !== shard.faction && shard.timer <= 0) {
-                //if shard already owned
-                if (shard.owner !== null) {
-                    var oldOwner = this.CONTROLLER_LIST[shard.owner];
-                    oldOwner.removeShard(shard);
+        //player + asteroid collision
+        this.asteroidTree.find(controllerBound, function (asteroid) {
+
+            //TODO: add condition to see if it is hostile asteroid
+
+            if (1===2) {
+                if (asteroid.owner !== null) { //steal their asteroid
+                    var oldOwner = this.CONTROLLER_LIST[asteroid.owner];
+                    oldOwner.removeAsteroid(asteroid);
                 }
-                var home = this.HOME_LIST[controller.viewing];
-                if (home) {
-                    home.removeViewer(controller);
-                }
-                controller.addShard(shard);
+                controller.addAsteroid(asteroid); 
             }
+            
         }.bind(this));
-
-
-        if (controller.type === "Player") {
-            var homeCheck = null;
-            this.homeTree.find(controllerBound, function (home) {
-                homeCheck = home;
-                if (controller.faction === home.faction && !controller.viewing) {
-                    for (var i = controller.shards.length - 1; i >= 0; i--) {
-                        var shard = this.PLAYER_SHARD_LIST[controller.shards[i]];
-                        controller.removeShard(shard);
-                        home.addShard(shard);
-                    }
-                    if (controller.pressingSpace) {
-                        home.addViewer(controller);
-                        controller.removeHomePrompt();
-                    } else {
-                        controller.addHomePrompt();
-                    }
-                }
-            }.bind(this));
-            if (!homeCheck) {
-                controller.removeHomePrompt();
-            }
-        }
     }
-
-    //controller + shooting shard collision
-    this.shootingShardTree.find(controllerBound, function (shard) {
-        if (controller.faction !== shard.faction) {
-            shard.onDelete();
-            controller.decreaseHealth(1);
-        }
-    }.bind(this));
-
-    //controller + tower collision
-    this.towerTree.find(controllerBound, function (tower) {
-        if (controller.faction !== tower.faction) {
-            tower.shootShard(controller);
-        }
-    }.bind(this));
 };
 
 GameServer.prototype.checkCollisions = function () {
@@ -294,10 +196,6 @@ GameServer.prototype.checkCollisions = function () {
     for (id in this.CONTROLLER_LIST) {
         var controller = this.CONTROLLER_LIST[id];
         this.checkControllerCollision(controller);
-    }
-    for (id in this.SHOOTING_SHARD_LIST) {
-        var shard = this.SHOOTING_SHARD_LIST[id];
-        this.checkShardCollision(shard);
     }
 };
 
@@ -308,54 +206,31 @@ GameServer.prototype.updateControllers = function () {
     }
 };
 
-GameServer.prototype.updateProjectiles = function () {
-    this.updateShards();
-    this.updateLasers();
-};
 
-GameServer.prototype.updateQueues = function () {
-    for (var id in this.QUEUE_LIST) {
-        var home = this.QUEUE_LIST[id];
-        home.updateQueue();
+
+GameServer.prototype.updateAsteroids = function () {
+    var id, asteroid;
+    this.spawnAsteroids();
+
+    for (id in this.ASTEROID_LIST) {
+        asteroid = this.ASTEROID_LIST[id];
+        asteroid.updatePosition();
     }
 };
 
 
-GameServer.prototype.updateShards = function () {
-    var id, shard;
-    //this.spawnShards();
-    this.checkCollisions();
-
-    for (id in this.PLAYER_SHARD_LIST) {
-        shard = this.PLAYER_SHARD_LIST[id];
-        shard.updatePosition();
-    }
-
-    for (id in this.SHOOTING_SHARD_LIST) {
-        shard = this.SHOOTING_SHARD_LIST[id];
-        shard.updatePosition();
-    }
-
-    for (id in this.HOME_SHARD_LIST) {
-        shard = this.HOME_SHARD_LIST[id];
-        shard.updatePosition();
-    }
-};
-
-GameServer.prototype.updateLasers = function () {
-    var laser, id;
-    for (id in this.LASER_LIST) {
-        laser = this.LASER_LIST[id];
-        laser.update();
-    }
-};
 
 GameServer.prototype.update = function () {
     this.timeStamp = Date.now();
+
+
     this.initNewClients();
+
+    this.checkCollisions();
+
     this.updateControllers();
-    this.updateProjectiles();
-    this.updateQueues();
+    this.updateAsteroids();
+
     this.packetHandler.sendPackets();
 };
 
@@ -375,13 +250,11 @@ GameServer.prototype.start = function () {
     console.log('Started Server!');
 
     /** INIT SERVER OBJECTS **/
-    this.initChunks();
+    this.initChunks();      
     this.initTiles();
-    //this.initShards();
     this.initAsteroids();
     this.initControllers();
     this.initHomes();
-    this.initTowers();
 
     /** START WEBSOCKET SERVICE **/
     var io = require('socket.io')(server, {});
@@ -421,25 +294,12 @@ GameServer.prototype.start = function () {
             }
         }.bind(this));
 
-        socket.on('newColor', function (data) {
-            var home = this.HOME_LIST[data.home];
-            if (home.level < 2 && home.hasColor === true) { //prevent cheating
-                return;
-            }
 
-            var tile = this.getEntityTile(home);
-            if (tile.faction) {
-                tile.setColor(data.color);
-                home.hasColor = true;
-                this.packetHandler.updateHomePackets(home);
-            }
-        }.bind(this));
 
         socket.on('keyEvent', function (data) {
             if (!player) {
                 return;
             }
-            var faction = this.FACTION_LIST[player.faction];
             switch (data.id) {
                 case 39:
                 case 68:
@@ -460,99 +320,16 @@ GameServer.prototype.start = function () {
                 case 32:
                     player.pressingSpace = data.state;
                     break;
-                case 90: //z
+                case "hehe xd": //swirling motion
                     if (data.state) {
-                        faction.addSentinel(player);
+                        player.groupAsteroids();
                     }
                     break;
-                case 88: //x
-                    if (data.state) {
-                        faction.addTower(player);
-                    }
-                    break;
-                case 78: //n
-                    if (data.state) {
-                        faction.addBarracks(player);
-                    }
-                    break;
-                case 86: //v
-                    if (data.state) {
-                        player.groupBots();
-                    }
-                    break;
-                case 66: //b
-                    if (data.state) {
-                        player.attemptBoost();
-                    }
-                    break;
-                case 80: //p
-                    if (data.state) {
-                        player.attemptStealth();
-                    }
-                    break;
-
-
             }
 
         }.bind(this));
 
-        socket.on('textInput', function (data) {
-            if (player) {
-                player.addShardNamer(data.word);
-            }
-        }.bind(this));
 
-        socket.on('removeViewer', function (data) {
-            if (player && player.viewing) {
-                var home = this.HOME_LIST[player.viewing];
-                if (home) {
-                    home.removeViewer(player);
-                }
-            }
-        }.bind(this));
-
-        socket.on("botCommand", function (data) {
-            if (!player) {
-                return;
-            }
-            player.moveBots(data.x, data.y);
-        }.bind(this));
-
-        socket.on("selectBots", function (data) {
-            if (!player) {
-                return;
-            }
-            player.resetSelect();
-            var boundary = player.createBoundary(data);
-            this.findBots(boundary);
-        }.bind(this));
-
-        socket.on('makeBots', function (data) {
-            var barracks = this.HOME_LIST[data.home];
-            var shard;
-            for (var id in data.shards) {
-                shard = this.HOME_SHARD_LIST[id];
-                if (shard) {
-                    barracks.startBot(data.botType, player, shard);
-                }
-            }
-        }.bind(this));
-
-        socket.on('buildHome', function (data) {
-            var home = this.HOME_LIST[data.home];
-            var shard;
-            for (var id in data.shards) {
-                shard = this.HOME_SHARD_LIST[id];
-                if (shard) {
-                    home.buildBase(shard);
-                }
-            }
-        }.bind(this));
-
-        socket.on('upgradeUnit', function (data) {
-            var barracks = this.HOME_LIST[data.home];
-            barracks.upgradeUnit(data);
-        }.bind(this));
 
         socket.on('disconnect', function () {
             console.log("Client #" + socket.id + " has left the server");
@@ -569,30 +346,9 @@ GameServer.prototype.start = function () {
 };
 
 GameServer.prototype.createPlayer = function (socket, info) {
-    var checkName = function (name) {
-        if (name === null || name === "") {
-            return "default faction"
-        }
-        return name;
-    };
-
-    info.faction = checkName(info.faction);
-    var faction = this.FACTION_LIST[info.faction];
-    if (!faction) {
-        faction = new Entity.Faction(info.faction, this);
-    }
-
-    return faction.addPlayer(socket.id, info.name);
+    var player = new Entity.Player(socket.id, info.name, this.gameServer);
 };
 
-GameServer.prototype.createEmptyShard = function () {
-    return new Entity.Shard(
-        Arithmetic.getRandomInt(entityConfig.BORDER_WIDTH, entityConfig.WIDTH - entityConfig.BORDER_WIDTH),
-        Arithmetic.getRandomInt(entityConfig.BORDER_WIDTH, entityConfig.WIDTH - entityConfig.BORDER_WIDTH),
-        this
-    );
-
-};
 
 GameServer.prototype.createAsteroid = function () {
     return new Entity.Asteroid(

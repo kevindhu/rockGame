@@ -43,7 +43,6 @@ PacketHandler.prototype.createChunkPacket = function (chunk, id) {
     };
 
     populate(this.gameServer.CHUNKS[chunk].CONTROLLER_LIST, this.addControllerPackets);
-    populate(this.gameServer.CHUNKS[chunk].SHARD_LIST, this.addShardPackets);
     populate(this.gameServer.CHUNKS[chunk].ASTEROID_LIST, this.addAsteroidPackets);
     populate(this.gameServer.CHUNKS[chunk].TILE_LIST, this.addTilePackets);
     populate(this.gameServer.CHUNKS[chunk].HOME_LIST, this.addHomePackets);
@@ -74,7 +73,6 @@ PacketHandler.prototype.deleteChunkPacket = function (chunk) {
 
     populate(this.gameServer.CHUNKS[chunk].CONTROLLER_LIST, this.deleteControllerPackets);
 
-    populate(this.gameServer.CHUNKS[chunk].SHARD_LIST, this.deleteShardPackets);
 
     populate(this.gameServer.CHUNKS[chunk].TILE_LIST, this.deleteTilePackets);
     populate(this.gameServer.CHUNKS[chunk].HOME_LIST, this.deleteHomePackets);
@@ -85,53 +83,21 @@ PacketHandler.prototype.deleteChunkPacket = function (chunk) {
 };
 
 
-PacketHandler.prototype.addShardAnimationPackets = function (shard) {
-    this.CHUNK_PACKETS[shard.chunk].push(
+PacketHandler.prototype.addAsteroidAnimationPackets = function (asteroid) {
+    this.CHUNK_PACKETS[asteroid.chunk].push(
         {
             master: "add",
             class: "animationInfo",
-            type: "shardDeath",
-            id: shard.id,
-            name: shard.name,
-            x: shard.x,
-            y: shard.y
+            type: "asteroidDeath",
+            id: asteroid.id,
+            x: asteroid.x,
+            y: asteroid.y
         })
 };
 
-PacketHandler.prototype.removeHomeAnimationPackets = function (home) {
-    this.CHUNK_PACKETS[home.chunk].push(
-        {
-            master: "delete",
-            class: "animationInfo",
-            type: "removeShard",
-            id: home.id,
-            name: null,
-            x: null,
-            y: null
-        });
-};
 
-PacketHandler.prototype.addHomeAnimationPackets = function (home) {
-    this.CHUNK_PACKETS[home.chunk].push(
-        {
-            master: "add",
-            class: "animationInfo",
-            type: "addShard",
-            id: home.id,
-            name: null,
-            x: home.x,
-            y: home.y
-        });
-};
 
-PacketHandler.prototype.addBracketPackets = function (player, tile) {
-    this.CHUNK_PACKETS[tile.chunk].push({
-        master: "add",
-        class: "bracketInfo",
-        playerId: player.id,
-        tileId: tile.id
-    })
-};
+
 
 PacketHandler.prototype.addPromptMsgPackets = function (player, message) {
     this.CHUNK_PACKETS[player.chunk].push(
@@ -228,23 +194,6 @@ PacketHandler.prototype.addAsteroidPackets = function (asteroid, ifInit) {
 
 
 
-PacketHandler.prototype.addShardPackets = function (shard, ifInit) {
-    var info = {
-        master: "add",
-        class: "shardInfo",
-        id: shard.id,
-        x: shard.x,
-        y: shard.y,
-        name: null,
-        visible: true
-    };
-    if (ifInit) {
-        return info;
-    }
-    else {
-        this.CHUNK_PACKETS[shard.chunk].push(info);
-    }
-};
 
 PacketHandler.prototype.addTilePackets = function (tile, ifInit) {
     return {
@@ -290,7 +239,6 @@ PacketHandler.prototype.addHomePackets = function (home, ifInit) {
         type: home.type,
         radius: home.radius,
         power: home.power,
-        shards: home.shards,
         level: home.level,
         hasColor: home.hasColor,
         health: home.health,
@@ -316,7 +264,6 @@ PacketHandler.prototype.updateHomePackets = function (home) {
             master: "update",
             class: "homeInfo",
             id: home.id,
-            shards: home.shards,
             power: home.power,
             level: home.level,
             radius: home.radius,
@@ -389,17 +336,6 @@ PacketHandler.prototype.updateControllersPackets = function (controller) {
 };
 
 
-PacketHandler.prototype.updateShardsPackets = function (shard) {
-    this.CHUNK_PACKETS[shard.chunk].push({
-        master: "update",
-        class: "shardInfo",
-        name: shard.name,
-        id: shard.id,
-        x: shard.x,
-        y: shard.y,
-        visible: shard.visible
-    });
-};
 
 
 PacketHandler.prototype.updateAsteroidsPackets = function (asteroid) {
@@ -436,13 +372,6 @@ PacketHandler.prototype.deletePromptMsgPackets = function (player, type) {
         });
 };
 
-PacketHandler.prototype.deleteBracketPackets = function (player) {
-    this.CHUNK_PACKETS[player.chunk].push({
-        master: "delete",
-        class: "bracketInfo",
-        id: player.id
-    });
-};
 
 
 PacketHandler.prototype.deleteControllerPackets = function (controller, chunk) {
@@ -508,20 +437,9 @@ PacketHandler.prototype.deleteHomePackets = function (home, chunk) {
     this.CHUNK_PACKETS[home.chunk].push(info);
 };
 
-PacketHandler.prototype.deleteShardPackets = function (shard, chunk) {
-    var info = {
-        master: "delete",
-        class: "shardInfo",
-        id: shard.id
-    };
-    if (chunk) {
-        return info;
-    }
-    this.CHUNK_PACKETS[shard.chunk].push(info);
-};
 
 
-PacketHandler.prototype.deleteAsteroidPackets = function (shard, chunk) {
+PacketHandler.prototype.deleteAsteroidPackets = function (asteroid, chunk) {
     var info = {
         master: "delete",
         class: "asteroidInfo",

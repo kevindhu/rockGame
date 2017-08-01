@@ -5,7 +5,6 @@ function Home(homeInfo, client) {
     this.name = homeInfo.owner;
     this.type = homeInfo.type;
     this.radius = homeInfo.radius;
-    this.shards = homeInfo.shards;
     this.power = homeInfo.power;
     this.level = homeInfo.level;
     this.hasColor = homeInfo.hasColor;
@@ -23,7 +22,6 @@ function Home(homeInfo, client) {
 
 
 Home.prototype.update = function (homeInfo) {
-    this.shards = homeInfo.shards;
     this.level = homeInfo.level;
     this.radius = homeInfo.radius;
     this.power = homeInfo.power;
@@ -59,10 +57,6 @@ Home.prototype.show = function () {
             ctx.strokeStyle = "rgba(12, 255, 218, 0.7)";
         ctx.lineWidth = 10;
         ctx.stroke();
-    }
-
-    if (this.owner !== null) {
-        ctx.fillText(this.shards.length, this.x, this.y + 40);
     }
     ctx.closePath();
 };

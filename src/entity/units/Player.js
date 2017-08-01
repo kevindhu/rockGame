@@ -4,13 +4,17 @@ var EntityFunctions = require('../EntityFunctions');
 var Controller = require('./Controller');
 var lerp = require('lerp');
 
-function Player(id, name, faction, gameServer) {
-    Player.super_.call(this, id, faction, gameServer);
+function Player(id, name, gameServer) {
+    Player.super_.call(this, id, gameServer);
     this.name = getName(name);
     this.type = "Player";
     this.radius = 10;
     this.maxSpeed = 10;
     this.selectedCount = 0;
+
+
+    this.x = ;
+    this.y = ;
 
     this.bots = [];
     this.boosterBots = [];
@@ -42,140 +46,6 @@ Player.prototype.onDelete = function () {
     Player.super_.prototype.onDelete.apply(this);
 };
 
-Player.prototype.shootShard = function (controller) {
-};
-
-
-Player.prototype.addBoosterBot = function (bot) {
-    this.boosterBots.push(bot.id);
-    this.addBot(bot);
-};
-
-Player.prototype.addStealthBot = function (bot) {
-    this.stealthBots.push(bot.id);
-    this.addBot(bot);
-};
-
-Player.prototype.removeStealthBot = function (bot) {
-    var index = this.stealthBots.indexOf(bot.id);
-    this.stealthBots.splice(index, 1);
-};
-
-Player.prototype.removeBoosterBot = function (bot) {
-    var index = this.boosterBots.indexOf(bot.id);
-    this.boosterBots.splice(index, 1);
-};
-
-Player.prototype.addBot = function (bot) {
-    this.bots.push(bot.id);
-};
-
-Player.prototype.removeBot = function (bot) {
-    var index = this.bots.indexOf(bot.id);
-    this.bots.splice(index, 1);
-};
-
-Player.prototype.selectBot = function (bot) {
-    bot.becomeSelected();
-    this.selectedCount++;
-};
-
-
-Player.prototype.isTarget = function (x, y) {
-    var target = null;
-    var bound = {
-        minx: x - 20,
-        miny: y - 20,
-        maxx: x + 20,
-        maxy: y + 20
-    };
-    this.gameServer.controllerTree.find(bound, function (controller) {
-        if (this.faction !== this.faction) {
-            target = controller;
-        }
-    }.bind(this));
-    if (!target) {
-        this.gameServer.homeTree.find(bound, function (home) {
-            target = home;
-        }.bind(this));
-    }
-    return target;
-};
-
-Player.prototype.addShardNamer = function (name) {
-    this.shardNamer = name;
-};
-
-Player.prototype.moveBots = function (x, y) {
-    var target = this.isTarget(this.x + x, this.y + y);
-
-    //make an array to go to
-    var row = Math.floor(Math.sqrt(this.selectedCount)) + 1;
-
-    var index = 0;
-    for (var i = 0; i < this.bots.length; i++) {
-        var bot = this.gameServer.CONTROLLER_LIST[this.bots[i]];
-        var rIndex, cIndex;
-        if (!bot) {
-            return;
-        }
-        if (bot.selected) {
-            if (target && target.faction) {
-                if (target.faction === this.faction && target.type === "Barracks") {
-                    bot.setFriendly(target);
-                }
-                else {
-                    bot.setEnemy(target);
-                }
-            } else {
-                rIndex = index % row;
-                cIndex = Math.floor(index / row);
-                bot.setManual(this.x + x + 100 * rIndex, this.y + y + 100 * cIndex);
-                index++;
-            }
-        }
-
-    }
-
-};
-
-Player.prototype.resetSelect = function () {
-    this.selectedCount = 0;
-    for (var i = 0; i < this.bots.length; i++) {
-        var bot = this.gameServer.CONTROLLER_LIST[this.bots[i]];
-        bot.removeSelect();
-    }
-};
-
-Player.prototype.groupBots = function () { //get all bots back to player
-    for (var i = 0; i < this.bots.length; i++) {
-        var bot = this.gameServer.CONTROLLER_LIST[this.bots[i]];
-        if (bot.selected) {
-            bot.regroup();
-        }
-    }
-};
-
-Player.prototype.attemptBoost = function () {
-    var bot;
-    for (var i = 0; i < this.boosterBots.length; i++) {
-        bot = this.gameServer.CONTROLLER_LIST[this.boosterBots[i]];
-        if (bot) {
-            bot.addBoost();
-        }
-    }
-};
-
-Player.prototype.attemptStealth = function () {
-    var bot;
-
-    for (var i = 0; i < this.stealthBots.length; i++) {
-        bot = this.gameServer.CONTROLLER_LIST[this.stealthBots[i]];
-        if (bot) {
-            bot.addStealth();
-        }
-    }
-};
 
 Player.prototype.createBoundary = function (boundary) {
     var playerBoundary = {};
@@ -189,19 +59,6 @@ Player.prototype.createBoundary = function (boundary) {
 
 Player.prototype.update = function () {
     var tile = this.gameServer.getEntityTile(this);
-    var faction = this.gameServer.FACTION_LIST[this.faction];
-
-    if (tile) {
-        if (this.shards.length > 1 && faction.isNeighboringFaction(tile, 2) && !tile.faction) {
-            this.packetHandler.addBracketPackets(this, tile);
-            this.addSentinelPrompt();
-        }
-        else {
-            this.removeSentinelPrompt();
-        }
-    }
-
-
     Player.super_.prototype.update.apply(this);
 };
 
@@ -212,34 +69,6 @@ Player.prototype.updateMaxSpeed = function () { //resets to 10, change this
 };
 
 
-Player.prototype.getRandomShard = function () {
-    var randomIndex = Arithmetic.getRandomInt(0, this.shards.length - 1);
-    return this.shards[randomIndex];
-};
-
-
-Player.prototype.addShard = function (shard) {
-    this.increaseHealth(1);
-    if (shard.name === null) {
-        this.transformEmptyShard(shard);
-    }
-    this.shards.push(shard.id);
-    shard.becomePlayer(this);
-    this.updateMaxSpeed();
-    this.gameServer.PLAYER_SHARD_LIST[shard.id] = shard;
-};
-
-Player.prototype.removeShard = function (shard) {
-    var index = this.shards.indexOf(shard.id);
-    this.shards.splice(index, 1);
-    this.updateMaxSpeed();
-    shard.timer = 0;
-    this.packetHandler.deleteBracketPackets(this);
-};
-
-Player.prototype.transformEmptyShard = function (shard) {
-    shard.setName(this.shardNamer);
-};
 
 Player.prototype.decreaseHealth = function (amount) {
     if (this.shards.length > 0) {
@@ -304,12 +133,9 @@ Player.prototype.findNeighboringChunks = function () {
     return chunks;
 };
 
-Player.prototype.dropRandomShard = function () {
-    var shard = this.getRandomShard();
-    this.dropShard(shard);
-};
 
-Player.prototype.dropShard = function (shard) {
+
+Player.prototype.dropAsteroid = function (shard) {
     if (shard) {
         this.removeShard(shard);
         shard.becomeControllerShooting(this, Arithmetic.getRandomInt(-30, 30),
@@ -317,7 +143,7 @@ Player.prototype.dropShard = function (shard) {
     }
 };
 
-Player.prototype.dropAllShards = function () {
+Player.prototype.dropAllAsteroids = function () {
     for (var i = this.shards.length - 1; i >= 0; i--) {
         var shard = this.gameServer.PLAYER_SHARD_LIST[this.shards[i]];
         this.dropShard(shard);
@@ -331,8 +157,6 @@ Player.prototype.onDeath = function () {
 
 Player.prototype.reset = function () {
     this.dropAllShards();
-    var faction = this.gameServer.FACTION_LIST[this.faction];
-    var headquarter = this.gameServer.HOME_LIST[faction.headquarter];
     if (headquarter) {
         this.x = headquarter.x;
         this.y = headquarter.y;

@@ -4,7 +4,6 @@ function Faction(factionInfo, client) {
     this.x = factionInfo.x;
     this.y = factionInfo.y;
     this.size = factionInfo.size;
-
     this.client = client;
 }
 
