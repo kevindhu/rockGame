@@ -5,5 +5,6 @@ module.exports = {
     Headquarter: require('./structures/Headquarter'),
     Sentinel: require('./structures/Sentinel'),
     Tower: require('./structures/Tower'),
-    Faction: require('./factions/Faction')
+    Faction: require('./factions/Faction'),
+    Asteroid: require('./projectiles/Asteroid')
 };

@@ -6,6 +6,7 @@ function Chunk(id, gameServer) {
     this.HOME_LIST = {};
     this.LASER_LIST = {};
     this.SHARD_LIST = {};
+    this.ASTEROID_LIST = {};
 }
 
 

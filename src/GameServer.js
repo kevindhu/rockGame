@@ -20,6 +20,8 @@ function GameServer() {
     this.PLAYER_SHARD_LIST = {};
     this.HOME_SHARD_LIST = {};
 
+    this.ASTEROID_LIST = {};
+
     this.FACTION_LIST = {};
     this.TILE_LIST = {};
     this.HOME_LIST = {};
@@ -94,6 +96,22 @@ GameServer.prototype.initShards = function () {
         this.createEmptyShard();
     }
 };
+
+
+
+GameServer.prototype.initAsteroids = function () {
+    console.log("INITING ASTEROIDS");
+    this.asteroidTree = new QuadNode({
+        minx: this.minx,
+        miny: this.miny,
+        maxx: this.maxx,
+        maxy: this.maxy
+    });
+
+    for (var i = 0; i < entityConfig.SHARDS; i++) {
+        this.createAsteroid();
+    }
+}
 
 GameServer.prototype.initHomes = function () {
     this.homeTree = new QuadNode({
@@ -359,7 +377,8 @@ GameServer.prototype.start = function () {
     /** INIT SERVER OBJECTS **/
     this.initChunks();
     this.initTiles();
-    this.initShards();
+    //this.initShards();
+    this.initAsteroids();
     this.initControllers();
     this.initHomes();
     this.initTowers();
@@ -572,7 +591,18 @@ GameServer.prototype.createEmptyShard = function () {
         Arithmetic.getRandomInt(entityConfig.BORDER_WIDTH, entityConfig.WIDTH - entityConfig.BORDER_WIDTH),
         this
     );
+
 };
+
+GameServer.prototype.createAsteroid = function () {
+    return new Entity.Asteroid(
+        Arithmetic.getRandomInt(entityConfig.BORDER_WIDTH, entityConfig.WIDTH - entityConfig.BORDER_WIDTH),
+        Arithmetic.getRandomInt(entityConfig.BORDER_WIDTH, entityConfig.WIDTH - entityConfig.BORDER_WIDTH),
+        this
+    );
+}
+
+
 
 /** MISC METHODS **/
 GameServer.prototype.findBots = function (boundary) {

@@ -90,6 +90,7 @@ Client.prototype.initLists = function () {
     this.CONTROLLER_LIST = {};
     this.TILE_LIST = {};
     this.SHARD_LIST = {};
+    this.ASTEROID_LIST = {};
     this.LASER_LIST = {};
     this.HOME_LIST = {};
     this.ANIMATION_LIST = {};
@@ -156,6 +157,8 @@ Client.prototype.addEntities = function (packet) {
         case "controllerInfo":
             addEntity(packet, this.CONTROLLER_LIST, Entity.Controller);
             break;
+        case "asteroidInfo":
+            addEntity(packet, this.ASTEROID_LIST, Entity.Asteroid);
         case "shardInfo":
             addEntity(packet, this.SHARD_LIST, Entity.Shard);
             break;
@@ -284,6 +287,7 @@ Client.prototype.drawScene = function (data) {
         this.TILE_LIST,
         this.CONTROLLER_LIST,
         this.SHARD_LIST,
+        this.ASTEROID_LIST,
         this.LASER_LIST,
         this.HOME_LIST,
         this.FACTION_LIST,

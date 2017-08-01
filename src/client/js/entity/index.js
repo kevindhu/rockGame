@@ -8,5 +8,6 @@ module.exports = {
     Laser: require('./Laser'),
     MiniMap: require('./MiniMap'),
     Shard: require('./Shard'),
-    Tile: require('./Tile')
+    Tile: require('./Tile'),
+    Asteroid: require('./Asteroid')
 };

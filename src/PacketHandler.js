@@ -44,6 +44,7 @@ PacketHandler.prototype.createChunkPacket = function (chunk, id) {
 
     populate(this.gameServer.CHUNKS[chunk].CONTROLLER_LIST, this.addControllerPackets);
     populate(this.gameServer.CHUNKS[chunk].SHARD_LIST, this.addShardPackets);
+    populate(this.gameServer.CHUNKS[chunk].ASTEROID_LIST, this.addAsteroidPackets);
     populate(this.gameServer.CHUNKS[chunk].TILE_LIST, this.addTilePackets);
     populate(this.gameServer.CHUNKS[chunk].HOME_LIST, this.addHomePackets);
     populate(this.gameServer.FACTION_LIST, this.addFactionPackets);
@@ -207,6 +208,25 @@ PacketHandler.prototype.addFactionPackets = function (faction, ifInit) {
         this.masterPacket.push(info);
     }
 };
+
+PacketHandler.prototype.addAsteroidPackets = function (asteroid, ifInit) {
+    var info = {    
+        master: "add",
+        class: "asteroidInfo",
+        id: asteroid.id,
+        x: asteroid.x,
+        y: asteroid.y,
+        radius: asteroid.radius
+    };
+    if (ifInit) {
+        return info;
+    }
+    else {
+        this.CHUNK_PACKETS[asteroid.chunk].push(info);
+    }
+}
+
+
 
 PacketHandler.prototype.addShardPackets = function (shard, ifInit) {
     var info = {
@@ -381,6 +401,18 @@ PacketHandler.prototype.updateShardsPackets = function (shard) {
     });
 };
 
+
+PacketHandler.prototype.updateAsteroidsPackets = function (asteroid) {
+    this.CHUNK_PACKETS[asteroid.chunk].push({
+        master: "update",
+        class: "asteroidInfo",
+        x: asteroid.x,
+        y: asteroid.y,
+        radius: asteroid.radius
+    });
+};
+
+
 PacketHandler.prototype.deleteUIPackets = function (player, action) {
     if (!player.id) {
         var meme = player.id.sdf;
@@ -487,6 +519,20 @@ PacketHandler.prototype.deleteShardPackets = function (shard, chunk) {
     }
     this.CHUNK_PACKETS[shard.chunk].push(info);
 };
+
+
+PacketHandler.prototype.deleteAsteroidPackets = function (shard, chunk) {
+    var info = {
+        master: "delete",
+        class: "asteroidInfo",
+        id: asteroid.id
+    };
+    if (chunk) {
+        return info;
+    }
+    this.CHUNK_PACKETS[asteroid.chunk].push(info);
+};
+
 
 PacketHandler.prototype.sendPackets = function () {
     var id;
