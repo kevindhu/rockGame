@@ -1,0 +1,26 @@
+{
+  "name": "asteroidGame",
+  "version": "1.0.0",
+  "description": "Simple asteroid game for funzies",
+  "main": "app.js",
+  "author": "lemondoo",
+  "license": "ISC",
+  "scripts": {
+    "start": "node app.js",
+    "deploy": "gcloud app deploy",
+    "watch": "watchify ./src/client/js/index.js -o ./src/client/js/bundle.js --debug"
+  },
+  "engines": {
+    "node": "4.1.x"
+  },
+  "dependencies": {
+    "@google-cloud/storage": "^1.1.1",
+    "express": "4.15.3",
+    "lerp": "1.0.3",
+    "socket.io": "2.0.3",
+    "browserify": "^14.4.0"
+  },
+  "devDependencies": {
+    "watchify": "^3.9.0"
+  }
+}

@@ -1,0 +1,15 @@
+f1 = function (input) {
+  if (input === "hello") {
+    return true;
+  }
+    return false;
+  
+}
+
+
+f2 = function (f1, input) {
+  if (f1(input)) {
+  return true;
+}
+return false;
+}
