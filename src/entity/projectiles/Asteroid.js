@@ -152,23 +152,20 @@ Asteroid.prototype.getTheta = function (target) {
 
 
     if (this.savedTheta && this.savedTheta - newTheta > 5) {
-        newTheta -= 2*Math.PI;
-    }
-    else if (this.savedTheta && newTheta - this.savedTheta > 5) {
         newTheta += 2*Math.PI;
     }
+    else if (this.savedTheta && newTheta - this.savedTheta > 5) {
+        newTheta -= 2*Math.PI;
+    }
 
-    console.log("NEW THETA: " + newTheta);
-    console.log("SAVED THETA: " + this.savedTheta);
+    console.log(newTheta, this.savedTheta);
 
     this.savedTheta = newTheta;
 
 
-    console.log(this.theta, newTheta);
 
 
-
-    this.theta = lerp(this.theta, newTheta, 0.2);
+    this.theta = lerp(this.theta, newTheta, 0.4);
 };
 
 
