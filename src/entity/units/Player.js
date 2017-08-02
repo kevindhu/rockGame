@@ -10,19 +10,13 @@ function Player(id, name, gameServer) {
     this.type = "Player";
     this.radius = 10;
     this.maxSpeed = 10;
-    this.selectedCount = 0;
 
+    this.asteroids = {};
+    this.heldAstroid = null;
 
-    this.x = ;
-    this.y = ;
+    this.x = entityConfig.WIDTH / 2;
+    this.y = entityConfig.WIDTH / 2;
 
-    this.bots = [];
-    this.boosterBots = [];
-    this.stealthBots = [];
-
-    this.shards = [];
-    this.shardNamer = "unnamed bot";
-    this.viewing = null;
     this.init();
 }
 
@@ -38,7 +32,7 @@ Player.prototype.removeView = function () {
 };
 
 Player.prototype.onDelete = function () {
-    this.dropAllShards();
+    this.dropAllAsteroids();
     var home = this.gameServer.HOME_LIST[this.viewing];
     if (home) {
         home.removeViewer(this);
@@ -134,13 +128,34 @@ Player.prototype.findNeighboringChunks = function () {
 };
 
 
+Player.prototype.selectAsteroid = function (x, y) {
+    var mouseBound = {
+        minx: x - 20,
+        miny: y - 20,
+        maxx: x + 20,
+        maxy: y + 20
+    };
 
-Player.prototype.dropAsteroid = function (shard) {
-    if (shard) {
-        this.removeShard(shard);
-        shard.becomeControllerShooting(this, Arithmetic.getRandomInt(-30, 30),
-            Arithmetic.getRandomInt(-30, 30))
+
+    this.gameServer.asteroidTree.find(mouseBound, function (asteroid) {
+        this.asteroids[asteroid.id] = asteroid;
+    }.bind(this))
+};
+
+
+Player.prototype.moveAsteroids = function (x,y) {
+    var asteroid;
+    for (var id in this.asteroids) {
+        asteroid = this.asteroids[id];
+        asteroid.teleport(x,y);
     }
+}
+
+
+Player.prototype.dropAsteroid = function (x,y) {
+    var astroid = this.heldAstroid;
+    astroid.teleport(x,y);
+    this.heldAstroid = null;
 };
 
 Player.prototype.dropAllAsteroids = function () {
@@ -155,16 +170,10 @@ Player.prototype.onDeath = function () {
 };
 
 
-Player.prototype.reset = function () {
-    this.dropAllShards();
-    if (headquarter) {
-        this.x = headquarter.x;
-        this.y = headquarter.y;
-    }
-    else {
-        this.x = entityConfig.WIDTH / 2;
-        this.y = entityConfig.WIDTH / 2;
-    }
+Player.prototype.reset = function () { //should delete this eventually, x`or only use during debuggging
+    this.x = entityConfig.WIDTH / 2;
+    this.y = entityConfig.WIDTH / 2;
+
     this.maxSpeed = 10;
     this.xSpeed = 0;
     this.ySpeed = 0;

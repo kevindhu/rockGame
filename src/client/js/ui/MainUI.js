@@ -1,9 +1,8 @@
 document.documentElement.style.overflow = 'hidden';  // firefox, chrome
 document.body.scroll = "no";
+
 var PlayerNamerUI = require('./PlayerNamerUI');
-var ShardNamerUI = require('./ShardNamerUI');
 var GameUI = require('./game/GameUI');
-var HomeUI = require("./home/HomeUI");
 
 function MainUI(client, socket) {
     this.client = client;
@@ -12,21 +11,11 @@ function MainUI(client, socket) {
     this.gameUI = new GameUI(this.client, this.socket, this);
 
     this.playerNamerUI = new PlayerNamerUI(this.client, this.socket);
-    this.shardNamerUI = new ShardNamerUI(this.client, this.socket);
-    this.homeUI = new HomeUI(this.client, this.socket);
 }
 
 MainUI.prototype.open = function (info) {
     var action = info.action;
     var home;
-
-    if (action === "name shard") {
-        this.shardNamerUI.open();
-    }
-    if (action === "home info") {
-        home = this.client.HOME_LIST[info.homeId];
-        this.homeUI.open(home);
-    }
     if (action === "gameMsgPrompt") {
         this.gameUI.gameMsgPrompt.open(info.message);
     }
@@ -34,14 +23,6 @@ MainUI.prototype.open = function (info) {
 
 
 MainUI.prototype.close = function (action) {
-    if (action === "name shard") {
-        this.shardNamerUI.close();
-    }
-    if (action === "home info") {
-        this.LIST_SCROLL = false;
-        this.homeUI.close();
-        this.socket.emit("removeViewer", {});
-    }
     if (action === "gameMsgPrompt") {
         this.gameUI.gameMsgPrompt.close();
     }
@@ -50,37 +31,24 @@ MainUI.prototype.close = function (action) {
 
 MainUI.prototype.updateLeaderBoard = function () {
     var leaderboard = document.getElementById("leaderboard");
-    var FACTION_ARRAY = this.client.FACTION_ARRAY;
+    var PLAYER_ARRAY = this.client.PLAYEr_ARRAY;
 
 
-    var factionSort = function (a, b) {
-        var factionA = this.client.FACTION_LIST[a];
-        var factionB = this.client.FACTION_LIST[b];
-        return factionA.size - factionB.size;
+    var playerSort = function (a, b) {
+        var factionA = this.client.CONTROLLER_LIST[a];
+        var factionB = this.client.CONTROLLER_LIST[b];
+        return factionA.score - factionB.score;
     }.bind(this);
 
-    FACTION_ARRAY.sort(factionSort);
+    PLAYER_ARRAY.sort(playerSort);
     leaderboard.innerHTML = "";
 
-    for (var i = FACTION_ARRAY.length - 1; i >= 0; i--) {
-        var faction = this.client.FACTION_LIST[FACTION_ARRAY[i]];
+    for (var i = PLAYER_ARRAY.length - 1; i >= 0; i--) {
+        var player = this.client.CONTROLLER_LIST[PLAYER_ARRAY[i]];
 
         var entry = document.createElement('li');
-        entry.appendChild(document.createTextNode(faction.name + " - " + faction.size));
+        entry.appendChild(document.createTextNode(player.name + " - " + player.score));
         leaderboard.appendChild(entry);
-    }
-};
-
-
-
-
-/** DEPRECATED METHODS **/
-MainUI.prototype.update = function (info) {
-    var action = info.action;
-    if (action === "update queue") {
-        this.homeUI.buildPage.update();
-        this.homeUI.botsPage.update();
-        //this.homeUI.upgradesPage.update();
     }
 };
 

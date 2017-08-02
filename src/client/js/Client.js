@@ -5,7 +5,6 @@ function Client() {
     this.SELFID = null;
     this.ARROW = null;
     this.BRACKET = null;
-    this.rightClick = false;
     this.init();
 }
 
@@ -33,56 +32,51 @@ Client.prototype.initCanvases = function () {
 
 
     document.addEventListener("mousedown", function (event) {
-        if (event.button === 2) {
-            this.rightClick = true;
-        } else if (this.CONTROLLER_LIST[this.SELFID]) {
-            this.ARROW = new Entity.Arrow(event.x / this.mainCanvas.offsetWidth * 1000,
-                event.y / this.mainCanvas.offsetHeight * 500, this);
+        if (this.CONTROLLER_LIST[this.SELFID]) {
+            var x = ((event.x / this.mainCanvas.offsetWidth * 1000) - this.mainCanvas.width / 2) / this.scaleFactor;
+            var y = ((event.y / this.mainCanvas.offsetHeight * 500) - this.mainCanvas.height / 2) / this.scaleFactor;
+
+            this.socket.emit("mouseDown", {
+                id: this.SELFID,
+                x: x,
+                y: y
+            });
         }
+
     }.bind(this));
 
     document.addEventListener("mouseup", function (event) {
         if (!this.CHAT_CLICK) {
             this.mainUI.gameUI.chatUI.close();
         }
-        if (!this.rightClick) {
-            this.ARROW.postX = event.x / this.mainCanvas.offsetWidth * 1000;
-            this.ARROW.postY = event.y / this.mainCanvas.offsetHeight * 500;
 
-            var minx = (this.ARROW.preX - this.mainCanvas.width / 2) / this.scaleFactor;
-            var miny = (this.ARROW.preY - this.mainCanvas.height / 2) / this.scaleFactor;
-            var maxx = (this.ARROW.postX - this.mainCanvas.width / 2) / this.scaleFactor;
-            var maxy = (this.ARROW.postY - this.mainCanvas.height / 2) / this.scaleFactor;
+        var x = ((event.x / this.mainCanvas.offsetWidth * 1000) - this.mainCanvas.width / 2) / this.scaleFactor;
+        var y = ((event.y / this.mainCanvas.offsetHeight * 500) - this.mainCanvas.height / 2) / this.scaleFactor;
 
-            this.socket.emit("selectBots", {
-                minX: Math.min(minx, maxx),
-                minY: Math.min(miny, maxy),
-                maxX: Math.max(minx, maxx),
-                maxY: Math.max(miny, maxy)
-            });
-        }
-        else {
-            var x = event.x / this.mainCanvas.offsetWidth * 1000;
-            var y = event.y / this.mainCanvas.offsetHeight * 500;
-
-            this.socket.emit("botCommand", {
-                x: (x - this.mainCanvas.width / 2) / this.scaleFactor,
-                y: (y - this.mainCanvas.height / 2) / this.scaleFactor
-            });
-        }
-
-        this.rightClick = false;
+        this.socket.emit("mouseUp", {
+            id: this.SELFID,
+            x: x,
+            y: y
+        });
+        
         this.ARROW = null;
         this.CHAT_CLICK = false;
     }.bind(this));
 
     document.addEventListener("mousemove", function (event) {
-        if (this.ARROW) {
-            this.ARROW.postX = event.x / this.mainCanvas.offsetWidth * 1000;
-            this.ARROW.postY = event.y / this.mainCanvas.offsetHeight * 500;
-        }
+        var x = ((event.x / this.mainCanvas.offsetWidth * 1000) - this.mainCanvas.width / 2) / this.scaleFactor;
+        var y = ((event.y / this.mainCanvas.offsetHeight * 500) - this.mainCanvas.height / 2) / this.scaleFactor;
+
+        this.socket.emit("mouseMove", {
+            id: this.SELFID,
+            x: x,
+            y: y
+        });
     }.bind(this));
 };
+
+
+
 Client.prototype.initLists = function () {
     this.FACTION_LIST = {};
     this.FACTION_ARRAY = [];
@@ -159,26 +153,8 @@ Client.prototype.addEntities = function (packet) {
             break;
         case "asteroidInfo":
             addEntity(packet, this.ASTEROID_LIST, Entity.Asteroid);
-        case "shardInfo":
-            addEntity(packet, this.SHARD_LIST, Entity.Shard);
-            break;
-        case "laserInfo":
-            addEntity(packet, this.LASER_LIST, Entity.Laser);
-            break;
-        case "homeInfo":
-            addEntity(packet, this.HOME_LIST, Entity.Home);
-            break;
-        case "factionInfo":
-            addEntity(packet, this.FACTION_LIST, Entity.Faction, this.FACTION_ARRAY);
-            this.mainUI.updateLeaderBoard();
-            break;
         case "animationInfo":
             addEntity(packet, this.ANIMATION_LIST, Entity.Animation);
-            break;
-        case "bracketInfo":
-            if (this.SELFID === packet.playerId) {
-                this.BRACKET = new Entity.Bracket(packet, this);
-            }
             break;
         case "UIInfo":
             if (this.SELFID === packet.playerId) {
@@ -214,8 +190,9 @@ Client.prototype.updateEntities = function (packet) {
         case "tileInfo":
             updateEntity(packet, this.TILE_LIST);
             break;
-        case "shardInfo":
-            updateEntity(packet, this.SHARD_LIST);
+        case "asteroidInfo":
+            console.log("YO");
+            updateEntity(packet, this.ASTEROID_LIST);
             break;
         case "homeInfo":
             updateEntity(packet, this.HOME_LIST);
@@ -286,11 +263,7 @@ Client.prototype.drawScene = function (data) {
     var entityList = [
         this.TILE_LIST,
         this.CONTROLLER_LIST,
-        this.SHARD_LIST,
         this.ASTEROID_LIST,
-        this.LASER_LIST,
-        this.HOME_LIST,
-        this.FACTION_LIST,
         this.ANIMATION_LIST
     ];
     var inBounds = function (player, x, y) {

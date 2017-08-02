@@ -173,22 +173,18 @@ GameServer.prototype.checkControllerCollision = function (controller) {
         maxy: controller.y + controller.radius
     };
 
-    if (controller.type === "Player") {
-        //player + asteroid collision
-        this.asteroidTree.find(controllerBound, function (asteroid) {
+    this.asteroidTree.find(controllerBound, function (asteroid) {
 
-            //TODO: add condition to see if it is hostile asteroid
-
-            if (1===2) {
-                if (asteroid.owner !== null) { //steal their asteroid
-                    var oldOwner = this.CONTROLLER_LIST[asteroid.owner];
-                    oldOwner.removeAsteroid(asteroid);
-                }
-                controller.addAsteroid(asteroid); 
+        //TODO: add condition to see if it is hostile asteroid
+        if (1===2) {
+            if (asteroid.owner !== null) { //steal their asteroid
+                var oldOwner = this.CONTROLLER_LIST[asteroid.owner];
+                oldOwner.removeAsteroid(asteroid);
             }
-            
-        }.bind(this));
-    }
+            controller.addAsteroid(asteroid); 
+        }   
+    }.bind(this));
+    
 };
 
 GameServer.prototype.checkCollisions = function () {
@@ -294,6 +290,34 @@ GameServer.prototype.start = function () {
             }
         }.bind(this));
 
+        socket.on('mouseDown', function (data) {
+            var player = this.CONTROLLER_LIST[data.id];
+
+
+            if (player) {
+                //CUT THE ASTROID
+            }
+        }.bind(this));
+
+        socket.on('mouseMove', function (data) {
+
+
+            var player = this.CONTROLLER_LIST[data.id];
+
+            if (player) {
+                player.selectAsteroid(player.x + data.x, player.y + data.y);
+                player.moveAsteroids(player.x + data.x, player.y + data.y);
+            }   
+        }.bind(this));
+
+        socket.on('mouseUp', function (data) {
+            var player = this.CONTROLLER_LIST[data.id];
+
+            if (player) {
+                //player.dropAsteroid(player.x + data.x, player.y + data.y);
+            } 
+        }.bind(this))
+
 
 
         socket.on('keyEvent', function (data) {
@@ -346,7 +370,8 @@ GameServer.prototype.start = function () {
 };
 
 GameServer.prototype.createPlayer = function (socket, info) {
-    var player = new Entity.Player(socket.id, info.name, this.gameServer);
+    var player = new Entity.Player(socket.id, info.name, this);
+    return player;
 };
 
 
@@ -358,17 +383,6 @@ GameServer.prototype.createAsteroid = function () {
     );
 }
 
-
-
-/** MISC METHODS **/
-GameServer.prototype.findBots = function (boundary) {
-    this.controllerTree.find(boundary, function (controller) {
-        if (controller.type === "Bot" && controller.owner === boundary.player) {
-            var player = this.CONTROLLER_LIST[boundary.player];
-            player.selectBot(controller);
-        }
-    }.bind(this));
-};
 
 Object.size = function (obj) {
     var size = 0, key;

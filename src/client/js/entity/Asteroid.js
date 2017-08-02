@@ -8,6 +8,7 @@ function Asteroid(asteroidInfo, client) {
 }
 
 Asteroid.prototype.update = function (asteroidInfo) {
+    console.log("UPDATED");
     this.x = asteroidInfo.x;
     this.y = asteroidInfo.y;
     this.radius = asteroidInfo.radius;

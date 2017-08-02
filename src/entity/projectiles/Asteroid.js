@@ -88,18 +88,14 @@ Asteroid.prototype.updatePosition = function () {
     if (this.timer > 0) {
         this.timer -= 1;
     }
+
+    this.findFriendlies();
+    this.move();
+
     this.updateChunk();
     this.updateQuadItem();
 
-    switch (this.type) {
-        case "shooting":
-            this.move();
-            break;
-        case "player":
-            var player = this.gameServer.CONTROLLER_LIST[this.owner];
-            this.follow(player);
-            break;
-    }
+
     this.packetHandler.updateAsteroidsPackets(this);
 };
 
@@ -163,6 +159,39 @@ Asteroid.prototype.move = function () {
     this.gameServer.asteroidTree.remove(this.quadItem);
     this.gameServer.asteroidTree.insert(this.quadItem);
 };
+
+
+Asteroid.prototype.findFriendlies = function () {
+    this.gameServer.asteroidTree.find(this.quadItem.bound, function (asteroid) {
+        if (asteroid.id !== this.id && this.xVel < 5 && this.yVel < 5) {
+            this.ricochet(asteroid);
+        }
+    }.bind(this))
+
+};
+
+
+Asteroid.prototype.ricochet = function (asteroid) {
+    var xAdd = Math.abs(asteroid.x - this.x) / 20;
+    var yAdd = Math.abs(asteroid.y - this.y) / 20;
+    var xImpulse = (4 - xAdd);
+    var yImpulse = (4 - yAdd);
+
+
+    this.xVel += (asteroid.x > this.x) ? -xImpulse: xImpulse;
+    this.yVel += (asteroid.y > this.y) ? -yImpulse: yImpulse;
+};
+
+
+
+
+Asteroid.prototype.teleport = function (x,y) {
+    this.xVel = (x - this.x)/4;
+    this.yVel = (y - this.y)/4;
+
+    this.updateQuadItem();
+    this.packetHandler.updateAsteroidsPackets(this);
+}
 
 Asteroid.prototype.addQuadItem = function () {
     this.quadItem = {

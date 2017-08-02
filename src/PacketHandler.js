@@ -342,6 +342,7 @@ PacketHandler.prototype.updateAsteroidsPackets = function (asteroid) {
     this.CHUNK_PACKETS[asteroid.chunk].push({
         master: "update",
         class: "asteroidInfo",
+        id: asteroid.id,
         x: asteroid.x,
         y: asteroid.y,
         radius: asteroid.radius

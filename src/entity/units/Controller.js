@@ -4,17 +4,14 @@ const Arithmetic = require('../../modules/Arithmetic');
 
 var lerp = require('lerp');
 
-function Controller(id, faction, gameServer) {
+function Controller(id, gameServer) {
     this.id = id;
     this.gameServer = gameServer;
     this.packetHandler = gameServer.packetHandler;
 
-    this.faction = faction.name;
     this.radius = 20;
 
     this.stationary = true;
-    this.x = faction.x;
-    this.y = faction.y;
     this.maxHealth = 5;
     this.health = 5;
     this.maxSpeed = 10;
@@ -43,7 +40,6 @@ Controller.prototype.init = function () {
 
 Controller.prototype.onDelete = function () {
     this.gameServer.controllerTree.remove(this.quadItem);
-    this.gameServer.FACTION_LIST[this.faction].removeController(this);
 
     delete this.gameServer.CONTROLLER_LIST[this.id];
     delete this.gameServer.CHUNKS[this.chunk].CONTROLLER_LIST[this.id];
@@ -56,17 +52,6 @@ Controller.prototype.update = function () {
     this.updatePosition();
     this.updateQuadItem();
     this.updateChunk();
-
-    if (tile) {
-        if (tile.faction === this.faction) {
-            this.increaseHealth(0.1);
-        }
-        else if (tile.faction !== null) {
-            var home = this.gameServer.HOME_LIST[tile.home];
-            home.shootShard(this);
-            this.decreaseHealth(0.1);
-        }
-    }
 
     this.packetHandler.updateControllersPackets(this);
 };
