@@ -23,11 +23,12 @@ function Asteroid(x, y, gameServer) {
     this.timer = 0;
     this.theta = 0;
 
-    this.radius = 10; //change to entityConfig!!!
+    this.radius = getRandom(10, 200); //change to entityConfig!!!
 
-    this.weight = getRandom(5, 10);
+    this.weight = getRandom(10, 15);
 
     this.maxVel = 400/this.weight;
+    this.range = 10 * this.weight;
 
     this.currPath = null;
     this.pathQueue = new Queue();
@@ -158,14 +159,14 @@ Asteroid.prototype.getTheta = function (target) {
         newTheta -= 2*Math.PI;
     }
 
-    console.log(newTheta, this.savedTheta);
+    if (Math.round(newTheta - this.savedTheta) > 2.7) {
+        this.theta = lerp(this.theta, newTheta, 0.9);
+    }
+    else {
+        this.theta = lerp(this.theta, newTheta, 0.4);
+    }
 
     this.savedTheta = newTheta;
-
-
-
-
-    this.theta = lerp(this.theta, newTheta, 0.4);
 };
 
 
@@ -179,23 +180,23 @@ Asteroid.prototype.move = function () {
         this.yVel = 0;
     }
 
-    while (this.pathQueue.length() > 5) {
+    while (this.pathQueue.length() > 3) {
         this.currPath = this.pathQueue.dequeue();
     }
 
 
 
     if (this.currPath) {
-        if (inBounds(this.currPath.x, this.x) && 
-            inBounds(this.currPath.y, this.y)) {
+        if (inBounds(this.currPath.x, this.x, this.range) && 
+            inBounds(this.currPath.y, this.y, this.range)) {
             this.currPath = this.pathQueue.dequeue();
             if (!this.currPath) {
                 return;
             }
         }
         this.getTheta(this.currPath);
-        this.xVel = this.maxVel * Math.cos(this.theta);
-        this.yVel = this.maxVel * Math.sin(this.theta);
+        this.xVel = lerp(this.xVel, this.maxVel * Math.cos(this.theta), 0.3);
+        this.yVel = lerp(this.yVel, this.maxVel * Math.sin(this.theta), 0.3);
     }
 
     else if (this.owner && 1===2) {
@@ -207,11 +208,11 @@ Asteroid.prototype.move = function () {
 
     this.findFriendlies();
 
-    this.xVel = lerp(this.xVel, 0, 0.3);
-    this.yVel = lerp(this.yVel, 0, 0.3);
-
     this.x += this.xVel;
     this.y += this.yVel;
+
+    this.xVel = lerp(this.xVel, 0, 0.1);
+    this.yVel = lerp(this.yVel, 0, 0.1);
 
 
     this.gameServer.asteroidTree.remove(this.quadItem);
@@ -294,8 +295,8 @@ function onBoundary(coord) {
 };
 
 
-function inBounds(x1, x2) {
-    return Math.abs(x1-x2) < 50;
+function inBounds(x1, x2, range) {
+    return Math.abs(x1-x2) < range;
 }
 
 

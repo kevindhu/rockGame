@@ -18,7 +18,7 @@ var medium = function () {
     CHUNKS = 4;
     WIDTH = 5000;
     TILES_INPUT = 1000;
-    SHARDS = 200;
+    SHARDS = 800;
     BORDER_WIDTH = 300;
 };
 
