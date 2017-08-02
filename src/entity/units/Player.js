@@ -12,6 +12,7 @@ function Player(id, name, gameServer) {
     this.maxSpeed = 10;
 
     this.asteroids = {};
+    this.asteroidsLength = 0;
     this.heldAstroid = null;
 
     this.x = entityConfig.WIDTH / 2;
@@ -137,10 +138,27 @@ Player.prototype.selectAsteroid = function (x, y) {
     };
 
 
-    this.gameServer.asteroidTree.find(mouseBound, function (asteroid) {
-        this.asteroids[asteroid.id] = asteroid;
-    }.bind(this))
+    if (this.asteroidsLength < 10) {
+        this.gameServer.asteroidTree.find(mouseBound, function (asteroid) {
+            if (!this.asteroids[asteroid.id]) {
+                this.asteroidsLength++;
+                this.asteroids[asteroid.id] = asteroid;
+                asteroid.addOwner(this);
+                //this.resetAsteroidQueues();
+            }
+        }.bind(this));
+    }
 };
+
+
+
+Player.prototype.resetAsteroidQueues = function () {
+    var asteroid;
+    for (var id in this.asteroids) {
+        asteroid = this.asteroids[id];
+        asteroid.resetPathQueue();
+    }
+}
 
 
 Player.prototype.moveAsteroids = function (x,y) {

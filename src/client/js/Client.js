@@ -191,7 +191,6 @@ Client.prototype.updateEntities = function (packet) {
             updateEntity(packet, this.TILE_LIST);
             break;
         case "asteroidInfo":
-            console.log("YO");
             updateEntity(packet, this.ASTEROID_LIST);
             break;
         case "homeInfo":

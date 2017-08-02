@@ -23,7 +23,15 @@ function Asteroid(x, y, gameServer) {
     this.timer = 0;
     this.theta = 0;
 
-    this.radius = 40; //change to entityConfig!!!
+    this.radius = 10; //change to entityConfig!!!
+
+    this.weight = getRandom(5, 10);
+
+    this.maxVel = 400/this.weight;
+
+    this.currPath = null;
+    this.pathQueue = new Queue();
+    this.queueTimer = 0;
 
 
     this.init();
@@ -89,10 +97,9 @@ Asteroid.prototype.updatePosition = function () {
         this.timer -= 1;
     }
 
-    this.findFriendlies();
     this.move();
 
-    this.updateChunk();
+    //this.updateChunk();
     this.updateQuadItem();
 
 
@@ -108,6 +115,7 @@ Asteroid.prototype.updateChunk = function () {
         delete this.gameServer.CHUNKS[this.chunk].ASTEROID_LIST[this.id];
 
         this.chunk = newChunk;
+        console.log("NEW CHUNK: " + newChunk);
         this.gameServer.CHUNKS[this.chunk].ASTEROID_LIST[this.id] = this;
     }
 };
@@ -135,26 +143,79 @@ Asteroid.prototype.onDelete = function () {
     this.packetHandler.deleteAsteroidPackets(this);
 };
 
+
+Asteroid.prototype.getTheta = function (target) {
+    var newTheta = Math.atan((this.y - target.y) / (this.x - target.x));
+    if (this.y - target.y > 0 && this.x - target.x > 0 || this.y - target.y < 0 && this.x - target.x > 0) {
+        newTheta += Math.PI;
+    }
+
+
+    if (this.savedTheta && this.savedTheta - newTheta > 5) {
+        newTheta -= 2*Math.PI;
+    }
+    else if (this.savedTheta && newTheta - this.savedTheta > 5) {
+        newTheta += 2*Math.PI;
+    }
+
+    console.log("NEW THETA: " + newTheta);
+    console.log("SAVED THETA: " + this.savedTheta);
+
+    this.savedTheta = newTheta;
+
+
+    console.log(this.theta, newTheta);
+
+
+
+    this.theta = lerp(this.theta, newTheta, 0.2);
+};
+
+
+Asteroid.prototype.resetPathQueue = function () {
+    this.pathQueue = new Queue();
+}
+
 Asteroid.prototype.move = function () {
     if (this.xVel > -0.1 && this.xVel < 0.1) {
         this.xVel = 0;
         this.yVel = 0;
     }
 
-    if (onBoundary(this.x) && !this.xSwitched) {
-        this.xVel = -this.xVel;
-        this.xSwitched = true;
+    while (this.pathQueue.length() > 5) {
+        this.currPath = this.pathQueue.dequeue();
     }
-    if (onBoundary(this.y) && !this.ySwitched) {
-        this.yVel = -this.yVel;
-        this.ySwitched = true;
+
+
+
+    if (this.currPath) {
+        if (inBounds(this.currPath.x, this.x) && 
+            inBounds(this.currPath.y, this.y)) {
+            this.currPath = this.pathQueue.dequeue();
+            if (!this.currPath) {
+                return;
+            }
+        }
+        this.getTheta(this.currPath);
+        this.xVel = this.maxVel * Math.cos(this.theta);
+        this.yVel = this.maxVel * Math.sin(this.theta);
     }
+
+    else if (this.owner && 1===2) {
+        this.getTheta(this.owner);
+        this.xVel = this.maxVel * Math.cos(this.theta);
+        this.yVel = this.maxVel * Math.sin(this.theta);
+    }
+
+
+    this.findFriendlies();
+
+    this.xVel = lerp(this.xVel, 0, 0.3);
+    this.yVel = lerp(this.yVel, 0, 0.3);
 
     this.x += this.xVel;
     this.y += this.yVel;
 
-    this.xVel = lerp(this.xVel, 0, 0.2);
-    this.yVel = lerp(this.yVel, 0, 0.2);
 
     this.gameServer.asteroidTree.remove(this.quadItem);
     this.gameServer.asteroidTree.insert(this.quadItem);
@@ -174,8 +235,8 @@ Asteroid.prototype.findFriendlies = function () {
 Asteroid.prototype.ricochet = function (asteroid) {
     var xAdd = Math.abs(asteroid.x - this.x) / 20;
     var yAdd = Math.abs(asteroid.y - this.y) / 20;
-    var xImpulse = (4 - xAdd);
-    var yImpulse = (4 - yAdd);
+    var xImpulse = (20 - xAdd)/10;
+    var yImpulse = (20 - yAdd)/10;
 
 
     this.xVel += (asteroid.x > this.x) ? -xImpulse: xImpulse;
@@ -186,11 +247,25 @@ Asteroid.prototype.ricochet = function (asteroid) {
 
 
 Asteroid.prototype.teleport = function (x,y) {
-    this.xVel = (x - this.x)/4;
-    this.yVel = (y - this.y)/4;
+    if (this.queueTimer === 0) { 
+        this.pathQueue.enqueue({
+            x: x,
+            y: y
+        });
+        this.queueTimer = 30;
 
-    this.updateQuadItem();
-    this.packetHandler.updateAsteroidsPackets(this);
+        if (!this.currPath) {
+            this.currPath = this.pathQueue.dequeue();
+        }
+
+    }
+    else {
+        this.queueTimer -= 1;
+    }
+}
+
+Asteroid.prototype.addOwner = function (player) {
+    this.owner = player;
 }
 
 Asteroid.prototype.addQuadItem = function () {
@@ -222,4 +297,46 @@ function onBoundary(coord) {
 };
 
 
+function inBounds(x1, x2) {
+    return Math.abs(x1-x2) < 50;
+}
+
+
+function getRandom(min, max) {
+    return Math.random() * (max - min) + min;
+}
+
+
+
+function Queue(){
+    var a=[],b=0;
+    this.getLength=function(){
+        return a.length-b
+    };
+
+    this.isEmpty=function(){
+        return 0==a.length
+    };
+
+    this.enqueue=function(b){
+        a.push(b)
+    };
+
+    
+    this.dequeue=function(){
+        if(0!=a.length){
+            var c=a[b];
+            2*++b>=a.length&&(a=a.slice(b),b=0);
+            return c
+        }
+    };
+    
+    this.peek=function(){
+        return 0<a.length?a[b]:void 0
+    }
+
+    this.length = function () {
+        return a.length;
+    }
+};
 module.exports = Asteroid;

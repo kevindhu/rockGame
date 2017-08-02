@@ -182,7 +182,7 @@ PacketHandler.prototype.addAsteroidPackets = function (asteroid, ifInit) {
         id: asteroid.id,
         x: asteroid.x,
         y: asteroid.y,
-        radius: asteroid.radius
+        radius: asteroid.radius,
     };
     if (ifInit) {
         return info;
@@ -345,7 +345,8 @@ PacketHandler.prototype.updateAsteroidsPackets = function (asteroid) {
         id: asteroid.id,
         x: asteroid.x,
         y: asteroid.y,
-        radius: asteroid.radius
+        radius: asteroid.radius,
+        currPath: asteroid.currPath
     });
 };
 
