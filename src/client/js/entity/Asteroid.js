@@ -34,7 +34,7 @@ Asteroid.prototype.show = function () {
         ctx.fillStyle = "blue";
     }
     else if (this.material === "copper") {
-        ctx.fillStyle = "green";
+        ctx.fillStyle = "yellow";
     }
 
 

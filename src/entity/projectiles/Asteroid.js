@@ -17,8 +17,8 @@ function Asteroid(x, y, material, gameServer) {
     this.supply = 5;
     this.owner = null;
 
-    this.xVel = 0;
-    this.yVel = 0;
+    this.xVel = 2;
+    this.yVel = 2;
 
     this.value = 0;
     this.timer = 0;
@@ -69,7 +69,7 @@ Asteroid.prototype.setMaterial = function (material) {
             break;
         case "copper":
             this.material = "copper";
-            this.materialQuality = 2;
+            this.materialQuality = 10;
             break;
     }
 };
@@ -181,8 +181,8 @@ Asteroid.prototype.updateChunk = function () {
 Asteroid.prototype.setRadius = function (radius) {
     this.radius = radius;
 
-    this.weight = this.materialQuality * this.radius/1.3;
-    this.maxVel = 400/this.weight;
+    this.mass = this.materialQuality * this.radius/1.3;
+    this.maxVel = 400/this.mass;
     this.range = 100;
 
     this.maxHealth = this.radius;
@@ -201,8 +201,8 @@ Asteroid.prototype.shoot = function (x,y) {
         y:y
     };
 
-    this.xVel = 10 * Math.cos(this.theta);
-    this.yVel = 10 * Math.sin(this.theta);
+    this.xVel = 20 * Math.cos(this.theta);
+    this.yVel = 20 * Math.sin(this.theta);
 };
 
 
@@ -320,6 +320,7 @@ Asteroid.prototype.findAsteroids = function () {
         if (asteroid.id !== this.id && Math.abs(this.xVel) > 0 && Math.abs(this.yVel) > 0) {
             if (this.ricochetTimer <= 0) {
                 this.ricochet(asteroid);
+                asteroid.ricochet(this);
             }
         }
     }.bind(this))
@@ -332,41 +333,24 @@ Asteroid.prototype.ricochet = function (asteroid) {
         return Math.sqrt(square(a) + square(b));
     }
 
-    var thisNormal = normal(this.xVel, this.yVel);
+    var phi = Math.atan((asteroid.y - this.y)/(asteroid.x - this.x));
+    var v1 = normal(this.xVel, this.yVel);
+    var v2 = normal(asteroid.xVel, asteroid.yVel);
 
-    var thisVectorNormal = [this.xVel/thisNormal, this.yVel/thisNormal];
+    var m1 = this.mass;
+    var m2 = asteroid.mass;
 
-    //console.log(thisVectorNormal);
+    var theta1 = this.theta;
+    var theta2 = asteroid.theta;
 
-    var collisionPos = [(this.x + asteroid.x)/2, (this.y + asteroid.y)/2];
 
-    var hitVector = [asteroid.x-collisionPos[0], asteroid.y - collisionPos[1]]
-    var hitNormal = normal(hitVector[0], hitVector[1]);
-    var hitVectorNormal = [hitVector[0]/hitNormal, hitVector[1]/hitNormal];
+    this.xVel = (v1 * Math.cos(theta1 - phi)*(m1 - m2) + 2*m2*v2*Math.cos(theta2 - phi))
+    /(m1 + m2) * Math.cos(phi) + v1 * Math.sin(theta1 - phi)*Math.cos(phi + Math.PI/2);
 
-    var theta = Math.acos(thisVectorNormal[0] * hitVectorNormal[0] + 
-        thisVectorNormal[1] * hitVectorNormal[1]) % (2*Math.PI);
-
-    if (this.x < asteroid.x) {
-        this.theta += Math.PI - (2*Math.PI - 2*theta);
-    }
-    else {
-        this.theta -= Math.PI - (2*Math.PI - 2*theta);
-    }
-
-    this.xVel = this.maxVel * Math.cos(this.theta);
-    this.yVel = this.maxVel * Math.sin(this.theta);
-
-    asteroid.xVel = asteroid.maxVel * hitVectorNormal[0];
-    asteroid.yVel = asteroid.maxVel * hitVectorNormal[1];
-
+    this.yVel = (v1 * Math.cos(theta1 - phi)*(m1 - m2) + 2*m2*v2*Math.cos(theta2 - phi))
+    /(m1 + m2) * Math.sin(phi) + v1 * Math.sin(theta1 - phi)*Math.sin(phi + Math.PI/2);
 
     this.ricochetTimer = 5;
-    asteroid.ricochetTimer = 5;
-
-
-    //this.xVel += (asteroid.x > this.x) ? -xImpulse: xImpulse;
-    //this.yVel += (asteroid.y > this.y) ? -yImpulse: yImpulse;
 };
 
 
