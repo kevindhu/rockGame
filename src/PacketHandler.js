@@ -7,29 +7,21 @@ function PacketHandler(gameServer) {
     this.initChunkPackets();
 }
 
+
+PacketHandler.prototype.sendVerificationPackets = function (socket) {
+    socket.emit('initVerification', {}); //make this more secure
+};
+
 PacketHandler.prototype.initChunkPackets = function () {
     for (var i = 0; i < entityConfig.CHUNKS; i++) {
         this.CHUNK_PACKETS[i] = [];
     }
 };
 
-PacketHandler.prototype.sendInitPackets = function (socket) {
-    socket.emit('addFactionsUI', this.addFactionsUIPacket()); //make more streamlined?
-};
-
-//TODO: optimize this with addUIPacket to make it cleaner
-PacketHandler.prototype.addFactionsUIPacket = function () {
-    var factionsPacket = [];
-    for (var i in this.gameServer.FACTION_LIST) {
-        factionsPacket.push(i);
-    }
-    return {factions: factionsPacket};
-};
 
 PacketHandler.prototype.sendChunkInitPackets = function (socket, chunk) {
-    socket.emit('updateEntities', this.createChunkPacket(chunk, socket.id));
+     socket.emit('updateEntities', this.createChunkPacket(chunk, socket.id));
 };
-
 
 PacketHandler.prototype.createChunkPacket = function (chunk, id) {
     var initPacket = [];
@@ -45,8 +37,6 @@ PacketHandler.prototype.createChunkPacket = function (chunk, id) {
     populate(this.gameServer.CHUNKS[chunk].CONTROLLER_LIST, this.addControllerPackets);
     populate(this.gameServer.CHUNKS[chunk].ASTEROID_LIST, this.addAsteroidPackets);
     populate(this.gameServer.CHUNKS[chunk].TILE_LIST, this.addTilePackets);
-    populate(this.gameServer.CHUNKS[chunk].HOME_LIST, this.addHomePackets);
-    populate(this.gameServer.FACTION_LIST, this.addFactionPackets);
 
     if (id) {
         initPacket.push({
@@ -56,7 +46,6 @@ PacketHandler.prototype.createChunkPacket = function (chunk, id) {
         });
     }
     return initPacket;
-
 };
 
 
@@ -72,31 +61,10 @@ PacketHandler.prototype.deleteChunkPacket = function (chunk) {
     };
 
     populate(this.gameServer.CHUNKS[chunk].CONTROLLER_LIST, this.deleteControllerPackets);
-
-
     populate(this.gameServer.CHUNKS[chunk].TILE_LIST, this.deleteTilePackets);
-    populate(this.gameServer.CHUNKS[chunk].HOME_LIST, this.deleteHomePackets);
-    //don't want to delete factions, they are still in the leaderboard!
-
+    populate(this.gameServer.CHUNKS[chunk].ASTEROID_LIST, this.deleteAsteroidPackets);
     return deletePacket;
-
 };
-
-
-PacketHandler.prototype.addAsteroidAnimationPackets = function (asteroid) {
-    this.CHUNK_PACKETS[asteroid.chunk].push(
-        {
-            master: "add",
-            class: "animationInfo",
-            type: "asteroidDeath",
-            id: asteroid.id,
-            x: asteroid.x,
-            y: asteroid.y
-        })
-};
-
-
-
 
 
 PacketHandler.prototype.addPromptMsgPackets = function (player, message) {
@@ -157,24 +125,6 @@ PacketHandler.prototype.addControllerPackets = function (controller, ifInit) {
     }
 };
 
-PacketHandler.prototype.addFactionPackets = function (faction, ifInit) {
-    var info = {
-        master: "add",
-        class: "factionInfo",
-        id: faction.id,
-        name: faction.name,
-        x: faction.x,
-        y: faction.y,
-        size: faction.homes.length
-    };
-    if (ifInit) {
-        return info;
-    }
-    else {
-        this.masterPacket.push(info);
-    }
-};
-
 PacketHandler.prototype.addAsteroidPackets = function (asteroid, ifInit) {
     var info = {    
         master: "add",
@@ -192,7 +142,17 @@ PacketHandler.prototype.addAsteroidPackets = function (asteroid, ifInit) {
     }
 }
 
-
+PacketHandler.prototype.addAsteroidAnimationPackets = function (asteroid) {
+    this.CHUNK_PACKETS[asteroid.chunk].push(
+        {
+            master: "add",
+            class: "animationInfo",
+            type: "asteroidDeath",
+            id: asteroid.id,
+            x: asteroid.x,
+            y: asteroid.y
+        })
+};
 
 
 PacketHandler.prototype.addTilePackets = function (tile, ifInit) {
@@ -208,15 +168,6 @@ PacketHandler.prototype.addTilePackets = function (tile, ifInit) {
     };
 };
 
-PacketHandler.prototype.addLaserPackets = function (laser, ifInit) {
-    this.CHUNK_PACKETS[laser.chunk].push({
-        master: "add",
-        class: "laserInfo",
-        id: laser.id,
-        owner: laser.owner,
-        target: laser.target
-    });
-};
 
 PacketHandler.prototype.addChatPackets = function (name, message) {
     this.masterPacket.push({
@@ -228,56 +179,7 @@ PacketHandler.prototype.addChatPackets = function (name, message) {
 };
 
 
-PacketHandler.prototype.addHomePackets = function (home, ifInit) {
-    var info = {
-        master: "add",
-        class: "homeInfo",
-        id: home.id,
-        owner: home.faction.name,
-        x: home.x,
-        y: home.y,
-        type: home.type,
-        radius: home.radius,
-        power: home.power,
-        level: home.level,
-        hasColor: home.hasColor,
-        health: home.health,
-        neighbors: home.neighbors,
-        unitDmg: home.unitDmg,
-        unitSpeed: home.unitSpeed,
-        unitArmor: home.unitArmor,
-        queue: home.queue,
-        bots: home.bots
-    };
-    if (ifInit) {
-        return info;
-    }
-    else {
-        this.CHUNK_PACKETS[home.chunk].push(info);
-    }
-};
 
-
-PacketHandler.prototype.updateHomePackets = function (home) {
-    this.CHUNK_PACKETS[home.chunk].push(
-        {
-            master: "update",
-            class: "homeInfo",
-            id: home.id,
-            power: home.power,
-            level: home.level,
-            radius: home.radius,
-            hasColor: home.hasColor,
-            health: home.health,
-            neighbors: home.neighbors,
-            unitDmg: home.unitDmg,
-            unitSpeed: home.unitSpeed,
-            unitArmor: home.unitArmor,
-            queue: home.queue,
-            bots: home.bots
-        }
-    );
-};
 
 PacketHandler.prototype.updateUIPackets = function (player, home, action) {
     var homeId;
@@ -298,26 +200,6 @@ PacketHandler.prototype.updateUIPackets = function (player, home, action) {
         });
 };
 
-PacketHandler.prototype.updateFactionPackets = function (faction) {
-    this.CHUNK_PACKETS[faction.chunk].push({
-        master: "update",
-        class: "factionInfo",
-        id: faction.id,
-        x: faction.x,
-        y: faction.y,
-        size: faction.homes.length
-    });
-};
-
-PacketHandler.prototype.updateTilesPackets = function (tile) {
-    this.CHUNK_PACKETS[tile.chunk].push({
-        master: "update",
-        class: "tileInfo",
-        id: tile.id,
-        color: tile.color,
-        alert: tile.alert
-    });
-};
 
 PacketHandler.prototype.updateControllersPackets = function (controller) {
     this.CHUNK_PACKETS[controller.chunk].push({
@@ -336,8 +218,6 @@ PacketHandler.prototype.updateControllersPackets = function (controller) {
 };
 
 
-
-
 PacketHandler.prototype.updateAsteroidsPackets = function (asteroid) {
     this.CHUNK_PACKETS[asteroid.chunk].push({
         master: "update",
@@ -346,7 +226,8 @@ PacketHandler.prototype.updateAsteroidsPackets = function (asteroid) {
         x: asteroid.x,
         y: asteroid.y,
         radius: asteroid.radius,
-        currPath: asteroid.currPath
+        currPath: asteroid.currPath,
+        queuePosition: asteroid.queuePosition
     });
 };
 
@@ -363,16 +244,7 @@ PacketHandler.prototype.deleteUIPackets = function (player, action) {
     });
 };
 
-PacketHandler.prototype.deletePromptMsgPackets = function (player, type) {
-    this.CHUNK_PACKETS[player.chunk].push(
-        {
-            master: "delete",
-            class: "UIInfo",
-            type: type,
-            id: player.id,
-            action: "gameMsgPrompt"
-        });
-};
+
 
 
 
@@ -389,55 +261,7 @@ PacketHandler.prototype.deleteControllerPackets = function (controller, chunk) {
     }
 };
 
-PacketHandler.prototype.deleteLaserPackets = function (laser, chunk) {
-    var info = {
-        master: "delete",
-        class: "laserInfo",
-        id: laser.id
-    };
-    if (chunk) {
-        return info;
-    } else {
-        this.CHUNK_PACKETS[laser.chunk].push(info);
-    }
-};
 
-PacketHandler.prototype.deleteFactionPackets = function (faction, chunk) {
-    var info = {
-        master: "delete",
-        class: "factionInfo",
-        id: faction.id
-    };
-    if (chunk) {
-        return info;
-    } else {
-        this.CHUNK_PACKETS[faction.chunk].push(info);
-    }
-};
-
-PacketHandler.prototype.deleteTilePackets = function (tile, chunk) {
-    var info = {
-        master: "delete",
-        class: "tileInfo",
-        id: tile.id
-    };
-    if (chunk) {
-        return info;
-    }
-    this.CHUNK_PACKETS[tile.chunk].push(info);
-};
-
-PacketHandler.prototype.deleteHomePackets = function (home, chunk) {
-    var info = {
-        master: "delete",
-        class: "homeInfo",
-        id: home.id
-    };
-    if (chunk) {
-        return info;
-    }
-    this.CHUNK_PACKETS[home.chunk].push(info);
-};
 
 
 

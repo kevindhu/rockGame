@@ -14,12 +14,12 @@ function Controller(id, gameServer) {
     this.stationary = true;
     this.maxHealth = 5;
     this.health = 5;
-    this.maxSpeed = 10;
-    this.maxXSpeed = 10;
+    this.maxVel = 10;
+    this.maxXVel = 10;
     this.maxYSpeed = 10;
     this.timer = 0;
-    this.xSpeed = 0;
-    this.ySpeed = 0;
+    this.xVel = 0;
+    this.yVel = 0;
     this.theta = 0;
 
     this.selected = false;
@@ -56,6 +56,8 @@ Controller.prototype.update = function () {
     this.packetHandler.updateControllersPackets(this);
 };
 
+
+
 Controller.prototype.updateChunk = function () {
     var newChunk = EntityFunctions.findChunk(this.gameServer, this);
     if (newChunk !== this.chunk) {
@@ -68,24 +70,6 @@ Controller.prototype.updateChunk = function () {
 
 
 
-Controller.prototype.addSpeedBoost = function () {
-    this.maxSpeed *= 2;
-};
-
-Controller.prototype.removeSpeedBoost = function () {
-    this.maxSpeed /= 2;
-};
-
-Controller.prototype.addStealthPowerup = function () {
-    this.stealth = true;
-    this.packetHandler.updateControllersPackets(this);
-};
-
-
-Controller.prototype.removeStealthPowerup = function () {
-    this.stealth = false;
-    this.packetHandler.updateControllersPackets(this);
-};
 
 Controller.prototype.ricochet = function (controller) {
     var xAdd = Math.abs(controller.x - this.x) / 20;
@@ -100,12 +84,10 @@ Controller.prototype.ricochet = function (controller) {
     var yImpulse = (4 - yAdd)/10;
 
 
-    this.xSpeed += (controller.x > this.x) ? -xImpulse: xImpulse;
-    this.ySpeed += (controller.y > this.y) ? -yImpulse: yImpulse;
+    this.xVel += (controller.x > this.x) ? -xImpulse: xImpulse;
+    this.yVel += (controller.y > this.y) ? -yImpulse: yImpulse;
 };
 
-Controller.prototype.shootLaser = function () {
-};
 
 Controller.prototype.addQuadItem = function () {
     this.quadItem = {
@@ -148,45 +130,48 @@ Controller.prototype.decreaseHealth = function (amount) {
 
 Controller.prototype.updatePosition = function () {
     if (this.pressingDown) {
-        this.ySpeed = lerp(this.ySpeed, this.maxYSpeed, 0.3);
+        this.yVel = lerp(this.yVel, this.maxYSpeed, 0.3);
     }
     if (this.pressingUp) {
-        this.ySpeed = lerp(this.ySpeed, -this.maxYSpeed, 0.3);
+        this.yVel = lerp(this.yVel, -this.maxYSpeed, 0.3);
     }
     if (this.pressingLeft) {
-        this.xSpeed = lerp(this.xSpeed, -this.maxXSpeed, 0.3);
+        this.xVel = lerp(this.xVel, -this.maxXVel, 0.3);
     }
     if (this.pressingRight) {
-        this.xSpeed = lerp(this.xSpeed, this.maxXSpeed, 0.3);
+        this.xVel = lerp(this.xVel, this.maxXVel, 0.3);
     }
-    if (!this.pressingRight && !this.pressingLeft) {
-        this.xSpeed = lerp(this.xSpeed, 0, 0.3);
+    if (!this.pressingRight && !this.pressingLeft) { //decay x Vel
+        this.xVel = lerp(this.xVel, 0, 0.3);
     }
-    if (!this.pressingUp && !this.pressingDown) {
-        this.ySpeed = lerp(this.ySpeed, 0, 0.3);
+    if (!this.pressingUp && !this.pressingDown) { //decay y Vel
+        this.yVel = lerp(this.yVel, 0, 0.3);
     }
-    if (onBoundary(this.x + this.xSpeed)) {
-        this.xSpeed = 0;
+    if (onBoundary(this.x + this.xVel)) {
+        this.xVel = 0;
     }
-    if (onBoundary(this.y + this.ySpeed)) {
-        this.ySpeed = 0;
+    if (onBoundary(this.y + this.yVel)) {
+        this.yVel = 0;
     }
     this.checkStationary();
     this.checkStuck();
-    this.y += this.ySpeed;
-    this.x += this.xSpeed;
+    this.y += this.yVel;
+    this.x += this.xVel;
 };
 
+
+
 Controller.prototype.checkStationary = function () {
-    if (Math.abs(this.ySpeed) <= 0.3 && Math.abs(this.xSpeed) <= 0.3) {
-        this.ySpeed = 0;
-        this.xSpeed = 0;
+    if (Math.abs(this.yVel) <= 0.3 && Math.abs(this.xVel) <= 0.3) {
+        this.yVel = 0;
+        this.xVel = 0;
         this.stationary = true;
     }
     else {
         this.stationary = false;
     }
 };
+
 
 Controller.prototype.checkStuck = function () {
     var resolveStuck = function (coord) {

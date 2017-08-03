@@ -263,9 +263,9 @@ GameServer.prototype.start = function () {
         socket.verified = false;
         socket.stage = 0;
 
+        this.packetHandler.sendVerificationPackets(socket);
         this.SOCKET_LIST[socket.id] = socket;
         this.INIT_SOCKET_LIST[socket.id] = socket;
-        this.packetHandler.sendInitPackets(socket);
 
         console.log("Client #" + socket.id + " has joined the server");
 

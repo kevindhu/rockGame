@@ -1,7 +1,7 @@
 const entityConfig = require('../entityConfig');
-const Arithmetic = require('../../modules/Arithmetic');
 var EntityFunctions = require('../EntityFunctions');
 var Controller = require('./Controller');
+var Queue = require('../../modules/Queue');
 var lerp = require('lerp');
 
 function Player(id, name, gameServer) {
@@ -9,28 +9,40 @@ function Player(id, name, gameServer) {
     this.name = getName(name);
     this.type = "Player";
     this.radius = 10;
-    this.maxSpeed = 10;
+    this.maxVel = 10;
 
-    this.asteroids = {};
-    this.asteroidsLength = 0;
-    this.heldAstroid = null;
+    this.asteroids = [];
+    this.asteroidChainPos = new Queue(); //maximum length of 10
 
     this.x = entityConfig.WIDTH / 2;
     this.y = entityConfig.WIDTH / 2;
 
+    this.preX = this.x;
+    this.preY = this.y;
+
+    this.theta = 0;
     this.init();
 }
 
 EntityFunctions.inherits(Player, Controller);
 
 
-Player.prototype.addView = function (home) {
-    this.viewing = home.id;
-};
 
-Player.prototype.removeView = function () {
-    this.viewing = null;
-};
+Player.prototype.populateAsteroidChain = function () {
+    this.asteroidChainPos = new Queue();
+    var theta = this.theta;
+    var x,y;
+    for (var i = 0; i< 10; i++) { //10 possible nodes in the queue
+        x = this.x + 10 * i * Math.cos(theta);
+        y = this.y + 10 * i * Math.sin(theta);
+        this.asteroidChainPos.enqueue(
+            {
+                x: x,
+                y: y
+            });
+    }
+}
+
 
 Player.prototype.onDelete = function () {
     this.dropAllAsteroids();
@@ -53,15 +65,29 @@ Player.prototype.createBoundary = function (boundary) {
 };
 
 Player.prototype.update = function () {
-    var tile = this.gameServer.getEntityTile(this);
     Player.super_.prototype.update.apply(this);
+
+    if (square(this.x - this.preX) + square(this.y - this.preY) > 1000) {
+        this.updateChainPositions();
+        this.preX = this.x;
+        this.preY = this.y;
+    }
 };
 
 
-Player.prototype.updateMaxSpeed = function () { //resets to 10, change this
-    this.maxXSpeed = this.maxSpeed;
-    this.maxYSpeed = this.maxSpeed;
-};
+Player.prototype.updateChainPositions = function () {
+    console.log(this.asteroidChainPos.length());
+    this.asteroidChainPos.dequeue();
+    console.log(this.asteroidChainPos.length());
+    this.asteroidChainPos.enqueue({
+        x: this.x,
+        y: this.y
+    });
+
+    console.log("PEEKING");
+    console.log(this.asteroidChainPos.peek(9));
+
+}
 
 
 
@@ -138,36 +164,49 @@ Player.prototype.selectAsteroid = function (x, y) {
     };
 
 
-    if (this.asteroidsLength < 10) {
+    if (this.asteroids.length < 10) {
         this.gameServer.asteroidTree.find(mouseBound, function (asteroid) {
-            if (!this.asteroids[asteroid.id]) {
-                this.asteroidsLength++;
-                this.asteroids[asteroid.id] = asteroid;
+            if (!this.hasAsteroid(asteroid)) {
+                this.asteroids.push(asteroid);
+                asteroid.qIndex = this.asteroids.length - 1;
                 asteroid.addOwner(this);
-                //this.resetAsteroidQueues();
+                this.populateAsteroidChain();
             }
         }.bind(this));
     }
 };
 
 
+Player.prototype.hasAsteroid = function (asteroid) {
+    for (var i = 0; i<this.asteroids.length; i++) {
+        if (asteroid === this.asteroids[i]) {
+            return true;
+        }
+    }
+    return false;
+};
+
+
+
+
+
 
 Player.prototype.resetAsteroidQueues = function () {
     var asteroid;
-    for (var id in this.asteroids) {
-        asteroid = this.asteroids[id];
+    for (var i = 0; i<this.asteroids.length; i++) {
+        asteroid = this.asteroids[i];
         asteroid.resetPathQueue();
     }
-}
+};
 
 
 Player.prototype.moveAsteroids = function (x,y) {
     var asteroid;
-    for (var id in this.asteroids) {
-        asteroid = this.asteroids[id];
-        asteroid.teleport(x,y);
+    for (var i = 0; i<this.asteroids.length; i++) {
+        asteroid = this.asteroids[i];
+        asteroid.addPath(x,y);
     }
-}
+};
 
 
 Player.prototype.dropAsteroid = function (x,y) {
@@ -175,6 +214,8 @@ Player.prototype.dropAsteroid = function (x,y) {
     astroid.teleport(x,y);
     this.heldAstroid = null;
 };
+
+
 
 Player.prototype.dropAllAsteroids = function () {
     for (var i = this.shards.length - 1; i >= 0; i--) {
@@ -188,13 +229,13 @@ Player.prototype.onDeath = function () {
 };
 
 
-Player.prototype.reset = function () { //should delete this eventually, x`or only use during debuggging
+Player.prototype.reset = function () { //should delete this eventually, or only use during debugging
     this.x = entityConfig.WIDTH / 2;
     this.y = entityConfig.WIDTH / 2;
 
-    this.maxSpeed = 10;
-    this.xSpeed = 0;
-    this.ySpeed = 0;
+    this.maxVel = 10;
+    this.xVel = 0;
+    this.yVel = 0;
     this.health = 5;
     this.stationary = false;
     this.updateQuadItem();
@@ -208,29 +249,9 @@ function getName(name) {
     return name;
 }
 
-Player.prototype.addHomePrompt = function () {
-    this.homePrompt = true;
-    this.packetHandler.addPromptMsgPackets(this, "press Space for Home Info");
-};
-Player.prototype.removeHomePrompt = function () {
-    if (this.homePrompt) {
-        this.packetHandler.deletePromptMsgPackets(this, "home prompt");
-        this.homePrompt = false;
-    }
-};
 
-
-Player.prototype.addSentinelPrompt = function () {
-    this.sentinelPrompt = true;
-    this.packetHandler.addPromptMsgPackets(this, "press N to place Barracks");
-};
-Player.prototype.removeSentinelPrompt = function () {
-    if (this.sentinelPrompt) {
-        this.sentinelPrompt = false;
-        this.packetHandler.deletePromptMsgPackets(this, "sentinel prompt");
-        this.packetHandler.deleteBracketPackets(this);
-    }
-};
-
+function square(x) {
+    return x*x;
+}
 
 module.exports = Player;

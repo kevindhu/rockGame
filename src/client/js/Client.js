@@ -5,6 +5,8 @@ function Client() {
     this.SELFID = null;
     this.ARROW = null;
     this.BRACKET = null;
+
+    this.mouseMoveTimer = 0;
     this.init();
 }
 
@@ -18,7 +20,7 @@ Client.prototype.initSocket = function () {
     this.socket = io();
     this.socket.verified = false;
 
-    this.socket.on('addFactionsUI', this.addFactionstoUI.bind(this));
+    this.socket.on('initVerification', this.verify.bind(this));
     this.socket.on('updateEntities', this.handlePacket.bind(this));
     this.socket.on('drawScene', this.drawScene.bind(this));
     this.socket.on('chatMessage', this.mainUI)
@@ -64,6 +66,13 @@ Client.prototype.initCanvases = function () {
     }.bind(this));
 
     document.addEventListener("mousemove", function (event) {
+        if (this.mouseMoveTimer > 0) {
+            this.mouseMoveTimer -= 1;
+            return;
+        } 
+        else {
+            this.mouseMoveTimer = 20;
+        }
         var x = ((event.x / this.mainCanvas.offsetWidth * 1000) - this.mainCanvas.width / 2) / this.scaleFactor;
         var y = ((event.y / this.mainCanvas.offsetHeight * 500) - this.mainCanvas.height / 2) / this.scaleFactor;
 
@@ -98,22 +107,13 @@ Client.prototype.initViewers = function () {
     this.mainUI.playerNamerUI.open();
 };
 
-Client.prototype.addFactionstoUI = function (data) {
+Client.prototype.verify = function (data) {
     if (!this.socket.verified) {
         console.log("VERIFIED CLIENT");
         this.socket.emit("verify", {});
         this.socket.verified = true;
     }
-    var factions = document.getElementById('factions');
-    var packet = data.factions;
-
-    for (var i = 0; i < packet.length; i++) {
-        var name = packet[i];
-        var option = document.createElement('option');
-        option.value = name;
-        factions.appendChild(option);
-    }
-}; //change method name and location
+}; 
 
 Client.prototype.handlePacket = function (data) {
     var packet, i;

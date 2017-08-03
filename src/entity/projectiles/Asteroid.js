@@ -1,5 +1,6 @@
 const entityConfig = require('../entityConfig');
 var EntityFunctions = require('../EntityFunctions');
+var Queue = require('../../modules/Queue');
 var lerp = require('lerp');
 
 function Asteroid(x, y, gameServer) {
@@ -23,16 +24,17 @@ function Asteroid(x, y, gameServer) {
     this.timer = 0;
     this.theta = 0;
 
-    this.radius = getRandom(10, 200); //change to entityConfig!!!
+    this.qIndex = -1;
 
-    this.weight = getRandom(10, 15);
+    this.radius = getRandom(20, 30); //change to entityConfig!!!
+
+    this.weight = this.radius/2;
 
     this.maxVel = 400/this.weight;
     this.range = 10 * this.weight;
 
     this.currPath = null;
     this.pathQueue = new Queue();
-    this.queueTimer = 0;
 
 
     this.init();
@@ -58,18 +60,10 @@ Asteroid.prototype.limbo = function () {
 
 
 
-Asteroid.prototype.setOwner = function (owner) {
-    var faction = this.gameServer.FACTION_LIST[owner.faction];
-    this.owner = owner.id;
-    this.setFaction(faction);
-};
-
 
 Asteroid.prototype.removeOwner = function () {
     this.owner = null;
-    this.faction = null;
 };
-
 
 
 Asteroid.prototype.becomeStatic = function () {
@@ -77,7 +71,7 @@ Asteroid.prototype.becomeStatic = function () {
     this.type = "static";
 };
 
-Asteroid.prototype.becomeShooting = function (xVel, yVel, temp) {
+Asteroid.prototype.becomeShooting = function (xVel, yVel, temp) { //not updated yet
     this.limbo();
     this.type = "shooting";
     
@@ -85,7 +79,7 @@ Asteroid.prototype.becomeShooting = function (xVel, yVel, temp) {
 };
 
 
-Asteroid.prototype.becomePlayer = function (player) {
+Asteroid.prototype.becomePlayer = function (player) { //not updated yet
     this.limbo();
     this.type = "player";
     this.setOwner(player);
@@ -100,7 +94,7 @@ Asteroid.prototype.updatePosition = function () {
 
     this.move();
 
-    //this.updateChunk();
+    //this.updateChunk(); //cant use this when they are out of bounds!!!
     this.updateQuadItem();
 
 
@@ -175,16 +169,9 @@ Asteroid.prototype.resetPathQueue = function () {
 }
 
 Asteroid.prototype.move = function () {
-    if (this.xVel > -0.1 && this.xVel < 0.1) {
-        this.xVel = 0;
-        this.yVel = 0;
-    }
-
-    while (this.pathQueue.length() > 3) {
+    while (this.pathQueue.length() > 6) {
         this.currPath = this.pathQueue.dequeue();
     }
-
-
 
     if (this.currPath) {
         if (inBounds(this.currPath.x, this.x, this.range) && 
@@ -198,21 +185,30 @@ Asteroid.prototype.move = function () {
         this.xVel = lerp(this.xVel, this.maxVel * Math.cos(this.theta), 0.3);
         this.yVel = lerp(this.yVel, this.maxVel * Math.sin(this.theta), 0.3);
     }
+    else if (this.owner) {
+        //move with speed of owner
+        this.queuePosition = this.owner.asteroidChainPos.peek(9 - this.qIndex);
+        this.getTheta(this.queuePosition);
 
-    else if (this.owner && 1===2) {
-        this.getTheta(this.owner);
-        this.xVel = this.maxVel * Math.cos(this.theta);
-        this.yVel = this.maxVel * Math.sin(this.theta);
+        var totalPlayerVel = Math.sqrt(square(this.owner.xVel) + square(this.owner.yVel));
+
+        this.xVel = lerp(this.xVel, this.owner.maxVel * 1.2 * Math.cos(this.theta), 0.3);
+        this.yVel = lerp(this.yVel, this.owner.maxVel * 1.2 * Math.sin(this.theta), 0.3);
+        this.findFriendlies();
     }
 
 
-    this.findFriendlies();
+    if (this.xVel > -0.3 && this.xVel < 0.3) {
+        this.x += this.xVel;
+        this.y += this.yVel;
+    }
+    else {
+        this.x += this.xVel;
+        this.y += this.yVel;
 
-    this.x += this.xVel;
-    this.y += this.yVel;
-
-    this.xVel = lerp(this.xVel, 0, 0.1);
-    this.yVel = lerp(this.yVel, 0, 0.1);
+        this.xVel = lerp(this.xVel, 0, 0.05);
+        this.yVel = lerp(this.yVel, 0, 0.05);
+    }
 
 
     this.gameServer.asteroidTree.remove(this.quadItem);
@@ -244,21 +240,14 @@ Asteroid.prototype.ricochet = function (asteroid) {
 
 
 
-Asteroid.prototype.teleport = function (x,y) {
-    if (this.queueTimer === 0) { 
-        this.pathQueue.enqueue({
-            x: x,
-            y: y
-        });
-        this.queueTimer = 30;
-
-        if (!this.currPath) {
-            this.currPath = this.pathQueue.dequeue();
-        }
-
-    }
-    else {
-        this.queueTimer -= 1;
+Asteroid.prototype.addPath = function (x,y) {
+    this.pathQueue.enqueue({
+        x: x,
+        y: y
+    });
+     
+    if (!this.currPath) {
+        this.currPath = this.pathQueue.dequeue();
     }
 }
 
@@ -304,37 +293,8 @@ function getRandom(min, max) {
     return Math.random() * (max - min) + min;
 }
 
+function square(x) {
+    return x*x;
+}
 
-
-function Queue(){
-    var a=[],b=0;
-    this.getLength=function(){
-        return a.length-b
-    };
-
-    this.isEmpty=function(){
-        return 0==a.length
-    };
-
-    this.enqueue=function(b){
-        a.push(b)
-    };
-
-    
-    this.dequeue=function(){
-        if(0!=a.length){
-            var c=a[b];
-            2*++b>=a.length&&(a=a.slice(b),b=0);
-            return c
-        }
-    };
-    
-    this.peek=function(){
-        return 0<a.length?a[b]:void 0
-    }
-
-    this.length = function () {
-        return a.length;
-    }
-};
 module.exports = Asteroid;
