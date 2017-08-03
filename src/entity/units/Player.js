@@ -230,7 +230,9 @@ Player.prototype.selectAsteroid = function (x, y) {
 
     if (this.asteroids.length < 10) {
         this.gameServer.asteroidTree.find(mouseBound, function (asteroid) {
-            if (!this.hasAsteroid(asteroid) && this.asteroids.length < 10) {
+            if (!this.hasAsteroid(asteroid) && 
+                asteroid.radius < 30 &&
+                this.asteroids.length < 10) {
                 this.asteroids.push(asteroid);
                 asteroid.qIndex = this.asteroids.length - 1;
                 asteroid.addOwner(this);

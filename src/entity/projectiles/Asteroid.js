@@ -22,6 +22,7 @@ function Asteroid(x, y, material, gameServer) {
 
     this.value = 0;
     this.timer = 0;
+    this.ricochetTimer = 0;
     this.theta = 0;
 
     this.qIndex = -1;
@@ -32,8 +33,8 @@ function Asteroid(x, y, material, gameServer) {
     else {
         this.setMaterial(this.getRandomMaterial());
     }
-    
-    this.setRadius(getRandom(10, 200)); //change to entityConfig!!!
+
+    this.setRadius(getRandom(15, 30)); //change to entityConfig!!!
 
     this.currPath = null;
     this.pathQueue = new Queue();
@@ -149,6 +150,10 @@ Asteroid.prototype.updatePosition = function () {
         this.timer -= 1;
     }
 
+    if (this.ricochetTimer > 0) {
+        this.ricochetTimer -= 1;
+    }
+
     this.move();
 
     //this.updateChunk(); //cant use this when they are out of bounds!!!
@@ -176,9 +181,9 @@ Asteroid.prototype.updateChunk = function () {
 Asteroid.prototype.setRadius = function (radius) {
     this.radius = radius;
 
-    this.weight = this.radius/(1.3 * this.materialQuality);
+    this.weight = this.materialQuality * this.radius/1.3;
     this.maxVel = 400/this.weight;
-    this.range = 10 * this.weight;
+    this.range = 100;
 
     this.maxHealth = this.radius;
     this.health = this.maxHealth;
@@ -196,8 +201,8 @@ Asteroid.prototype.shoot = function (x,y) {
         y:y
     };
 
-    this.xVel = 80 * Math.cos(this.theta);
-    this.yVel = 80 * Math.sin(this.theta);
+    this.xVel = 10 * Math.cos(this.theta);
+    this.yVel = 10 * Math.sin(this.theta);
 };
 
 
@@ -259,7 +264,22 @@ Asteroid.prototype.move = function () {
         this.currPath = this.pathQueue.dequeue();
     }
 
-    if (this.currPath) {
+    if (this.owner && this.owner.active) {
+        if (this.currPath) {
+            this.currPath = null;
+            this.pathQueue = new Queue();
+        }
+
+        //move with speed of owner
+        this.queuePosition = this.owner.asteroidChainPos.peek(9 - this.qIndex);
+        this.getTheta(this.queuePosition);
+
+        var totalPlayerVel = Math.sqrt(square(this.owner.xVel) + square(this.owner.yVel));
+
+        this.xVel = lerp(this.xVel, this.owner.maxVel * 1.4 * Math.cos(this.theta), 0.3);
+        this.yVel = lerp(this.yVel, this.owner.maxVel * 1.4 * Math.sin(this.theta), 0.3);
+    }
+    else if (this.currPath) {
         if (inBounds(this.currPath.x, this.x, this.range) && 
             inBounds(this.currPath.y, this.y, this.range)) {
             this.currPath = this.pathQueue.dequeue();
@@ -271,20 +291,13 @@ Asteroid.prototype.move = function () {
         this.xVel = lerp(this.xVel, this.maxVel * Math.cos(this.theta), 0.3);
         this.yVel = lerp(this.yVel, this.maxVel * Math.sin(this.theta), 0.3);
     }
-    else if (this.owner && this.owner.active) {
-        //move with speed of owner
-        this.queuePosition = this.owner.asteroidChainPos.peek(9 - this.qIndex);
-        this.getTheta(this.queuePosition);
 
-        var totalPlayerVel = Math.sqrt(square(this.owner.xVel) + square(this.owner.yVel));
-
-        this.xVel = lerp(this.xVel, this.owner.maxVel * 1.4 * Math.cos(this.theta), 0.3);
-        this.yVel = lerp(this.yVel, this.owner.maxVel * 1.4 * Math.sin(this.theta), 0.3);
-        this.findFriendlies();
+    if (Math.abs(this.xVel) > 1 || Math.abs(this.yVel) > 1) {
+        this.findAsteroids();
     }
 
 
-    if (this.xVel > -0.3 && this.xVel < 0.3) {
+    if (Math.abs(this.xVel)<0.3 && Math.abs(this.yVel)<0.3) {
         this.x += this.xVel;
         this.y += this.yVel;
     }
@@ -302,10 +315,12 @@ Asteroid.prototype.move = function () {
 };
 
 
-Asteroid.prototype.findFriendlies = function () {
+Asteroid.prototype.findAsteroids = function () {
     this.gameServer.asteroidTree.find(this.quadItem.bound, function (asteroid) {
-        if (asteroid.id !== this.id && this.xVel < 5 && this.yVel < 5) {
-            this.ricochet(asteroid);
+        if (asteroid.id !== this.id && Math.abs(this.xVel) > 0 && Math.abs(this.yVel) > 0) {
+            if (this.ricochetTimer <= 0) {
+                this.ricochet(asteroid);
+            }
         }
     }.bind(this))
 
@@ -313,14 +328,45 @@ Asteroid.prototype.findFriendlies = function () {
 
 
 Asteroid.prototype.ricochet = function (asteroid) {
-    var xAdd = Math.abs(asteroid.x - this.x) / 20;
-    var yAdd = Math.abs(asteroid.y - this.y) / 20;
-    var xImpulse = (20 - xAdd)/10;
-    var yImpulse = (20 - yAdd)/10;
+    var normal = function (a,b) {
+        return Math.sqrt(square(a) + square(b));
+    }
+
+    var thisNormal = normal(this.xVel, this.yVel);
+
+    var thisVectorNormal = [this.xVel/thisNormal, this.yVel/thisNormal];
+
+    //console.log(thisVectorNormal);
+
+    var collisionPos = [(this.x + asteroid.x)/2, (this.y + asteroid.y)/2];
+
+    var hitVector = [asteroid.x-collisionPos[0], asteroid.y - collisionPos[1]]
+    var hitNormal = normal(hitVector[0], hitVector[1]);
+    var hitVectorNormal = [hitVector[0]/hitNormal, hitVector[1]/hitNormal];
+
+    var theta = Math.acos(thisVectorNormal[0] * hitVectorNormal[0] + 
+        thisVectorNormal[1] * hitVectorNormal[1]) % (2*Math.PI);
+
+    if (this.x < asteroid.x) {
+        this.theta += Math.PI - (2*Math.PI - 2*theta);
+    }
+    else {
+        this.theta -= Math.PI - (2*Math.PI - 2*theta);
+    }
+
+    this.xVel = this.maxVel * Math.cos(this.theta);
+    this.yVel = this.maxVel * Math.sin(this.theta);
+
+    asteroid.xVel = asteroid.maxVel * hitVectorNormal[0];
+    asteroid.yVel = asteroid.maxVel * hitVectorNormal[1];
 
 
-    this.xVel += (asteroid.x > this.x) ? -xImpulse: xImpulse;
-    this.yVel += (asteroid.y > this.y) ? -yImpulse: yImpulse;
+    this.ricochetTimer = 5;
+    asteroid.ricochetTimer = 5;
+
+
+    //this.xVel += (asteroid.x > this.x) ? -xImpulse: xImpulse;
+    //this.yVel += (asteroid.y > this.y) ? -yImpulse: yImpulse;
 };
 
 

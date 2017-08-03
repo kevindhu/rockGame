@@ -6,6 +6,7 @@ function Asteroid(asteroidInfo, client) {
     this.health = asteroidInfo.health;
     this.maxHealth = asteroidInfo.maxHealth;
     this.material = asteroidInfo.material;
+    this.theta = asteroidInfo.theta;
 
     this.client = client;
 }
@@ -19,6 +20,7 @@ Asteroid.prototype.update = function (asteroidInfo) {
     this.targetPt = asteroidInfo.targetPt;
     this.health = asteroidInfo.health;
     this.maxHealth = asteroidInfo.maxHealth;
+    this.theta = asteroidInfo.theta;
 };
 
 
@@ -29,14 +31,35 @@ Asteroid.prototype.show = function () {
     ctx.beginPath();
 
     if (this.material === "sulfer") {
-        ctx.fillStyle = "#33251c";
+        ctx.fillStyle = "blue";
     }
     else if (this.material === "copper") {
-        ctx.fillStyle = "#ba6a37";
+        ctx.fillStyle = "green";
     }
-    ctx.arc(this.x, this.y, this.radius, 0, 2 * Math.PI, false);
+
+
+
+
+
+    var x, y, theta, startX, startY;
+    theta = this.theta;
+    startX = this.radius * Math.cos(theta);
+    startY = this.radius * Math.sin(theta);
+    ctx.moveTo(this.x + startX, this.y + startY);
+
+    for (i = 1; i <= 6; i++) {
+        theta = this.theta + Math.PI / 3 * i +
+            getRandom(-this.maxHealth / this.health / 7, this.maxHealth / this.health / 7);
+        x = this.radius * Math.cos(theta);
+        y = this.radius * Math.sin(theta);
+        ctx.lineTo(this.x + x, this.y + y);
+    }
+    ctx.lineTo(this.x + startX, this.y + startY);
     ctx.fill();
     ctx.closePath();
+
+
+
 
     if (this.currPath) {
         ctx.beginPath();

@@ -309,7 +309,7 @@ GameServer.prototype.start = function () {
                     player.selectAsteroid(player.x + data.x, player.y + data.y);
                     player.moveAsteroids(player.x + data.x, player.y + data.y);
                 }   
-                else {
+                else if (1==2){
                     player.addSlash(
                         {
                             x: player.x + data.x, 

@@ -132,7 +132,8 @@ PacketHandler.prototype.addAsteroidPackets = function (asteroid, ifInit) {
         radius: asteroid.radius,
         health: asteroid.health,
         maxHealth: asteroid.maxHealth,
-        material: asteroid.material
+        material: asteroid.material,
+        theta: asteroid.theta
     };
     if (ifInit) {
         return info;
@@ -232,6 +233,7 @@ PacketHandler.prototype.updateAsteroidsPackets = function (asteroid) {
         targetPt: asteroid.targetPt,
         health: asteroid.health,
         maxHealth: asteroid.maxHealth,
+        theta: asteroid.theta
     });
 };
 
