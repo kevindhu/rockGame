@@ -26,15 +26,18 @@ function Asteroid(x, y, gameServer) {
 
     this.qIndex = -1;
 
-    this.radius = getRandom(10, 20); //change to entityConfig!!!
+    this.radius = getRandom(10, 200); //change to entityConfig!!!
 
     this.weight = this.radius/1.3;
-
     this.maxVel = 400/this.weight;
     this.range = 10 * this.weight;
 
     this.currPath = null;
     this.pathQueue = new Queue();
+
+
+    this.maxHealth = 20;
+    this.health = this.maxHealth;
 
     this.init();
 }
@@ -66,6 +69,31 @@ Asteroid.prototype.removeOwner = function () {
 };
 
 
+Asteroid.prototype.split = function () {
+    this.health = 20;
+
+    var clone = new Asteroid (this.x, this.y, this.gameServer);
+    this.setRadius(this.radius/2);
+    clone.setRadius(this.radius + getRandom(-1,1));
+
+    this.theta = getRandom(0, 2*Math.PI);
+    clone.theta = -this.theta + getRandom(-1,1);
+
+    this.xVel = 20 * Math.cos(this.theta);
+    this.yVel = 20 * Math.sin(this.theta);
+
+    clone.xVel = 20 * Math.cos(clone.theta);
+    clone.yVel = 20 * Math.sin(clone.theta);
+};
+
+
+Asteroid.prototype.decreaseHealth = function (amount) {
+    this.health -= amount;
+    if (this.health <= 0) {
+        this.split();
+    }
+}
+
 Asteroid.prototype.becomeStatic = function () {
     this.limbo();
     this.type = "static";
@@ -88,6 +116,11 @@ Asteroid.prototype.becomePlayer = function (player) { //not updated yet
 
 
 Asteroid.prototype.updatePosition = function () {
+    if (this.radius < 5 || overBoundary(this.x) || overBoundary(this.y)) {
+        this.onDelete();
+    }
+
+
     if (this.timer > 0) {
         this.timer -= 1;
     }
@@ -115,6 +148,13 @@ Asteroid.prototype.updateChunk = function () {
     }
 };
 
+
+Asteroid.prototype.setRadius = function (radius) {
+    this.radius = radius;
+    this.weight = this.radius/1.3;
+    this.maxVel = 400/this.weight;
+    this.range = 10 * this.weight;
+}
 
 
 Asteroid.prototype.shoot = function (x,y) {
@@ -187,7 +227,7 @@ Asteroid.prototype.resetPathQueue = function () {
 }
 
 Asteroid.prototype.move = function () {
-    while (this.pathQueue.length() > 20) {
+    while (this.pathQueue.length() > 10) {
         this.currPath = this.pathQueue.dequeue();
     }
 
@@ -301,8 +341,8 @@ Asteroid.prototype.updateQuadItem = function () {
     this.gameServer.asteroidTree.insert(this.quadItem);
 };
 
-function onBoundary(coord) {
-    return coord <= entityConfig.BORDER_WIDTH || coord >= entityConfig.WIDTH - entityConfig.BORDER_WIDTH;
+function overBoundary(coord) {
+    return coord < entityConfig.BORDER_WIDTH || coord > entityConfig.WIDTH - entityConfig.BORDER_WIDTH;
 };
 
 

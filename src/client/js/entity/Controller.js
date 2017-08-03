@@ -23,6 +23,10 @@ Controller.prototype.update = function (controllerInfo) {
     this.level = controllerInfo.level;
     this.active = controllerInfo.active;
     this.slash = controllerInfo.slash;
+
+
+    this.client.active = this.active; //probably should change this
+    
 };
 
 Controller.prototype.show = function () {

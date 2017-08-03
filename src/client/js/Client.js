@@ -71,7 +71,12 @@ Client.prototype.initCanvases = function () {
             return;
         } 
         else {
-            this.mouseMoveTimer = 20;
+            if (this.active) {
+                this.mouseMoveTimer = 2;
+            }
+            else {
+                this.mouseMoveTimer = 20;
+            }
         }
         var x = ((event.x / this.mainCanvas.offsetWidth * 1000) - this.mainCanvas.width / 2) / this.scaleFactor;
         var y = ((event.y / this.mainCanvas.offsetHeight * 500) - this.mainCanvas.height / 2) / this.scaleFactor;
@@ -227,26 +232,11 @@ Client.prototype.deleteEntities = function (packet) {
         case "controllerInfo":
             deleteEntity(packet, this.CONTROLLER_LIST);
             break;
-        case "shardInfo":
-            deleteEntity(packet, this.SHARD_LIST);
-            break;
-        case "homeInfo":
-            deleteEntity(packet, this.HOME_LIST);
-            break;
-        case "factionInfo":
-            deleteEntity(packet, this.FACTION_LIST, this.FACTION_ARRAY);
-            this.mainUI.updateLeaderBoard();
+        case "asteroidInfo":
+            deleteEntity(packet, this.ASTEROID_LIST);
             break;
         case "animationInfo":
             deleteEntity(packet, this.ANIMATION_LIST);
-            break;
-        case "laserInfo":
-            deleteEntity(packet, this.LASER_LIST);
-            break;
-        case "bracketInfo":
-            if (this.SELFID === packet.id) {
-                this.BRACKET = null;
-            }
             break;
         case "UIInfo":
             if (this.SELFID === packet.id) {

@@ -24,6 +24,7 @@ function Player(id, name, gameServer) {
 
     this.slash = [];
     this.slash.theta = null;
+    this.slashTimer = 0;
 
     this.theta = 0;
     this.init();
@@ -103,12 +104,43 @@ Player.prototype.createBoundary = function (boundary) {
 Player.prototype.update = function () {
     Player.super_.prototype.update.apply(this);
 
+    if (this.slashTimer > 0) {
+        this.slashTimer -=1;
+
+    }
+
     if (square(this.x - this.preX) + square(this.y - this.preY) > 1000) {
         this.updateChainPositions();
         this.preX = this.x;
         this.preY = this.y;
     }
+
+    if (this.slash && this.slash.length > 0) {
+        this.slashAsteroid();
+    }
 };
+
+
+
+
+Player.prototype.slashAsteroid = function () {
+    var x = this.slash[0].x;
+    var y = this.slash[0].y;
+    var slashBound = {
+        minx: x - this.radius,
+        miny: y - this.radius,
+        maxx: x + this.radius,
+        maxy: y + this.radius
+    };
+
+    this.gameServer.asteroidTree.find(slashBound, function (asteroid) {
+        if (asteroid.owner !== this && this.slashTimer <= 0) {
+            asteroid.decreaseHealth(5);
+            this.slashTimer = 20;
+        }
+    }.bind(this));
+}
+
 
 
 Player.prototype.updateChainPositions = function () {
@@ -122,8 +154,10 @@ Player.prototype.updateChainPositions = function () {
 
 
 Player.prototype.decreaseHealth = function (amount) {
-    if (this.shards.length > 0) {
-        var filteredAmount = amount / this.shards.length;
+    var filteredAmount;
+
+    if (this.asteroids.length > 0) {
+        filteredAmount = amount / this.asteroids.length;
     }
     else {
         filteredAmount = amount;
@@ -196,7 +230,7 @@ Player.prototype.selectAsteroid = function (x, y) {
 
     if (this.asteroids.length < 10) {
         this.gameServer.asteroidTree.find(mouseBound, function (asteroid) {
-            if (!this.hasAsteroid(asteroid)) {
+            if (!this.hasAsteroid(asteroid) && this.asteroids.length < 10) {
                 this.asteroids.push(asteroid);
                 asteroid.qIndex = this.asteroids.length - 1;
                 asteroid.addOwner(this);

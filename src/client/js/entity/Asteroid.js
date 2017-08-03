@@ -3,6 +3,8 @@ function Asteroid(asteroidInfo, client) {
     this.x = asteroidInfo.x;
     this.y = asteroidInfo.y;
     this.radius = asteroidInfo.radius;
+    this.health = asteroidInfo.health;
+    this.maxHealth = asteroidInfo.maxHealth;
 
     this.client = client;
 }
@@ -14,6 +16,8 @@ Asteroid.prototype.update = function (asteroidInfo) {
     this.currPath = asteroidInfo.currPath;
     this.queuePosition = asteroidInfo.queuePosition;
     this.targetPt = asteroidInfo.targetPt;
+    this.health = asteroidInfo.health;
+    this.maxHealth = asteroidInfo.maxHealth;
 };
 
 
@@ -50,6 +54,21 @@ Asteroid.prototype.show = function () {
         ctx.beginPath();
         ctx.fillStyle = "pink";
         ctx.arc(this.targetPt.x, this.targetPt.y, 10, 0, 2 * Math.PI, false);
+        ctx.fill();
+        ctx.closePath();
+    }
+
+
+    if (this.health && this.maxHealth) {
+        ctx.beginPath();
+        ctx.strokeStyle = "black";
+        ctx.rect(this.x, this.y, this.maxHealth * 5, 20);
+        ctx.stroke();
+        ctx.closePath();
+
+        ctx.beginPath();
+        ctx.fillStyle = "green";
+        ctx.rect(this.x, this.y, this.health * 5, 20);
         ctx.fill();
         ctx.closePath();
     }
