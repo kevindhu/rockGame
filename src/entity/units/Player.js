@@ -20,6 +20,11 @@ function Player(id, name, gameServer) {
     this.preX = this.x;
     this.preY = this.y;
 
+    this.active = true;
+
+    this.slash = [];
+    this.slash.theta = null;
+
     this.theta = 0;
     this.init();
 }
@@ -44,6 +49,28 @@ Player.prototype.populateAsteroidChain = function () {
 }
 
 
+Player.prototype.switch = function () {
+    this.active = !this.active;
+}
+
+
+Player.prototype.addSlash = function (pos) {
+
+    if (this.slash.length === 1) {
+        this.slash.theta = this.getTheta(pos, this.slash[0]);
+    }
+
+    var lastPos = this.slash[this.slash.length-1];
+    if (lastPos && Math.abs(this.getTheta(pos, lastPos) - this.slash.theta) > 2 ||
+        this.slash.length === 3) {
+        
+        this.slash = [];
+        this.slash.theta = null;
+    }
+    this.slash.push(pos);
+}
+
+
 Player.prototype.onDelete = function () {
     this.dropAllAsteroids();
     var home = this.gameServer.HOME_LIST[this.viewing];
@@ -53,6 +80,15 @@ Player.prototype.onDelete = function () {
     Player.super_.prototype.onDelete.apply(this);
 };
 
+
+Player.prototype.getTheta = function (pos1, pos2) {
+    var newTheta = Math.atan((pos2.y - pos1.y) / (pos2.x - pos1.x));
+
+    if (pos2.y - pos1.y > 0 && pos2.x - pos1.x > 0 || pos2.y - pos1.y < 0 && pos2.x - pos1.x > 0) {
+        newTheta += Math.PI;
+    }
+    return newTheta % (2 * Math.PI);
+}
 
 Player.prototype.createBoundary = function (boundary) {
     var playerBoundary = {};
@@ -76,18 +112,12 @@ Player.prototype.update = function () {
 
 
 Player.prototype.updateChainPositions = function () {
-    console.log(this.asteroidChainPos.length());
     this.asteroidChainPos.dequeue();
-    console.log(this.asteroidChainPos.length());
     this.asteroidChainPos.enqueue({
         x: this.x,
         y: this.y
     });
-
-    console.log("PEEKING");
-    console.log(this.asteroidChainPos.peek(9));
-
-}
+};
 
 
 
@@ -209,8 +239,21 @@ Player.prototype.moveAsteroids = function (x,y) {
 };
 
 
+
+Player.prototype.shootAsteroid = function (x,y) {
+    var asteroid = this.asteroids[0];
+
+    if (!asteroid) return;
+
+    this.asteroids.splice(0,1);
+    this.asteroidChainPos.dequeue();
+
+    asteroid.removeOwner();
+    asteroid.shoot(x,y);
+};
+
 Player.prototype.dropAsteroid = function (x,y) {
-    var astroid = this.heldAstroid;
+    var astroid = null; //need to implement
     astroid.teleport(x,y);
     this.heldAstroid = null;
 };

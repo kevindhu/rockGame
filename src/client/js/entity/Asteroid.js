@@ -13,6 +13,7 @@ Asteroid.prototype.update = function (asteroidInfo) {
     this.radius = asteroidInfo.radius;
     this.currPath = asteroidInfo.currPath;
     this.queuePosition = asteroidInfo.queuePosition;
+    this.targetPt = asteroidInfo.targetPt;
 };
 
 
@@ -36,7 +37,7 @@ Asteroid.prototype.show = function () {
         ctx.closePath();
     }
 
-    if (this.queuePosition) {
+    if (this.queuePosition && 1===2) {
         ctx.beginPath();
         ctx.fillStyle = "yellow";
         ctx.arc(this.queuePosition.x, this.queuePosition.y, 10, 0, 2 * Math.PI, false);
@@ -44,6 +45,14 @@ Asteroid.prototype.show = function () {
         ctx.closePath();
     }
 
+
+    if (this.targetPt && 1===2) {
+        ctx.beginPath();
+        ctx.fillStyle = "pink";
+        ctx.arc(this.targetPt.x, this.targetPt.y, 10, 0, 2 * Math.PI, false);
+        ctx.fill();
+        ctx.closePath();
+    }
 
 };
 

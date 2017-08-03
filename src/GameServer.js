@@ -305,16 +305,25 @@ GameServer.prototype.start = function () {
             var player = this.CONTROLLER_LIST[data.id];
 
             if (player) {
-                player.selectAsteroid(player.x + data.x, player.y + data.y);
-                player.moveAsteroids(player.x + data.x, player.y + data.y);
-            }   
+                if (!player.active) {
+                    player.selectAsteroid(player.x + data.x, player.y + data.y);
+                    player.moveAsteroids(player.x + data.x, player.y + data.y);
+                }   
+                else {
+                    player.addSlash(
+                        {
+                            x: player.x + data.x, 
+                            y:player.y + data.y
+                        });
+                }
+            }
         }.bind(this));
 
         socket.on('mouseUp', function (data) {
             var player = this.CONTROLLER_LIST[data.id];
 
             if (player) {
-                //player.dropAsteroid(player.x + data.x, player.y + data.y);
+                player.shootAsteroid(player.x + data.x, player.y + data.y);
             } 
         }.bind(this))
 
@@ -342,7 +351,9 @@ GameServer.prototype.start = function () {
                     player.pressingUp = data.state;
                     break;
                 case 32:
-                    player.pressingSpace = data.state;
+                    if (data.state) {
+                        player.switch();
+                    }
                     break;
                 case "hehe xd": //swirling motion
                     if (data.state) {

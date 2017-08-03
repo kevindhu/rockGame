@@ -103,19 +103,16 @@ PacketHandler.prototype.addControllerPackets = function (controller, ifInit) {
     var info = {
         master: "add",
         class: "controllerInfo",
-        owner: controller.owner,
         id: controller.id,
-        type: controller.type,
         name: controller.name,
         x: controller.x,
         y: controller.y,
         health: controller.health,
         maxHealth: controller.maxHealth,
-        selected: controller.selected,
         theta: controller.theta,
         level: controller.level,
         radius: controller.radius,
-        stealth: controller.stealth
+        active: controller.active
     };
     if (ifInit) {
         return info;
@@ -213,7 +210,8 @@ PacketHandler.prototype.updateControllersPackets = function (controller) {
         theta: controller.theta,
         level: controller.level,
         selected: controller.selected,
-        stealth: controller.stealth
+        active: controller.active,
+        slash: controller.slash
     });
 };
 
@@ -227,7 +225,8 @@ PacketHandler.prototype.updateAsteroidsPackets = function (asteroid) {
         y: asteroid.y,
         radius: asteroid.radius,
         currPath: asteroid.currPath,
-        queuePosition: asteroid.queuePosition
+        queuePosition: asteroid.queuePosition,
+        targetPt: asteroid.targetPt
     });
 };
 

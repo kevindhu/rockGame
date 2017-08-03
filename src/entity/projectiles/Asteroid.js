@@ -26,16 +26,15 @@ function Asteroid(x, y, gameServer) {
 
     this.qIndex = -1;
 
-    this.radius = getRandom(20, 30); //change to entityConfig!!!
+    this.radius = getRandom(10, 20); //change to entityConfig!!!
 
-    this.weight = this.radius/2;
+    this.weight = this.radius/1.3;
 
     this.maxVel = 400/this.weight;
     this.range = 10 * this.weight;
 
     this.currPath = null;
     this.pathQueue = new Queue();
-
 
     this.init();
 }
@@ -63,6 +62,7 @@ Asteroid.prototype.limbo = function () {
 
 Asteroid.prototype.removeOwner = function () {
     this.owner = null;
+    this.removePaths();
 };
 
 
@@ -117,6 +117,21 @@ Asteroid.prototype.updateChunk = function () {
 
 
 
+Asteroid.prototype.shoot = function (x,y) {
+    this.getTheta({
+        x: x,
+        y: y
+    }, true);
+
+    this.targetPt = {
+        x:x,
+        y:y
+    };
+
+    this.xVel = 80 * Math.cos(this.theta);
+    this.yVel = 80 * Math.sin(this.theta);
+};
+
 
 Asteroid.prototype.follow = function (owner) {
     this.x = owner.x;//+ Arithmetic.getRandomInt(-5, 5);
@@ -139,7 +154,7 @@ Asteroid.prototype.onDelete = function () {
 };
 
 
-Asteroid.prototype.getTheta = function (target) {
+Asteroid.prototype.getTheta = function (target, hard) {
     var newTheta = Math.atan((this.y - target.y) / (this.x - target.x));
     if (this.y - target.y > 0 && this.x - target.x > 0 || this.y - target.y < 0 && this.x - target.x > 0) {
         newTheta += Math.PI;
@@ -153,7 +168,10 @@ Asteroid.prototype.getTheta = function (target) {
         newTheta -= 2*Math.PI;
     }
 
-    if (Math.round(newTheta - this.savedTheta) > 2.7) {
+    if (hard) {
+        this.theta = newTheta;
+    }
+    else if (Math.round(newTheta - this.savedTheta) > 2.7) {
         this.theta = lerp(this.theta, newTheta, 0.9);
     }
     else {
@@ -185,15 +203,15 @@ Asteroid.prototype.move = function () {
         this.xVel = lerp(this.xVel, this.maxVel * Math.cos(this.theta), 0.3);
         this.yVel = lerp(this.yVel, this.maxVel * Math.sin(this.theta), 0.3);
     }
-    else if (this.owner) {
+    else if (this.owner && this.owner.active) {
         //move with speed of owner
         this.queuePosition = this.owner.asteroidChainPos.peek(9 - this.qIndex);
         this.getTheta(this.queuePosition);
 
         var totalPlayerVel = Math.sqrt(square(this.owner.xVel) + square(this.owner.yVel));
 
-        this.xVel = lerp(this.xVel, this.owner.maxVel * 1.2 * Math.cos(this.theta), 0.3);
-        this.yVel = lerp(this.yVel, this.owner.maxVel * 1.2 * Math.sin(this.theta), 0.3);
+        this.xVel = lerp(this.xVel, this.owner.maxVel * 1.4 * Math.cos(this.theta), 0.3);
+        this.yVel = lerp(this.yVel, this.owner.maxVel * 1.4 * Math.sin(this.theta), 0.3);
         this.findFriendlies();
     }
 
@@ -249,6 +267,10 @@ Asteroid.prototype.addPath = function (x,y) {
     if (!this.currPath) {
         this.currPath = this.pathQueue.dequeue();
     }
+}
+
+Asteroid.prototype.removePaths = function () {
+    this.pathQueue = new Queue();
 }
 
 Asteroid.prototype.addOwner = function (player) {

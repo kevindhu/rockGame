@@ -5,14 +5,12 @@ function Controller(controllerInfo, client) {
     this.y = controllerInfo.y;
     this.health = controllerInfo.health;
     this.maxHealth = controllerInfo.maxHealth;
-    this.selected = controllerInfo.selected;
     this.owner = controllerInfo.owner;
     this.theta = controllerInfo.theta;
-    this.type = controllerInfo.type;
-    this.level = controllerInfo.level;
+    this.level = controllerInfo.level; //need to implement again
     this.radius = controllerInfo.radius;
-    this.stealth = controllerInfo.stealth;
-
+    this.active = controllerInfo.active;
+    this.slash = controllerInfo.slash;
     this.client = client;
 }
 
@@ -21,10 +19,10 @@ Controller.prototype.update = function (controllerInfo) {
     this.y = controllerInfo.y;
     this.health = controllerInfo.health;
     this.maxHealth = controllerInfo.maxHealth;
-    this.selected = controllerInfo.selected;
     this.theta = controllerInfo.theta;
     this.level = controllerInfo.level;
-    this.stealth = controllerInfo.stealth;
+    this.active = controllerInfo.active;
+    this.slash = controllerInfo.slash;
 };
 
 Controller.prototype.show = function () {
@@ -34,26 +32,25 @@ Controller.prototype.show = function () {
     var strokeAlpha;
     var i;
 
-    if (this.stealth) {
-        if (this.id !== selfId && this.owner !== selfId) {
-            return;
-        } else {
-            fillAlpha = 0.1;
-            strokeAlpha = 0.3;
-        }
-    } else {
-        fillAlpha = this.health / (4 * this.maxHealth);
-        strokeAlpha = 1;
-    }
+
+    fillAlpha = this.health / (4 * this.maxHealth);
+    strokeAlpha = 1;
+    
     ctx.font = "20px Arial";
-    ctx.strokeStyle = "rgba(252, 102, 37," + strokeAlpha + ")";
+
+    if (this.active) {
+        ctx.strokeStyle = "rgba(202, 12, 37," + strokeAlpha + ")";
+    }
+    else {
+        ctx.strokeStyle = "rgba(252, 102, 37," + strokeAlpha + ")";
+    }
 
     ctx.fillStyle = "rgba(123,0,0," + fillAlpha + ")";
     ctx.lineWidth = 10;
 
     ctx.beginPath();
     //draw player object
-    if (this.type === "Player") {
+    if (1===1) {
         var radius = 30;
         ctx.moveTo(this.x + radius, this.y);
         for (i = Math.PI / 4; i <= 2 * Math.PI - Math.PI / 4; i += Math.PI / 4) {
@@ -84,6 +81,16 @@ Controller.prototype.show = function () {
         }
         ctx.lineTo(this.x + startX, this.y + startY);
         ctx.fill();
+    }
+
+    if (this.slash) {
+        ctx.beginPath();
+        ctx.fillStyle = "orange";
+        for (var i = 0; i<this.slash.length; i++) {
+            ctx.arc(this.slash[i].x, this.slash[i].y, 10, 0, 2 * Math.PI, false);
+            ctx.fill();
+        }
+        ctx.closePath();
     }
 
     ctx.fillStyle = "#ff9d60";
