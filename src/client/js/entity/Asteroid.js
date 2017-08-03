@@ -5,6 +5,7 @@ function Asteroid(asteroidInfo, client) {
     this.radius = asteroidInfo.radius;
     this.health = asteroidInfo.health;
     this.maxHealth = asteroidInfo.maxHealth;
+    this.material = asteroidInfo.material;
 
     this.client = client;
 }
@@ -27,8 +28,12 @@ Asteroid.prototype.show = function () {
 
     ctx.beginPath();
 
-
-    ctx.fillStyle = "#ff1f1c";
+    if (this.material === "sulfer") {
+        ctx.fillStyle = "#33251c";
+    }
+    else if (this.material === "copper") {
+        ctx.fillStyle = "#ba6a37";
+    }
     ctx.arc(this.x, this.y, this.radius, 0, 2 * Math.PI, false);
     ctx.fill();
     ctx.closePath();
@@ -62,13 +67,13 @@ Asteroid.prototype.show = function () {
     if (this.health && this.maxHealth) {
         ctx.beginPath();
         ctx.strokeStyle = "black";
-        ctx.rect(this.x, this.y, this.maxHealth * 5, 20);
+        ctx.rect(this.x, this.y, 100, 20);
         ctx.stroke();
         ctx.closePath();
 
         ctx.beginPath();
         ctx.fillStyle = "green";
-        ctx.rect(this.x, this.y, this.health * 5, 20);
+        ctx.rect(this.x, this.y, 100 * this.health/this.maxHealth, 20);
         ctx.fill();
         ctx.closePath();
     }

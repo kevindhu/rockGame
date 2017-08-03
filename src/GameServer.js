@@ -390,6 +390,7 @@ GameServer.prototype.createAsteroid = function () {
     return new Entity.Asteroid(
         Arithmetic.getRandomInt(entityConfig.BORDER_WIDTH, entityConfig.WIDTH - entityConfig.BORDER_WIDTH),
         Arithmetic.getRandomInt(entityConfig.BORDER_WIDTH, entityConfig.WIDTH - entityConfig.BORDER_WIDTH),
+        null,
         this
     );
 }

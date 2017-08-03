@@ -3,7 +3,7 @@ var EntityFunctions = require('../EntityFunctions');
 var Queue = require('../../modules/Queue');
 var lerp = require('lerp');
 
-function Asteroid(x, y, gameServer) {
+function Asteroid(x, y, material, gameServer) {
     this.gameServer = gameServer;
     this.packetHandler = gameServer.packetHandler;
 
@@ -26,18 +26,17 @@ function Asteroid(x, y, gameServer) {
 
     this.qIndex = -1;
 
-    this.radius = getRandom(10, 200); //change to entityConfig!!!
-
-    this.weight = this.radius/1.3;
-    this.maxVel = 400/this.weight;
-    this.range = 10 * this.weight;
+    if (material) {
+        this.setMaterial(material);
+    }
+    else {
+        this.setMaterial(this.getRandomMaterial());
+    }
+    
+    this.setRadius(getRandom(10, 200)); //change to entityConfig!!!
 
     this.currPath = null;
     this.pathQueue = new Queue();
-
-
-    this.maxHealth = 20;
-    this.health = this.maxHealth;
 
     this.init();
 }
@@ -61,6 +60,31 @@ Asteroid.prototype.limbo = function () {
 };
 
 
+Asteroid.prototype.setMaterial = function (material) {
+    switch (material) {
+        case "sulfer":
+            this.material = "sulfer";
+            this.materialQuality = 1;
+            break;
+        case "copper":
+            this.material = "copper";
+            this.materialQuality = 2;
+            break;
+    }
+};
+
+Asteroid.prototype.getRandomMaterial = function () {
+    var rand = getRandom(0,1);
+
+    if (rand > 0.5) {
+        return "sulfer";
+    }
+    else {
+        return "copper";
+    }
+
+};
+
 
 
 Asteroid.prototype.removeOwner = function () {
@@ -70,9 +94,8 @@ Asteroid.prototype.removeOwner = function () {
 
 
 Asteroid.prototype.split = function () {
-    this.health = 20;
+    var clone = new Asteroid (this.x, this.y, this.material, this.gameServer);
 
-    var clone = new Asteroid (this.x, this.y, this.gameServer);
     this.setRadius(this.radius/2);
     clone.setRadius(this.radius + getRandom(-1,1));
 
@@ -88,7 +111,8 @@ Asteroid.prototype.split = function () {
 
 
 Asteroid.prototype.decreaseHealth = function (amount) {
-    this.health -= amount;
+    var filteredAmount = amount/this.materialQuality;
+    this.health -= filteredAmount;
     if (this.health <= 0) {
         this.split();
     }
@@ -151,9 +175,13 @@ Asteroid.prototype.updateChunk = function () {
 
 Asteroid.prototype.setRadius = function (radius) {
     this.radius = radius;
-    this.weight = this.radius/1.3;
+
+    this.weight = this.radius/(1.3 * this.materialQuality);
     this.maxVel = 400/this.weight;
     this.range = 10 * this.weight;
+
+    this.maxHealth = this.radius;
+    this.health = this.maxHealth;
 }
 
 

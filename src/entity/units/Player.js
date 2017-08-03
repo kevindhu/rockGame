@@ -135,7 +135,7 @@ Player.prototype.slashAsteroid = function () {
 
     this.gameServer.asteroidTree.find(slashBound, function (asteroid) {
         if (asteroid.owner !== this && this.slashTimer <= 0) {
-            asteroid.decreaseHealth(5);
+            asteroid.decreaseHealth(10);
             this.slashTimer = 20;
         }
     }.bind(this));
