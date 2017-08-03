@@ -187,7 +187,7 @@ Asteroid.prototype.resetPathQueue = function () {
 }
 
 Asteroid.prototype.move = function () {
-    while (this.pathQueue.length() > 6) {
+    while (this.pathQueue.length() > 20) {
         this.currPath = this.pathQueue.dequeue();
     }
 

@@ -71,7 +71,7 @@ Client.prototype.initCanvases = function () {
             return;
         } 
         else {
-            this.mouseMoveTimer = 1;
+            this.mouseMoveTimer = 20;
         }
         var x = ((event.x / this.mainCanvas.offsetWidth * 1000) - this.mainCanvas.width / 2) / this.scaleFactor;
         var y = ((event.y / this.mainCanvas.offsetHeight * 500) - this.mainCanvas.height / 2) / this.scaleFactor;

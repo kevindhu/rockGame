@@ -29,7 +29,7 @@ Asteroid.prototype.show = function () {
     ctx.fill();
     ctx.closePath();
 
-    if (this.currPath && 1===2) {
+    if (this.currPath) {
         ctx.beginPath();
         ctx.fillStyle = "green";
         ctx.arc(this.currPath.x, this.currPath.y, 10, 0, 2 * Math.PI, false);
