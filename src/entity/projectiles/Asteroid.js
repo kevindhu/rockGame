@@ -11,7 +11,6 @@ function Asteroid(x, y, material, gameServer) {
     this.x = x;
     this.y = y;
 
-    this.type = "static";
     this.supply = 5;
     this.owner = null;
 
@@ -111,7 +110,7 @@ Asteroid.prototype.removeOwner = function () {
 
 
 Asteroid.prototype.split = function () {
-    if (this.radius < 10) {
+    if (this.radius/2 < 10) {
         this.onDelete();
         return;
     }
@@ -298,8 +297,12 @@ Asteroid.prototype.move = function () {
             }
         }
         this.getTheta(this.currPath);
-        this.xVel = lerp(this.xVel, this.maxVel * Math.cos(this.theta), 0.3);
-        this.yVel = lerp(this.yVel, this.maxVel * Math.sin(this.theta), 0.3);
+        if (this.owner) {
+            this.xVel = lerp(this.xVel, this.owner.maxVel * (3 - (this.mass/250)) * Math.cos(this.theta), 0.3);
+            this.yVel = lerp(this.yVel, this.owner.maxVel * (3 - (this.mass/250)) * Math.sin(this.theta), 0.3);
+        }
+        //this.xVel = lerp(this.xVel, this.maxVel * Math.cos(this.theta), 0.3);
+        //this.yVel = lerp(this.yVel, this.maxVel * Math.sin(this.theta), 0.3);
     }
 
     if (Math.abs(this.xVel) > 1 || Math.abs(this.yVel) > 1) {
@@ -452,10 +455,10 @@ Asteroid.prototype.addQuadItem = function () {
 
 Asteroid.prototype.updateQuadItem = function () {
     this.quadItem.bound = {
-        minx: this.x - this.radius,
-        miny: this.y - this.radius,
-        maxx: this.x + this.radius,
-        maxy: this.y + this.radius
+        minx: this.x - 1.1 * this.radius,
+        miny: this.y - 1.1 * this.radius,
+        maxx: this.x + 1.1 * this.radius,
+        maxy: this.y + 1.1 * this.radius
     };
 
     this.gameServer.asteroidTree.remove(this.quadItem);

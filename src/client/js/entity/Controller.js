@@ -5,12 +5,11 @@ function Controller(controllerInfo, client) {
     this.y = controllerInfo.y;
     this.health = controllerInfo.health;
     this.maxHealth = controllerInfo.maxHealth;
-    this.owner = controllerInfo.owner;
     this.theta = controllerInfo.theta;
     this.level = controllerInfo.level; //need to implement again
     this.radius = controllerInfo.radius;
     this.active = controllerInfo.active;
-    this.slash = controllerInfo.slash;
+    this.range = controllerInfo.range;
     this.client = client;
 
     if (this.id = this.client.SELFID) {
@@ -26,12 +25,10 @@ Controller.prototype.update = function (controllerInfo) {
     this.theta = controllerInfo.theta;
     this.level = controllerInfo.level;
     this.active = controllerInfo.active;
-    this.slash = controllerInfo.slash;
 
     if (this.id = this.client.SELFID) {
         this.client.active = this.active; //probably should change this
     }
-    
 };
 
 Controller.prototype.show = function () {
@@ -47,6 +44,14 @@ Controller.prototype.show = function () {
     
     ctx.font = "20px Arial";
 
+    if (this.range) {
+        ctx.beginPath();
+        ctx.fillStyle = "rgba(196, 41, 54, 0.2)";
+        ctx.arc(this.x, this.y, this.range, 0, 2 * Math.PI, false);
+        ctx.fill();
+        ctx.closePath();
+    }
+
     if (this.active) {
         ctx.strokeStyle = "rgba(202, 12, 37," + strokeAlpha + ")";
     }
@@ -59,56 +64,24 @@ Controller.prototype.show = function () {
 
     ctx.beginPath();
     //draw player object
-    if (1===1) {
-        var radius = 30;
-        ctx.moveTo(this.x + radius, this.y);
-        for (i = Math.PI / 4; i <= 2 * Math.PI - Math.PI / 4; i += Math.PI / 4) {
-            theta = i + getRandom(-(this.maxHealth / this.health) / 7, (this.maxHealth / this.health) / 7);
-            x = radius * Math.cos(theta);
-            y = radius * Math.sin(theta);
-            ctx.lineTo(this.x + x, this.y + y);
-        }
-        ctx.lineTo(this.x + radius, this.y + 3);
-        ctx.stroke();
-        ctx.fill();
+    
+    var radius = 30;
+    ctx.moveTo(this.x + radius, this.y);
+    
+    for (i = Math.PI / 4; i <= 2 * Math.PI - Math.PI / 4; i += Math.PI / 4) {
+        theta = i + getRandom(-(this.maxHealth / this.health) / 7, (this.maxHealth / this.health) / 7);
+        x = radius * Math.cos(theta);
+        y = radius * Math.sin(theta);
+        ctx.lineTo(this.x + x, this.y + y);
     }
-    else { //bot
-        var x, y, theta, startX, startY;
-        var smallRadius = 12;
-        var bigRadius = this.radius;
-
-        theta = this.theta;
-        startX = bigRadius * Math.cos(theta);
-        startY = bigRadius * Math.sin(theta);
-        ctx.moveTo(this.x + startX, this.y + startY);
-        for (i = 1; i <= 2; i++) {
-            theta = this.theta + 2 * Math.PI / 3 * i +
-                getRandom(-this.maxHealth / this.health / 7, this.maxHealth / this.health / 7);
-            x = smallRadius * Math.cos(theta);
-            y = smallRadius * Math.sin(theta);
-            ctx.lineTo(this.x + x, this.y + y);
-        }
-        ctx.lineTo(this.x + startX, this.y + startY);
-        ctx.fill();
-    }
-
-    if (this.slash) {
-        ctx.beginPath();
-        ctx.fillStyle = "orange";
-        for (var i = 0; i<this.slash.length; i++) {
-            ctx.arc(this.slash[i].x, this.slash[i].y, 10, 0, 2 * Math.PI, false);
-            ctx.fill();
-        }
-        ctx.closePath();
-    }
+    ctx.lineTo(this.x + radius, this.y + 3);
+    ctx.stroke();
+    ctx.fill();
+    
 
     ctx.fillStyle = "#ff9d60";
     ctx.fillText(this.name, this.x, this.y + 70);
-    if (this.selected && this.owner === this.client.SELFID) {
-        ctx.lineWidth = 5;
-        ctx.strokeStyle = "#1d55af";
-        ctx.stroke();
-    }
+
     ctx.closePath();
 };
 

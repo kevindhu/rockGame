@@ -12,7 +12,7 @@ Trail.prototype.updateList = function (x,y) {
         y: currY
     });
 
-    if (this.realPath.length > 30) {
+    if (this.realPath.length > 18) {
         this.realPath.splice(0,1);
     }
 }

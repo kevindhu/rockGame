@@ -1,15 +1,20 @@
 function Animation(animationInfo, client) {
     this.type = animationInfo.type;
     this.id = animationInfo.id;
-    this.name = animationInfo.name;
     this.x = animationInfo.x;
     this.y = animationInfo.y;
-    this.theta = 15;
+    //this.theta = 15;
     this.timer = getRandom(10, 14);
 
-    if (this.x) {
-        this.endX = this.x + getRandom(-100, 100);
-        this.endY = this.y + getRandom(-100, 100);
+    if (this.type === "slash") {
+        this.pre = {
+            x: this.x + getRandom(30, 70), 
+            y: this.y + getRandom(30, 70)
+        }
+        this.post = {
+            x: this.x - getRandom(30, 70),
+            y: this.y - getRandom(30, 70)
+        }
     }
 
     this.client = client;
@@ -19,35 +24,25 @@ function Animation(animationInfo, client) {
 Animation.prototype.show = function () {
     var home;
     var ctx = this.client.mainCtx;
-    if (this.type === "addShard") {
-        console.log("DRAWING ADD SHARD ANIMATION");
-        home = this.client.HOME_LIST[this.id];
-        if (!home) {
-            return;
-        }
+
+
+
+    if (this.type === "slash") {
         ctx.beginPath();
-        ctx.lineWidth = 3 * this.timer;
-        ctx.strokeStyle = "#012CCC";
-        ctx.arc(home.x, home.y, home.radius, 0, this.timer / 1.2, true);
+
+        ctx.strokeStyle = "rgba(242, 31, 66, 0.6)";
+        ctx.lineWidth = 15;
+
+        ctx.moveTo(this.pre.x, this.pre.y);
+        ctx.lineTo(this.x, this.y);
+        ctx.lineTo(this.post.x, this.post.y);
+
         ctx.stroke();
         ctx.closePath();
     }
+    
 
-    if (this.type === "removeShard") {
-        home = this.client.HOME_LIST[this.id];
-        if (!home) {
-            delete this.client.ANIMATION_LIST[id];
-            return;
-        }
-        ctx.beginPath();
-        ctx.lineWidth = 15 - this.timer;
-        ctx.strokeStyle = "rgba(255, 0, 0, " + this.timer * 10 / 100 + ")";
-        ctx.arc(home.x, home.y, home.radius, 0, 2 * Math.PI, false);
-        ctx.stroke();
-        ctx.closePath();
-    }
-
-    if (this.type === "shardDeath") {
+    if (this.type === "shardDeath") { //deprecated but could pull some good code from here
         ctx.font = 60 - this.timer + "px Arial";
         ctx.save();
         ctx.translate(this.x, this.y);
@@ -62,6 +57,7 @@ Animation.prototype.show = function () {
         this.x = lerp(this.x, this.endX, 0.1);
         this.y = lerp(this.y, this.endY, 0.1);
     }
+
 
     this.timer--;
     if (this.timer <= 0) {
@@ -79,3 +75,5 @@ function lerp(a, b, ratio) {
 }
 
 module.exports = Animation;
+
+

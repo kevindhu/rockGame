@@ -299,18 +299,20 @@ GameServer.prototype.start = function () {
 
             var player = this.CONTROLLER_LIST[data.id];
 
-            if (player) {
-                if (!player.active) {
-                    player.selectAsteroid(player.x + data.x, player.y + data.y);
-                    player.moveAsteroids(player.x + data.x, player.y + data.y);
-                }   
-                else if (1==2){
-                    player.addSlash(
-                        {
-                            x: player.x + data.x, 
-                            y:player.y + data.y
-                        });
-                }
+            if (player && !player.active) {
+                player.selectAsteroid(player.x + data.x, player.y + data.y);
+                player.moveAsteroids(player.x + data.x, player.y + data.y);
+            }
+        }.bind(this));
+
+        socket.on('slash', function (data) {
+            var player = this.CONTROLLER_LIST[data.id];
+
+            if (player && player.active) {
+                player.addSlash({
+                    x: player.x + data.x, 
+                    y: player.y + data.y
+                });
             }
         }.bind(this));
 

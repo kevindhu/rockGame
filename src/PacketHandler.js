@@ -112,7 +112,8 @@ PacketHandler.prototype.addControllerPackets = function (controller, ifInit) {
         theta: controller.theta,
         level: controller.level,
         radius: controller.radius,
-        active: controller.active
+        active: controller.active,
+        range: controller.range
     };
     if (ifInit) {
         return info;
@@ -155,6 +156,19 @@ PacketHandler.prototype.addAsteroidAnimationPackets = function (asteroid) {
             y: asteroid.y
         })
 };
+
+
+PacketHandler.prototype.addSlashAnimationPackets = function (controller, x, y) {
+    this.CHUNK_PACKETS[controller.chunk].push(
+        {
+            master: "add",
+            class: "animationInfo",
+            type: "slash",
+            id: controller.id,
+            x: x,
+            y: y
+        })
+}
 
 
 PacketHandler.prototype.addTilePackets = function (tile, ifInit) {

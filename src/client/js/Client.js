@@ -3,9 +3,9 @@ var MainUI = require('./ui/MainUI');
 
 function Client() {
     this.SELFID = null;
-    this.ARROW = null;
-    this.BRACKET = null;
     this.TRAIL = null;
+
+    this.SLASH = [];
 
     this.mouseMoveTimer = 0;
     this.init();
@@ -70,18 +70,40 @@ Client.prototype.initCanvases = function () {
         var x = ((event.x / this.mainCanvas.offsetWidth * 1000) - this.mainCanvas.width / 2) / this.scaleFactor;
         var y = ((event.y / this.mainCanvas.offsetHeight * 500) - this.mainCanvas.height / 2) / this.scaleFactor;
 
+
+        if (square(x) + square(y) > 200 * 200) {
+            return;
+        }
+
+        if (this.active) {
+            if (this.SLASH.length >= 2) {
+                if (square(this.SLASH[0].x - this.SLASH[1].x) + 
+                square(this.SLASH[0].y - this.SLASH[1].y) > 300) {
+                    this.socket.emit("slash", {
+                        id: this.SELFID,
+                        x: (this.SLASH[0].x + this.SLASH[1].x) / 2,
+                        y: (this.SLASH[0].y + this.SLASH[1].y) / 2,
+                    });
+                }
+                this.SLASH = [];
+            }
+            else {
+                this.SLASH.push(
+                    {   
+                        x: x,
+                        y: y
+                    });
+            }
+            return;
+        }
+
         if (this.mouseMoveTimer > 0) {
             this.mouseMoveTimer -= 1;
             return;
         } 
         else {
-            if (this.active) {
-                this.mouseMoveTimer = 2;
-            }
-            else {
-                this.mouseMoveTimer = 5;        
-                this.TRAIL.updateList(x,y);
-            }
+            this.mouseMoveTimer = 5;        
+            this.TRAIL.updateList(x,y);
         }
         
 
@@ -97,15 +119,9 @@ Client.prototype.initCanvases = function () {
 
 
 Client.prototype.initLists = function () {
-    this.FACTION_LIST = {};
-    this.FACTION_ARRAY = [];
-
     this.CONTROLLER_LIST = {};
     this.TILE_LIST = {};
-    this.SHARD_LIST = {};
     this.ASTEROID_LIST = {};
-    this.LASER_LIST = {};
-    this.HOME_LIST = {};
     this.ANIMATION_LIST = {};
 };
 Client.prototype.initViewers = function () {
@@ -296,12 +312,6 @@ Client.prototype.drawScene = function (data) {
             }
         }
     }
-    if (this.BRACKET) {
-        this.BRACKET.show();
-    }
-    if (this.ARROW) {
-        this.ARROW.show();
-    }
     if (this.TRAIL && !this.active) {
         this.TRAIL.show();
     }
@@ -314,5 +324,9 @@ function lerp(a, b, ratio) {
     return a + ratio * (b - a);
 }
 
+
+function square(a) {
+    return a*a;
+}
 
 module.exports = Client;

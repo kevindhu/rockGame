@@ -26,6 +26,8 @@ function Player(id, name, gameServer) {
     this.slash.theta = null;
     this.slashTimer = 0;
 
+    this.range = 200;
+
     this.theta = 0;
     this.init();
 }
@@ -57,17 +59,8 @@ Player.prototype.switch = function () {
 
 
 Player.prototype.addSlash = function (pos) {
-
-    if (this.slash.length === 1) {
-        this.slash.theta = this.getTheta(pos, this.slash[0]);
-    }
-
-    var lastPos = this.slash[this.slash.length-1];
-    if (lastPos && Math.abs(this.getTheta(pos, lastPos) - this.slash.theta) > 2 ||
-        this.slash.length === 3) {
-        
+    if (this.slash.length >= 1) {
         this.slash = [];
-        this.slash.theta = null;
     }
     this.slash.push(pos);
 }
@@ -124,18 +117,20 @@ Player.prototype.slashAsteroid = function () {
     var x = this.slash[0].x;
     var y = this.slash[0].y;
     var slashBound = {
-        minx: x - this.radius,
-        miny: y - this.radius,
-        maxx: x + this.radius,
-        maxy: y + this.radius
+        minx: x - 30,
+        miny: y - 30,
+        maxx: x + 30,
+        maxy: y + 30
     };
 
     this.gameServer.asteroidTree.find(slashBound, function (asteroid) {
         if (asteroid.owner !== this && this.slashTimer <= 0) {
-            asteroid.decreaseHealth(10);
-            this.slashTimer = 20;
+            asteroid.decreaseHealth(5);
+            this.slashTimer = 5;
+            this.packetHandler.addSlashAnimationPackets(this, x, y)
         }
     }.bind(this));
+    this.slash = [];
 }
 
 
@@ -154,7 +149,6 @@ Player.prototype.updateQueuePositions =function () {
     for (var i = 0; i<this.asteroids.length; i++)  {
         asteroid = this.asteroids[i];
         asteroid.queuePosition = this.asteroidChainPos.peek(9 - i);
-        console.log(asteroid.queuePosition);
     }
 }
 
@@ -253,9 +247,6 @@ Player.prototype.selectAsteroid = function (x, y) {
 
 
 
-
-
-
 Player.prototype.resetAsteroidQueues = function () {
     var asteroid;
     for (var i = 0; i<this.asteroids.length; i++) {
@@ -289,11 +280,9 @@ Player.prototype.removeAsteroid = function (asteroid) {
     var index = this.asteroids.indexOf(asteroid);
     if (index !== -1) {
         this.asteroids.splice(index,1);
-        //this.asteroidChainPos.dequeue(); //what if asteroid in middle of queue?
         asteroid.removeOwner();
     }
     this.updateQueuePositions();
-    console.log("WORKS");
 };
 
 
