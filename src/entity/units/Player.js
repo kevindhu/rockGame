@@ -73,11 +73,7 @@ Player.prototype.addSlash = function (pos) {
 
 
 Player.prototype.onDelete = function () {
-    this.dropAllAsteroids();
-    var home = this.gameServer.HOME_LIST[this.viewing];
-    if (home) {
-        home.removeViewer(this);
-    }
+    this.removeAllAsteroids();
     Player.super_.prototype.onDelete.apply(this);
 };
 
@@ -106,8 +102,8 @@ Player.prototype.update = function () {
 
     if (this.slashTimer > 0) {
         this.slashTimer -=1;
-
     }
+
 
     if (square(this.x - this.preX) + square(this.y - this.preY) > 1000) {
         this.updateChainPositions();
@@ -287,18 +283,12 @@ Player.prototype.removeAsteroid = function (asteroid) {
     }
 };
 
-Player.prototype.dropAsteroid = function (x,y) {
-    var asteroid = null; //need to implement
-    asteroid.teleport(x,y);
-    this.heldAstroid = null;
-};
 
 
-
-Player.prototype.dropAllAsteroids = function () {
-    for (var i = this.shards.length - 1; i >= 0; i--) {
-        var shard = this.gameServer.PLAYER_SHARD_LIST[this.shards[i]];
-        this.dropShard(shard);
+Player.prototype.removeAllAsteroids = function () {
+    var i, asteroid;
+    for (i = this.asteroids.length - 1; i >= 0; i--) {
+        this.removeAsteroid(this.asteroids[i]);
     }
 };
 

@@ -176,12 +176,10 @@ GameServer.prototype.checkControllerCollision = function (controller) {
     this.asteroidTree.find(controllerBound, function (asteroid) {
 
         //TODO: add condition to see if it is hostile asteroid
-        if (1===2) {
-            if (asteroid.owner !== null) { //steal their asteroid
-                var oldOwner = this.CONTROLLER_LIST[asteroid.owner];
-                oldOwner.removeAsteroid(asteroid);
-            }
-            controller.addAsteroid(asteroid); 
+        if (asteroid.shooting && asteroid.prevOwner !== controller) {
+
+            controller.decreaseHealth(Math.abs(asteroid.xVel) + Math.abs(asteroid.yVel));
+            asteroid.onDelete();
         }   
     }.bind(this));
     

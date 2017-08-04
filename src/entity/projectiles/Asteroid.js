@@ -8,10 +8,8 @@ function Asteroid(x, y, material, gameServer) {
     this.packetHandler = gameServer.packetHandler;
 
     this.id = Math.random();
-
     this.x = x;
     this.y = y;
-
 
     this.type = "static";
     this.supply = 5;
@@ -107,16 +105,13 @@ Asteroid.prototype.getRandomThetas = function () {
 
 
 Asteroid.prototype.removeOwner = function () {
-
-
-
     this.owner = null;
     this.removePaths();
 };
 
 
 Asteroid.prototype.split = function () {
-    if (this.radius < 8) {
+    if (this.radius < 10) {
         this.onDelete();
         return;
     }
