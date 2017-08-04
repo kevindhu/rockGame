@@ -221,10 +221,10 @@ Player.prototype.findNeighboringChunks = function () {
 
 Player.prototype.selectAsteroid = function (x, y) {
     var mouseBound = {
-        minx: x - 20,
-        miny: y - 20,
-        maxx: x + 20,
-        maxy: y + 20
+        minx: x - 40,
+        miny: y - 40,
+        maxx: x + 40,
+        maxy: y + 40
     };
 
 

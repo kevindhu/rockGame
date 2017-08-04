@@ -7,6 +7,9 @@ function Asteroid(asteroidInfo, client) {
     this.maxHealth = asteroidInfo.maxHealth;
     this.material = asteroidInfo.material;
     this.theta = asteroidInfo.theta;
+    this.thetas = asteroidInfo.thetas;
+    this.updateRadii();
+
 
     this.client = client;
 }
@@ -18,10 +21,13 @@ Asteroid.prototype.update = function (asteroidInfo) {
     this.currPath = asteroidInfo.currPath;
     this.queuePosition = asteroidInfo.queuePosition;
     this.targetPt = asteroidInfo.targetPt;
-    this.health = asteroidInfo.health;
     this.maxHealth = asteroidInfo.maxHealth;
     this.theta = asteroidInfo.theta;
     this.shooting = asteroidInfo.shooting;
+    if (this.health !== asteroidInfo.health) {
+        this.health = asteroidInfo.health;
+        this.updateRadii();
+    }
 };
 
 
@@ -52,11 +58,14 @@ Asteroid.prototype.show = function () {
     startY = this.radius * Math.sin(theta);
     ctx.moveTo(this.x + startX, this.y + startY);
 
-    for (i = 1; i <= 6; i++) {
-        theta = this.theta + Math.PI / 3 * i +
-            getRandom(-this.maxHealth / this.health / 7, this.maxHealth / this.health / 7);
-        x = this.radius * Math.cos(theta);
-        y = this.radius * Math.sin(theta);
+
+
+    for (i = 0; i <= this.thetas.length; i++) {
+        theta = this.theta + this.thetas[i];
+        radius = this.radii[i];
+
+        x = radius * Math.cos(theta);
+        y = radius * Math.sin(theta);
         ctx.lineTo(this.x + x, this.y + y);
     }
     ctx.lineTo(this.x + startX, this.y + startY);
@@ -107,6 +116,18 @@ Asteroid.prototype.show = function () {
     }
 
 };
+
+
+
+Asteroid.prototype.updateRadii = function () {
+    var delta =  this.radius/1.2 * (1-this.health/this.maxHealth);
+    var radii = [];
+    for (var i = 0; i<this.thetas.length; i++) {    
+        radii[i] = this.radius + getRandom(-delta, -delta/2);
+    }
+
+    this.radii = radii;
+}
 
 
 function getRandom(min, max) {

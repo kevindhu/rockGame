@@ -34,6 +34,8 @@ function Asteroid(x, y, material, gameServer) {
         this.setMaterial(this.getRandomMaterial());
     }
 
+    this.getRandomThetas();
+
     this.setRadius(getRandom(15, 30)); //change to entityConfig!!!
 
     this.currPath = null;
@@ -87,7 +89,19 @@ Asteroid.prototype.getRandomMaterial = function () {
     else {
         return "copper";
     }
+};
 
+Asteroid.prototype.getRandomThetas = function () {
+    var thetas = [];
+    var angles = Math.round(getRandom(5,9));
+    var average = 2 * Math.PI / angles;
+
+    var theta = 0;
+    for (var i = 0; i<angles-1; i++) {
+        theta += average + getRandom(-0.4,0.4);
+        thetas[i] = theta;
+    }
+    this.thetas = thetas;
 };
 
 
@@ -207,8 +221,8 @@ Asteroid.prototype.removeShooting = function () {
 }
 
 Asteroid.prototype.follow = function (owner) {
-    this.x = owner.x;//+ Arithmetic.getRandomInt(-5, 5);
-    this.y = owner.y;//+ Arithmetic.getRandomInt(-5, 5);
+    this.x = owner.x;
+    this.y = owner.y;
 };
 
 Asteroid.prototype.addVelocity = function (x, y) {

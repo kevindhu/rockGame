@@ -133,7 +133,8 @@ PacketHandler.prototype.addAsteroidPackets = function (asteroid, ifInit) {
         health: asteroid.health,
         maxHealth: asteroid.maxHealth,
         material: asteroid.material,
-        theta: asteroid.theta
+        theta: asteroid.theta,
+        thetas : asteroid.thetas
     };
     if (ifInit) {
         return info;

@@ -75,7 +75,7 @@ Client.prototype.initCanvases = function () {
                 this.mouseMoveTimer = 2;
             }
             else {
-                this.mouseMoveTimer = 20;
+                this.mouseMoveTimer = 5;
             }
         }
         var x = ((event.x / this.mainCanvas.offsetWidth * 1000) - this.mainCanvas.width / 2) / this.scaleFactor;
