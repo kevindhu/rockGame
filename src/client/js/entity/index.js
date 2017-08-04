@@ -5,5 +5,6 @@ module.exports = {
     Home: require('./Home'),
     MiniMap: require('./MiniMap'),
     Tile: require('./Tile'),
-    Asteroid: require('./Asteroid')
+    Asteroid: require('./Asteroid'),
+    Trail: require('./Trail')
 };

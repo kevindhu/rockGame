@@ -12,6 +12,10 @@ function Controller(controllerInfo, client) {
     this.active = controllerInfo.active;
     this.slash = controllerInfo.slash;
     this.client = client;
+
+    if (this.id = this.client.SELFID) {
+        this.client.active = this.active; //probably should change this
+    }
 }
 
 Controller.prototype.update = function (controllerInfo) {
@@ -24,8 +28,9 @@ Controller.prototype.update = function (controllerInfo) {
     this.active = controllerInfo.active;
     this.slash = controllerInfo.slash;
 
-
-    this.client.active = this.active; //probably should change this
+    if (this.id = this.client.SELFID) {
+        this.client.active = this.active; //probably should change this
+    }
     
 };
 

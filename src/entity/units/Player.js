@@ -47,6 +47,7 @@ Player.prototype.populateAsteroidChain = function () {
                 y: y
             });
     }
+    this.updateQueuePositions();
 }
 
 
@@ -106,7 +107,7 @@ Player.prototype.update = function () {
 
 
     if (square(this.x - this.preX) + square(this.y - this.preY) > 1000) {
-        this.updateChainPositions();
+        this.updateAsteroidChain();
         this.preX = this.x;
         this.preY = this.y;
     }
@@ -139,13 +140,23 @@ Player.prototype.slashAsteroid = function () {
 
 
 
-Player.prototype.updateChainPositions = function () {
+Player.prototype.updateAsteroidChain = function () {
     this.asteroidChainPos.dequeue();
     this.asteroidChainPos.enqueue({
         x: this.x,
         y: this.y
     });
+    this.updateQueuePositions();
 };
+
+Player.prototype.updateQueuePositions =function () {
+    var asteroid;
+    for (var i = 0; i<this.asteroids.length; i++)  {
+        asteroid = this.asteroids[i];
+        asteroid.queuePosition = this.asteroidChainPos.peek(9 - i);
+        console.log(asteroid.queuePosition);
+    }
+}
 
 
 
@@ -278,10 +289,14 @@ Player.prototype.removeAsteroid = function (asteroid) {
     var index = this.asteroids.indexOf(asteroid);
     if (index !== -1) {
         this.asteroids.splice(index,1);
-        this.asteroidChainPos.dequeue();
+        //this.asteroidChainPos.dequeue(); //what if asteroid in middle of queue?
         asteroid.removeOwner();
     }
+    this.updateQueuePositions();
+    console.log("WORKS");
 };
+
+
 
 
 

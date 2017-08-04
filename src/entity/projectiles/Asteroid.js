@@ -282,7 +282,6 @@ Asteroid.prototype.move = function () {
         }
 
         //move with speed of owner
-        this.queuePosition = this.owner.asteroidChainPos.peek(9 - this.qIndex);
         this.getTheta(this.queuePosition);
 
         var totalPlayerVel = Math.sqrt(square(this.owner.xVel) + square(this.owner.yVel));
@@ -362,9 +361,6 @@ Asteroid.prototype.ricochet = function (asteroid) {
         return Math.sqrt(square(a) + square(b));
     }
 
-    //console.log("ASTEROID 1 VELOCITY " + this.xVel);
-    //console.log("ASTEROID 2 VELOCITY " + asteroid.xVel);
-
     var preXVel = this.xVel;
     var preYVel = this.yVel;
 
@@ -401,8 +397,6 @@ Asteroid.prototype.ricochet = function (asteroid) {
 
     var theta1 = this.theta;
     var theta2 = asteroid.theta;
-
-    //console.log("---" + theta1, theta2, phi, v1, v2, m1, m2, preXVel, preYVel + "---");
 
 
     this.xVel = (v1 * Math.cos(theta1 - phi)*(m1 - m2) + 2*m2*v2*Math.cos(theta2 - phi))

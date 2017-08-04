@@ -5,6 +5,7 @@ function Client() {
     this.SELFID = null;
     this.ARROW = null;
     this.BRACKET = null;
+    this.TRAIL = null;
 
     this.mouseMoveTimer = 0;
     this.init();
@@ -66,6 +67,9 @@ Client.prototype.initCanvases = function () {
     }.bind(this));
 
     document.addEventListener("mousemove", function (event) {
+        var x = ((event.x / this.mainCanvas.offsetWidth * 1000) - this.mainCanvas.width / 2) / this.scaleFactor;
+        var y = ((event.y / this.mainCanvas.offsetHeight * 500) - this.mainCanvas.height / 2) / this.scaleFactor;
+
         if (this.mouseMoveTimer > 0) {
             this.mouseMoveTimer -= 1;
             return;
@@ -75,11 +79,12 @@ Client.prototype.initCanvases = function () {
                 this.mouseMoveTimer = 2;
             }
             else {
-                this.mouseMoveTimer = 5;
+                this.mouseMoveTimer = 5;        
+                this.TRAIL.updateList(x,y);
             }
         }
-        var x = ((event.x / this.mainCanvas.offsetWidth * 1000) - this.mainCanvas.width / 2) / this.scaleFactor;
-        var y = ((event.y / this.mainCanvas.offsetHeight * 500) - this.mainCanvas.height / 2) / this.scaleFactor;
+        
+
 
         this.socket.emit("mouseMove", {
             id: this.SELFID,
@@ -108,7 +113,6 @@ Client.prototype.initViewers = function () {
     this.scaleFactor = 1;
     this.mainScaleFactor = 1;
     this.mainUI = new MainUI(this, this.socket);
-
     this.mainUI.playerNamerUI.open();
 };
 
@@ -169,6 +173,7 @@ Client.prototype.addEntities = function (packet) {
         case "selfId":
             this.SELFID = packet.selfId;
             this.mainUI.gameUI.open();
+            this.TRAIL = new Entity.Trail(this);
             break;
         case "chatInfo":
             this.mainUI.gameUI.chatUI.addMessage(packet);
@@ -260,24 +265,8 @@ Client.prototype.drawScene = function (data) {
         return x < (player.x + range) && x > (player.x - range)
             && y < (player.y + range) && y > (player.y - range);
     }.bind(this);
-    var drawConnectors = function () {
-        for (var id in this.HOME_LIST) {
-            this.mainCtx.beginPath();
-            var home = this.HOME_LIST[id];
-            if (home.neighbors) {
-                for (var i = 0; i < home.neighbors.length; i++) {
-                    var neighbor = this.HOME_LIST[home.neighbors[i]];
-                    this.mainCtx.moveTo(home.x, home.y);
 
-                    this.mainCtx.strokeStyle = "#912381";
-                    this.mainCtx.lineWidth = 10;
 
-                    this.mainCtx.lineTo(neighbor.x, neighbor.y);
-                    this.mainCtx.stroke();
-                }
-            }
-        }
-    }.bind(this);
     var translateScene = function () {
         this.mainCtx.setTransform(1, 0, 0, 1, 0, 0);
         this.scaleFactor = lerp(this.scaleFactor, this.mainScaleFactor, 0.3);
@@ -313,7 +302,10 @@ Client.prototype.drawScene = function (data) {
     if (this.ARROW) {
         this.ARROW.show();
     }
-    drawConnectors(); //fix this, as right now buildings are drawn first
+    if (this.TRAIL && !this.active) {
+        this.TRAIL.show();
+    }
+
     translateScene();
 };
 
