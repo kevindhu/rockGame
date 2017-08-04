@@ -54,7 +54,11 @@ Asteroid.prototype.init = function () {
 
 
 Asteroid.prototype.limbo = function () {
-    this.removeOwner();
+    if (this.owner) {
+        this.owner.removeAsteroid(this);
+    }
+
+    this.gameServer.asteroidTree.remove(this.quadItem);
 
     delete this.gameServer.CHUNKS[this.chunk].ASTEROID_LIST[this.id];
     delete this.gameServer.ASTEROID_LIST[this.id];
@@ -89,12 +93,19 @@ Asteroid.prototype.getRandomMaterial = function () {
 
 
 Asteroid.prototype.removeOwner = function () {
+
+
+
     this.owner = null;
     this.removePaths();
 };
 
 
 Asteroid.prototype.split = function () {
+    if (this.radius < 8) {
+        this.onDelete();
+        return;
+    }
     var clone = new Asteroid (this.x, this.y, this.material, this.gameServer);
 
     this.setRadius(this.radius/2);
@@ -119,34 +130,15 @@ Asteroid.prototype.decreaseHealth = function (amount) {
     }
 }
 
-Asteroid.prototype.becomeStatic = function () {
-    this.limbo();
-    this.type = "static";
-};
-
-Asteroid.prototype.becomeShooting = function (xVel, yVel, temp) { //not updated yet
-    this.limbo();
-    this.type = "shooting";
-    
-    this.addVelocity(xVel, yVel);
-};
-
-
-Asteroid.prototype.becomePlayer = function (player) { //not updated yet
-    this.limbo();
-    this.type = "player";
-    this.setOwner(player);
-};
 
 
 
 Asteroid.prototype.updatePosition = function () {
-    if (this.radius < 5 || overBoundary(this.x) || overBoundary(this.y)) {
+    if (overBoundary(this.x) || overBoundary(this.y)) {
         this.onDelete();
     }
 
-
-    if (this.timer > 0) {
+    if (this.timer > 0) { //what is the use of this?
         this.timer -= 1;
     }
 
@@ -190,7 +182,10 @@ Asteroid.prototype.setRadius = function (radius) {
 }
 
 
-Asteroid.prototype.shoot = function (x,y) {
+Asteroid.prototype.addShooting = function (owner, x,y) {
+    this.shooting = true;
+    this.prevOwner = owner;
+
     this.getTheta({
         x: x,
         y: y
@@ -201,10 +196,15 @@ Asteroid.prototype.shoot = function (x,y) {
         y:y
     };
 
-    this.xVel = 20 * Math.cos(this.theta);
-    this.yVel = 20 * Math.sin(this.theta);
+    this.xVel = 80 * Math.cos(this.theta);
+    this.yVel = 80 * Math.sin(this.theta);
 };
 
+
+Asteroid.prototype.removeShooting = function () {
+    this.shooting = false;
+    this.prevOwner = null;
+}
 
 Asteroid.prototype.follow = function (owner) {
     this.x = owner.x;//+ Arithmetic.getRandomInt(-5, 5);
@@ -221,6 +221,8 @@ Asteroid.prototype.addVelocity = function (x, y) {
 
 
 Asteroid.prototype.onDelete = function () {
+
+
     this.limbo();
     this.packetHandler.addAsteroidAnimationPackets(this, "asteroidDeath");
     this.packetHandler.deleteAsteroidPackets(this);
@@ -298,6 +300,9 @@ Asteroid.prototype.move = function () {
 
 
     if (Math.abs(this.xVel)<0.3 && Math.abs(this.yVel)<0.3) {
+        if (this.shooting) {
+            this.removeShooting();
+        }
         this.x += this.xVel;
         this.y += this.yVel;
     }
@@ -317,11 +322,26 @@ Asteroid.prototype.move = function () {
 
 Asteroid.prototype.findAsteroids = function () {
     this.gameServer.asteroidTree.find(this.quadItem.bound, function (asteroid) {
-        if (asteroid.id !== this.id && Math.abs(this.xVel) > 0 && Math.abs(this.yVel) > 0) {
+        if (asteroid.id !== this.id && 
+            Math.abs(this.xVel) > 0 && 
+            Math.abs(this.yVel) > 0) {
+            if (this.owner) { //check if asteroid belongs to same owner
+                if (this.owner === asteroid.owner || asteroid.shooting &&
+                 asteroid.prevOwner === this.owner) {
+                    return;
+                }
+            }
+
+            if (this.shooting &&
+                 this.prevOwner === asteroid.owner) {
+                return;
+            }
+
             if (this.ricochetTimer <= 0) {
                 this.ricochet(asteroid);
                 asteroid.ricochet(this);
             }
+            
         }
     }.bind(this))
 
@@ -333,15 +353,47 @@ Asteroid.prototype.ricochet = function (asteroid) {
         return Math.sqrt(square(a) + square(b));
     }
 
+    //console.log("ASTEROID 1 VELOCITY " + this.xVel);
+    //console.log("ASTEROID 2 VELOCITY " + asteroid.xVel);
+
+    var preXVel = this.xVel;
+    var preYVel = this.yVel;
+
+    if (Math.abs(asteroid.x - this.x) < 0.01) {
+        if (asteroid.x - this.x > 0) {
+            asteroid.x += 0.1;
+        }
+        else {
+            asteroid.x -= 0.1;
+        }
+    }
+
+    if (Math.abs(asteroid.y - this.y) < 0.01) {
+        if (asteroid.y - this.y > 0) {
+            asteroid.y += 0.1;
+        }
+        else {
+            asteroid.y -= 0.1;
+        }
+    }
+
     var phi = Math.atan((asteroid.y - this.y)/(asteroid.x - this.x));
+
+    if (isNaN(phi)) {
+        console.log("PHI IS NaN WTF");
+    }
+
     var v1 = normal(this.xVel, this.yVel);
     var v2 = normal(asteroid.xVel, asteroid.yVel);
+
 
     var m1 = this.mass;
     var m2 = asteroid.mass;
 
     var theta1 = this.theta;
     var theta2 = asteroid.theta;
+
+    //console.log("---" + theta1, theta2, phi, v1, v2, m1, m2, preXVel, preYVel + "---");
 
 
     this.xVel = (v1 * Math.cos(theta1 - phi)*(m1 - m2) + 2*m2*v2*Math.cos(theta2 - phi))
@@ -350,8 +402,16 @@ Asteroid.prototype.ricochet = function (asteroid) {
     this.yVel = (v1 * Math.cos(theta1 - phi)*(m1 - m2) + 2*m2*v2*Math.cos(theta2 - phi))
     /(m1 + m2) * Math.sin(phi) + v1 * Math.sin(theta1 - phi)*Math.sin(phi + Math.PI/2);
 
+
+    //console.log("DAMAGE IS " + Math.abs(this.xVel - preXVel));
+    if (Math.abs(this.xVel - preXVel) * this.mass/30 > 1) { //filter for low dmg
+        this.decreaseHealth(Math.abs(this.xVel - preXVel) * this.mass/70);
+        this.decreaseHealth(Math.abs(this.yVel - preYVel) * this.mass/70);
+    }
+
     this.ricochetTimer = 5;
 };
+
 
 
 

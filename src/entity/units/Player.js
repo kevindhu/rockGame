@@ -230,7 +230,8 @@ Player.prototype.selectAsteroid = function (x, y) {
 
     if (this.asteroids.length < 10) {
         this.gameServer.asteroidTree.find(mouseBound, function (asteroid) {
-            if (!this.hasAsteroid(asteroid) && 
+            if (asteroid.owner !== this && 
+                !asteroid.shooting &&
                 asteroid.radius < 30 &&
                 this.asteroids.length < 10) {
                 this.asteroids.push(asteroid);
@@ -242,15 +243,6 @@ Player.prototype.selectAsteroid = function (x, y) {
     }
 };
 
-
-Player.prototype.hasAsteroid = function (asteroid) {
-    for (var i = 0; i<this.asteroids.length; i++) {
-        if (asteroid === this.asteroids[i]) {
-            return true;
-        }
-    }
-    return false;
-};
 
 
 
@@ -281,16 +273,23 @@ Player.prototype.shootAsteroid = function (x,y) {
 
     if (!asteroid) return;
 
-    this.asteroids.splice(0,1);
-    this.asteroidChainPos.dequeue();
+    this.removeAsteroid(asteroid);
+    asteroid.addShooting(this, x,y);
+};
 
-    asteroid.removeOwner();
-    asteroid.shoot(x,y);
+
+Player.prototype.removeAsteroid = function (asteroid) {
+    var index = this.asteroids.indexOf(asteroid);
+    if (index !== -1) {
+        this.asteroids.splice(index,1);
+        this.asteroidChainPos.dequeue();
+        asteroid.removeOwner();
+    }
 };
 
 Player.prototype.dropAsteroid = function (x,y) {
-    var astroid = null; //need to implement
-    astroid.teleport(x,y);
+    var asteroid = null; //need to implement
+    asteroid.teleport(x,y);
     this.heldAstroid = null;
 };
 

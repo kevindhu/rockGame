@@ -233,7 +233,8 @@ PacketHandler.prototype.updateAsteroidsPackets = function (asteroid) {
         targetPt: asteroid.targetPt,
         health: asteroid.health,
         maxHealth: asteroid.maxHealth,
-        theta: asteroid.theta
+        theta: asteroid.theta,
+        shooting: asteroid.shooting
     });
 };
 

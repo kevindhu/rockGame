@@ -322,7 +322,7 @@ GameServer.prototype.start = function () {
         socket.on('mouseUp', function (data) {
             var player = this.CONTROLLER_LIST[data.id];
 
-            if (player) {
+            if (player && player.active) {
                 player.shootAsteroid(player.x + data.x, player.y + data.y);
             } 
         }.bind(this))

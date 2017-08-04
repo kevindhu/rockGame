@@ -21,6 +21,7 @@ Asteroid.prototype.update = function (asteroidInfo) {
     this.health = asteroidInfo.health;
     this.maxHealth = asteroidInfo.maxHealth;
     this.theta = asteroidInfo.theta;
+    this.shooting = asteroidInfo.shooting;
 };
 
 
@@ -30,11 +31,15 @@ Asteroid.prototype.show = function () {
 
     ctx.beginPath();
 
-    if (this.material === "sulfer") {
+    if (this.material === "sulfer") {   
         ctx.fillStyle = "blue";
     }
     else if (this.material === "copper") {
         ctx.fillStyle = "yellow";
+    }
+
+    if (this.shooting) {
+        ctx.fillStyle = "purple";
     }
 
 
@@ -87,7 +92,7 @@ Asteroid.prototype.show = function () {
     }
 
 
-    if (this.health && this.maxHealth) {
+    if (this.health && this.maxHealth) { //health bar
         ctx.beginPath();
         ctx.strokeStyle = "black";
         ctx.rect(this.x, this.y, 100, 20);

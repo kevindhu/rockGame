@@ -1,2 +1,5 @@
 QuadNode: https://github.com/Barbosik/QuadNode
 
+
+Elastic Collision Equation: https://en.wikipedia.org/wiki/Elastic_collision
+
