@@ -30,7 +30,6 @@ Client.prototype.initCanvases = function () {
     this.mainCanvas = document.getElementById("main_canvas");
     this.mainCanvas.style.border = '1px solid #000000';
     this.mainCanvas.style.visibility = "hidden";
-
     this.mainCtx = this.mainCanvas.getContext("2d");
 
 
@@ -45,7 +44,6 @@ Client.prototype.initCanvases = function () {
                 y: y
             });
         }
-
     }.bind(this));
 
     document.addEventListener("mouseup", function (event) {
@@ -74,7 +72,6 @@ Client.prototype.initCanvases = function () {
         if (square(x) + square(y) > 200 * 200) {
             return;
         }
-
         if (this.active) {
             if (this.SLASH.length >= 2) {
                 if (square(this.SLASH[0].x - this.SLASH[1].x) + 
@@ -96,7 +93,6 @@ Client.prototype.initCanvases = function () {
             }
             return;
         }
-
         if (this.mouseMoveTimer > 0) {
             this.mouseMoveTimer -= 1;
             return;
@@ -106,13 +102,26 @@ Client.prototype.initCanvases = function () {
             this.TRAIL.updateList(x,y);
         }
         
-
-
-        this.socket.emit("mouseMove", {
-            id: this.SELFID,
-            x: x,
-            y: y
-        });
+        if (!this.pre) {
+            this.pre = {
+                x: x,
+                y: y
+            }
+        }
+        else if (square(this.pre.x - x) + square(this.pre.y - y) > 200) {
+            this.pre = {
+                x: x,
+                y: y
+            }
+            this.socket.emit("mouseMove", {
+                id: this.SELFID,
+                x: x,
+                y: y
+            });
+        }
+        else {
+            console.log("TOO SHORT BITCH tyler1 xd");
+        }
     }.bind(this));
 };
 
