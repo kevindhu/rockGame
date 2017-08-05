@@ -29,6 +29,9 @@ Controller.prototype.update = function (controllerInfo) {
     if (this.id = this.client.SELFID) {
         this.client.active = this.active; //probably should change this
     }
+    if (this.client.active) {
+        this.client.TRAIL.realPath = [];
+    }
 };
 
 Controller.prototype.show = function () {

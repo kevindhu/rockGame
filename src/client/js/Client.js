@@ -69,7 +69,7 @@ Client.prototype.initCanvases = function () {
         var y = ((event.y / this.mainCanvas.offsetHeight * 500) - this.mainCanvas.height / 2) / this.scaleFactor;
 
 
-        if (square(x) + square(y) > 200 * 200) {
+        if (square(x) + square(y) > 500 * 500) {
             return;
         }
         if (this.active) {
@@ -79,7 +79,7 @@ Client.prototype.initCanvases = function () {
                     this.socket.emit("slash", {
                         id: this.SELFID,
                         x: (this.SLASH[0].x + this.SLASH[1].x) / 2,
-                        y: (this.SLASH[0].y + this.SLASH[1].y) / 2,
+                        y: (this.SLASH[0].y + this.SLASH[1].y) / 2
                     });
                 }
                 this.SLASH = [];
@@ -93,34 +93,27 @@ Client.prototype.initCanvases = function () {
             }
             return;
         }
-        if (this.mouseMoveTimer > 0) {
-            this.mouseMoveTimer -= 1;
-            return;
-        } 
-        else {
-            this.mouseMoveTimer = 5;        
-            this.TRAIL.updateList(x,y);
-        }
-        
+
+
+
+
         if (!this.pre) {
             this.pre = {
                 x: x,
                 y: y
             }
         }
-        else if (square(this.pre.x - x) + square(this.pre.y - y) > 200) {
+        else if (square(this.pre.x - x) + square(this.pre.y - y) > 400) {
             this.pre = {
                 x: x,
                 y: y
-            }
+            };
             this.socket.emit("mouseMove", {
                 id: this.SELFID,
                 x: x,
                 y: y
             });
-        }
-        else {
-            console.log("TOO SHORT BITCH tyler1 xd");
+            this.TRAIL.updateList(x,y);
         }
     }.bind(this));
 };

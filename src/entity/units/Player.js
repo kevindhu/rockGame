@@ -26,7 +26,7 @@ function Player(id, name, gameServer) {
     this.slash.theta = null;
     this.slashTimer = 0;
 
-    this.range = 200;
+    this.range = 500;
 
     this.theta = 0;
     this.init();

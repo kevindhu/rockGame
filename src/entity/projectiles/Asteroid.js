@@ -11,7 +11,6 @@ function Asteroid(x, y, material, gameServer) {
     this.x = x;
     this.y = y;
 
-    this.supply = 5;
     this.owner = null;
 
     this.xVel = getRandom(-3, 3);
@@ -22,8 +21,6 @@ function Asteroid(x, y, material, gameServer) {
     this.ricochetTimer = 0;
     this.theta = 0;
 
-    this.qIndex = -1;
-
     if (material) {
         this.setMaterial(material);
     }
@@ -33,7 +30,7 @@ function Asteroid(x, y, material, gameServer) {
 
     this.getRandomThetas();
 
-    this.setRadius(getRandom(15, 200)); //change to entityConfig!!!
+    this.setRadius(getRandom(15, 25)); //change to entityConfig!!!
 
     this.currPath = null;
     this.pathQueue = new Queue();
@@ -307,7 +304,7 @@ Asteroid.prototype.move = function () {
 
     this.findAsteroids();
 
-    if (Math.abs(this.xVel)<0.3 && Math.abs(this.yVel)<0.3) {
+    if (Math.abs(this.xVel)<0.3 && Math.abs(this.yVel)<0.3) { //moving very slowly
         if (this.shooting) {
             this.removeShooting();
         }
@@ -317,8 +314,12 @@ Asteroid.prototype.move = function () {
         this.yVel = lerp(this.yVel, 0, 0.05);
     }
 
+    if (isNaN(this.xVel)) {
+        console.log("PENIS");
+    }
     this.x += this.xVel;
     this.y += this.yVel;
+
 
 
     this.gameServer.asteroidTree.remove(this.quadItem);
@@ -345,7 +346,7 @@ Asteroid.prototype.findAsteroids = function () {
 
             var v1 = normal(this.xVel, this.yVel);
             var v2 = normal(asteroid.xVel, asteroid.yVel);
-            if (v1 + v2 < 60 && !this.owner) {
+            if (v1 + v2 < 30 && !this.owner) {
                 this.moveOut(asteroid);
                 asteroid.moveOut(this);
             } else if (this.ricochetTimer <= 0) {
@@ -359,8 +360,28 @@ Asteroid.prototype.findAsteroids = function () {
 };
 
 Asteroid.prototype.moveOut = function (asteroid) {
+    if (Math.abs(asteroid.y - this.y) < 0.01) {
+        if (asteroid.y - this.y > 0) {
+            asteroid.y += 0.1;
+        }
+        else {
+            asteroid.y -= 0.1;
+        }
+    }
+    if (Math.abs(asteroid.x - this.x) < 0.01) {
+        if (asteroid.x - this.x > 0) {
+            asteroid.x += 0.1;
+        }
+        else {
+            asteroid.x -= 0.1;
+        }
+    }
+
+
     var xDelta = Math.abs(this.x - asteroid.x);
     var yDelta = Math.abs(this.y - asteroid.y);
+
+
 
     var xBuffer = (this.radius + asteroid.radius) * xDelta/normal(xDelta, yDelta);
     var yBuffer = (this.radius + asteroid.radius) * yDelta/normal(xDelta, yDelta);
@@ -384,10 +405,15 @@ Asteroid.prototype.moveOut = function (asteroid) {
         this.yVel -= ySpeed;
     }
 
-}
+    if (isNaN(this.xVel) || isNaN(this.yVel)) {
+        console.log("FICKK TT");
+    }
+
+};
 
 
 Asteroid.prototype.ricochet = function (asteroid) {
+    console.log("RICOCHET");
     var preXVel = this.xVel;
     var preYVel = this.yVel;
 
@@ -431,6 +457,10 @@ Asteroid.prototype.ricochet = function (asteroid) {
 
     this.yVel = (v1 * Math.cos(theta1 - phi)*(m1 - m2) + 2*m2*v2*Math.cos(theta2 - phi))
     /(m1 + m2) * Math.sin(phi) + v1 * Math.sin(theta1 - phi)*Math.sin(phi + Math.PI/2);
+
+    if (isNaN(this.xVel) || isNaN(this.yVel)) {
+        console.log("FICKK TT");
+    }
 
 
     //console.log("DAMAGE IS " + Math.abs(this.xVel - preXVel));
