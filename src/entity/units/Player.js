@@ -85,7 +85,7 @@ Player.prototype.updateAsteroidFeed = function () {
     //add more asteroid glow if starting to be consumed
     var i, asteroid;
 
-    for (i = 0; i<this.asteroids.length; i++) {
+    for (i = 0; i < this.asteroids.length; i++) {
         asteroid = this.asteroids[i];
         asteroid.addFeed();
     }
@@ -99,7 +99,7 @@ Player.prototype.update = function () {
         this.slashTimer -= 1;
     }
 
-    if (this.gameServer.timeStamp % 500 && this.active) { //update every half-second
+    if (this.gameServer.timeStamp % 5 === 0 && this.active) { //update every half-second
         this.updateAsteroidFeed();
     }
 
@@ -301,7 +301,7 @@ Player.prototype.consumeAsteroid = function (asteroid) {
 
 Player.prototype.eat = function (amount) {
     if (amount > 0) {
-        this.food ++;
+        this.food++;
     }
     if (this.food > this.maxFood) {
         this.levelUp();
@@ -316,14 +316,14 @@ Player.prototype.levelUp = function () {
 
     //level up animation
 
-    this.level ++;
+    this.level++;
     this.range += 100;
     this.radius += 5;
     this.maxVel -= 2;
     this.power += 10; //power determines max size of things you can hold
 
     this.food = 0;
-    this.maxFood ++;
+    this.maxFood++;
 
     console.log("LEVEL UP: " + this.radius);
 };

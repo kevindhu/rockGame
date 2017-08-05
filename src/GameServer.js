@@ -205,7 +205,7 @@ GameServer.prototype.updateAsteroids = function () {
 
     for (id in this.ASTEROID_LIST) {
         asteroid = this.ASTEROID_LIST[id];
-        asteroid.updatePosition();
+        asteroid.update();
     }
 };
 
@@ -216,7 +216,6 @@ GameServer.prototype.update = function () {
 
 
     this.initNewClients();
-
     this.checkCollisions();
 
     this.updateControllers();

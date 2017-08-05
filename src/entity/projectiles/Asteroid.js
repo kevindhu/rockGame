@@ -19,7 +19,10 @@ function Asteroid(x, y, material, gameServer) {
     this.value = 0;
     this.timer = 0;
     this.ricochetTimer = 0;
+
     this.theta = 0;
+    this.displayTheta = 0;
+    this.displayThetaVel = 0;
 
 
     if (material) {
@@ -105,6 +108,7 @@ Asteroid.prototype.removeOwner = function () {
     this.owner = null;
     this.resetFeed();
     this.removePaths();
+    this.removeGlowing();
 };
 
 
@@ -140,7 +144,7 @@ Asteroid.prototype.decreaseHealth = function (amount) {
 
 
 
-Asteroid.prototype.updatePosition = function () {
+Asteroid.prototype.update = function () {
     if (overBoundary(this.x) || overBoundary(this.y)) {
         this.onDelete();
     }
@@ -154,11 +158,8 @@ Asteroid.prototype.updatePosition = function () {
     }
 
     this.move();
-
     //this.updateChunk(); //cant use this when they are out of bounds!!!
     this.updateQuadItem();
-
-
     this.packetHandler.updateAsteroidsPackets(this);
 };
 
@@ -179,7 +180,6 @@ Asteroid.prototype.updateChunk = function () {
 
 Asteroid.prototype.setRadius = function (radius) {
     this.radius = radius;
-
     this.mass = this.materialQuality * this.radius/1.3;
     this.maxVel = 400/this.mass;
     this.range = 100;
@@ -276,21 +276,29 @@ Asteroid.prototype.move = function () {
         this.currPath = this.pathQueue.dequeue();
     }
 
-    if (this.owner && this.owner.active) {
-        if (this.currPath) {
-            this.currPath = null;
-            this.pathQueue = new Queue();
+    if (this.owner) {
+        if (this.owner.active) {
+            if (this.currPath) {
+                this.currPath = null;
+                this.pathQueue = new Queue();
+            }
+
+            //move with speed of owner
+            this.getTheta(this.queuePosition);
+
+
+            //var totalPlayerVel = Math.sqrt(square(this.owner.xVel) + square(this.owner.yVel));
+
+            this.xVel = lerp(this.xVel, this.owner.maxVel * 1.4 * Math.cos(this.theta), 0.3);
+            this.yVel = lerp(this.yVel, this.owner.maxVel * 1.4 * Math.sin(this.theta), 0.3);
         }
-
-        //move with speed of owner
-        this.getTheta(this.queuePosition);
-
-        var totalPlayerVel = Math.sqrt(square(this.owner.xVel) + square(this.owner.yVel));
-
-        this.xVel = lerp(this.xVel, this.owner.maxVel * 1.4 * Math.cos(this.theta), 0.3);
-        this.yVel = lerp(this.yVel, this.owner.maxVel * 1.4 * Math.sin(this.theta), 0.3);
+        else if (square(this.x-this.owner.x) + square(this.y - this.owner.y) > square(this.owner.range)) {
+            console.log("TOO LONG");
+            this.owner.active = true;
+            return;
+        }
     }
-    else if (this.currPath) {
+    if (this.currPath) {
         if (inBounds(this.currPath.x, this.x, this.range) && 
             inBounds(this.currPath.y, this.y, this.range)) {
             this.currPath = this.pathQueue.dequeue();
@@ -319,9 +327,14 @@ Asteroid.prototype.move = function () {
         this.yVel = lerp(this.yVel, 0, 0.05);
     }
 
-    if (isNaN(this.xVel)) {
-        console.log("PENIS");
+    if (Math.abs(this.displayThetaVel) > 0.02) {
+        this.displayThetaVel = lerp(this.displayThetaVel, 0, 0.1);
     }
+
+    this.displayTheta += this.displayThetaVel;
+
+
+
     this.x += this.xVel;
     this.y += this.yVel;
 
@@ -410,14 +423,12 @@ Asteroid.prototype.moveOut = function (asteroid) {
         this.yVel -= ySpeed;
     }
 
-    if (isNaN(this.xVel) || isNaN(this.yVel)) {
-        console.log("FICKK TT");
-    }
+    var delta = 0.2;
+    this.displayThetaVel = getRandom(-delta,delta);
 
 };
 
 Asteroid.prototype.ricochet = function (asteroid) {
-    console.log("RICOCHET");
     var preXVel = this.xVel;
     var preYVel = this.yVel;
 
@@ -462,26 +473,33 @@ Asteroid.prototype.ricochet = function (asteroid) {
     this.yVel = (v1 * Math.cos(theta1 - phi)*(m1 - m2) + 2*m2*v2*Math.cos(theta2 - phi))
     /(m1 + m2) * Math.sin(phi) + v1 * Math.sin(theta1 - phi)*Math.sin(phi + Math.PI/2);
 
-    if (isNaN(this.xVel) || isNaN(this.yVel)) {
-        console.log("FICKK TT");
-    }
 
 
-    //console.log("DAMAGE IS " + Math.abs(this.xVel - preXVel));
-    if (Math.abs(this.xVel - preXVel) * this.mass/30 > 1) { //filter for low dmg
-        this.decreaseHealth(Math.abs(this.xVel - preXVel) * this.mass/70);
-        this.decreaseHealth(Math.abs(this.yVel - preYVel) * this.mass/70);
-    }
-
+    var delta = Math.sqrt(square(this.xVel - preXVel) + square(this.yVel - preYVel))/this.mass;
+    this.displayThetaVel = getRandom(-delta,delta);
+    if (5 * delta > 1) { //filter for low dmg
+        this.decreaseHealth(5 * delta);
+    } //damage asteroids
     this.ricochetTimer = 5;
+
 };
 
 
 Asteroid.prototype.addFeed = function () {
-    this.feed += 1;
-    if (this.owner && this.feed >= this.maxFeed) {
-        this.owner.consumeAsteroid(this);
+    if (!this.glowing && this.owner && this.feed >= this.maxFeed) {
+        this.becomeGlowing();
     }
+
+    this.feed += 5;
+
+};
+
+Asteroid.prototype.becomeGlowing = function () {
+    this.glowing = true;
+};
+
+Asteroid.prototype.removeGlowing = function () {
+    this.glowing = false;
 };
 
 

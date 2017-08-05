@@ -6,7 +6,7 @@ function Asteroid(asteroidInfo, client) {
     this.health = asteroidInfo.health;
     this.maxHealth = asteroidInfo.maxHealth;
     this.material = asteroidInfo.material;
-    this.theta = asteroidInfo.theta;
+    this.displayTheta = asteroidInfo.displayTheta;
     this.thetas = asteroidInfo.thetas;
     this.radii = [];
     this.colors = [];
@@ -24,14 +24,15 @@ Asteroid.prototype.update = function (asteroidInfo) {
     }
     this.currPath = asteroidInfo.currPath;
     this.queuePosition = asteroidInfo.queuePosition;
+    this.displayTheta = asteroidInfo.displayTheta;
     this.targetPt = asteroidInfo.targetPt;
     this.maxHealth = asteroidInfo.maxHealth;
-    this.theta = asteroidInfo.theta;
     this.shooting = asteroidInfo.shooting;
     if (this.health !== asteroidInfo.health) {
         this.updateRadii((this.health - asteroidInfo.health) / this.maxHealth);
         this.health = asteroidInfo.health;
     }
+    this.glowing = asteroidInfo.glowing;
 };
 
 
@@ -52,15 +53,22 @@ Asteroid.prototype.show = function () {
         ctx.fillStyle = "purple";
     }
 
+    if (this.glowing) {
+        ctx.beginPath();
+        ctx.fillStyle = "rgba(244, 164, 66, 0.2)";
+        ctx.arc(this.x, this.y, this.radius + 20, 0, 2 * Math.PI, false);
+        ctx.fill();
+        ctx.closePath();
+    }
 
     var x, y, theta, startX, startY;
-    theta = this.theta;
+    theta = this.displayTheta;
     startX = this.radius * Math.cos(theta);
     startY = this.radius * Math.sin(theta);
     ctx.moveTo(this.x + startX, this.y + startY);
 
     for (i = 0; i <= this.thetas.length; i++) {
-        theta = this.theta + this.thetas[i];
+        theta = this.displayTheta + this.thetas[i];
         radius = this.radii[i];
 
         x = radius * Math.cos(theta);
@@ -78,12 +86,12 @@ Asteroid.prototype.show = function () {
         var ind = (((i - 1) % l) + l) % l;
 
         var pre = {
-            x: Math.floor(this.radii[ind] * Math.cos(this.theta + this.thetas[ind])),
-            y: Math.floor(this.radii[ind] * Math.sin(this.theta + this.thetas[ind]))
+            x: Math.floor(this.radii[ind] * Math.cos(this.displayTheta + this.thetas[ind])),
+            y: Math.floor(this.radii[ind] * Math.sin(this.displayTheta + this.thetas[ind]))
         };
         var post = {
-            x: Math.floor(this.radii[i] * Math.cos(this.theta + this.thetas[i])),
-            y: Math.floor(this.radii[i] * Math.sin(this.theta + this.thetas[i]))
+            x: Math.floor(this.radii[i] * Math.cos(this.displayTheta + this.thetas[i])),
+            y: Math.floor(this.radii[i] * Math.sin(this.displayTheta + this.thetas[i]))
         };
 
 
@@ -102,19 +110,19 @@ Asteroid.prototype.show = function () {
     }
 
     var pre = {
-        x: this.radii[0] * Math.cos(this.theta + this.thetas[0]),
-        y: this.radii[0] * Math.sin(this.theta + this.thetas[0])
+        x: this.radii[0] * Math.cos(this.displayTheta + this.thetas[0]),
+        y: this.radii[0] * Math.sin(this.displayTheta + this.thetas[0])
     };
 
     var post = {
-        x: this.radii[l-1] * Math.cos(this.theta + this.thetas[l-1]),
-        y: this.radii[l-1] * Math.sin(this.theta + this.thetas[l-1])
+        x: this.radii[l-1] * Math.cos(this.displayTheta + this.thetas[l-1]),
+        y: this.radii[l-1] * Math.sin(this.displayTheta + this.thetas[l-1])
     };
 
     ctx.fillStyle = "rgb(239,213,123)";
 
-    startX = this.radius * Math.cos(this.theta) + this.x;
-    startY = this.radius * Math.sin(this.theta) + this.y;
+    startX = this.radius * Math.cos(this.displayTheta) + this.x;
+    startY = this.radius * Math.sin(this.displayTheta) + this.y;
 
     ctx.beginPath();
     ctx.moveTo(startX, startY);
