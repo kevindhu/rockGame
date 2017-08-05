@@ -115,8 +115,8 @@ Asteroid.prototype.show = function () {
     };
 
     var post = {
-        x: this.radii[l-1] * Math.cos(this.displayTheta + this.thetas[l-1]),
-        y: this.radii[l-1] * Math.sin(this.displayTheta + this.thetas[l-1])
+        x: this.radii[l - 1] * Math.cos(this.displayTheta + this.thetas[l - 1]),
+        y: this.radii[l - 1] * Math.sin(this.displayTheta + this.thetas[l - 1])
     };
 
     ctx.fillStyle = "rgb(239,213,123)";
@@ -133,9 +133,6 @@ Asteroid.prototype.show = function () {
     ctx.fill();
 
     ctx.closePath();
-
-
-
 
 
     if (this.currPath) {
@@ -188,8 +185,8 @@ Asteroid.prototype.addColors = function () {
     for (var i = 0; i < this.thetas.length; i++) {
         rgb = {
             r: Math.floor(229 + getRandom(-20, 10)),
-            g: Math.floor(213 + getRandom(-20, 10)),
-            b: Math.floor(133 + getRandom(-20, 10))
+            g: Math.floor(213 + getRandom(-40, 0)),
+            b: Math.floor(133 + getRandom(-20, 50))
         };
         this.colors[i] = "rgb(" + rgb.r + "," +
             rgb.g + "," + rgb.b + ")";

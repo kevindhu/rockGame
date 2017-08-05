@@ -15,7 +15,7 @@ Trail.prototype.updateList = function (x,y) {
     if (this.realPath.length > 18) {
         this.realPath.splice(0,1);
     }
-}
+};
 
 Trail.prototype.show = function () {
     var ctx = this.client.mainCtx;

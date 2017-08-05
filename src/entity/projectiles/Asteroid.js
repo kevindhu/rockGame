@@ -34,7 +34,7 @@ function Asteroid(x, y, material, gameServer) {
 
     this.getRandomThetas();
 
-    this.setRadius(getRandom(15, 25)); //change to entityConfig!!!
+    this.setRadius(getRandom(15, 200)); //change to entityConfig!!!
 
     this.currPath = null;
     this.pathQueue = new Queue();
@@ -206,8 +206,8 @@ Asteroid.prototype.addShooting = function (owner, x,y) {
         y:y
     };
 
-    this.xVel = 80 * Math.cos(this.theta);
-    this.yVel = 80 * Math.sin(this.theta);
+    this.xVel = 150 * Math.cos(this.theta);
+    this.yVel = 150 * Math.sin(this.theta);
 };
 
 
@@ -269,7 +269,7 @@ Asteroid.prototype.getTheta = function (target, hard) {
 
 Asteroid.prototype.resetPathQueue = function () {
     this.pathQueue = new Queue();
-}
+};
 
 Asteroid.prototype.move = function () {
     while (this.pathQueue.length() > 10) {
@@ -286,14 +286,18 @@ Asteroid.prototype.move = function () {
             //move with speed of owner
             this.getTheta(this.queuePosition);
 
-
-            //var totalPlayerVel = Math.sqrt(square(this.owner.xVel) + square(this.owner.yVel));
-
-            this.xVel = lerp(this.xVel, this.owner.maxVel * 1.4 * Math.cos(this.theta), 0.3);
-            this.yVel = lerp(this.yVel, this.owner.maxVel * 1.4 * Math.sin(this.theta), 0.3);
+            if (inBounds(this.x, this.queuePosition.x, 30) &&
+                inBounds(this.y, this.queuePosition.y, 30)) {
+                this.xVel = lerp(this.xVel, 0, 0.3);
+                this.yVel = lerp(this.yVel, 0, 0.3);
+            }
+            else {
+                //var totalPlayerVel = Math.sqrt(square(this.owner.xVel) + square(this.owner.yVel));
+                this.xVel = lerp(this.xVel, this.owner.maxVel * 1.5 * Math.cos(this.theta), 0.3);
+                this.yVel = lerp(this.yVel, this.owner.maxVel * 1.5 * Math.sin(this.theta), 0.3);
+            }
         }
-        else if (square(this.x-this.owner.x) + square(this.y - this.owner.y) > square(this.owner.range)) {
-            console.log("TOO LONG");
+        else if (square(this.x-this.owner.x) + square(this.y - this.owner.y) > square(this.owner.range + 400)) {
             this.owner.active = true;
             return;
         }
@@ -327,7 +331,7 @@ Asteroid.prototype.move = function () {
         this.yVel = lerp(this.yVel, 0, 0.05);
     }
 
-    if (Math.abs(this.displayThetaVel) > 0.02) {
+    if (Math.abs(this.displayThetaVel) > 0.005) {
         this.displayThetaVel = lerp(this.displayThetaVel, 0, 0.1);
     }
 
@@ -423,8 +427,8 @@ Asteroid.prototype.moveOut = function (asteroid) {
         this.yVel -= ySpeed;
     }
 
-    var delta = 0.2;
-    this.displayThetaVel = getRandom(-delta,delta);
+    var delta = 0.005;
+    this.displayThetaVel += getRandom(-delta,delta);
 
 };
 
@@ -489,9 +493,9 @@ Asteroid.prototype.addFeed = function () {
     if (!this.glowing && this.owner && this.feed >= this.maxFeed) {
         this.becomeGlowing();
     }
-
-    this.feed += 5;
-
+    else {
+        this.feed += 5;
+    }
 };
 
 Asteroid.prototype.becomeGlowing = function () {

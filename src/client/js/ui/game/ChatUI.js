@@ -63,7 +63,7 @@ ChatUI.prototype.sendMessage = function () {
 
     if (this.textInput.value && this.textInput.value !== "") {
         socket.emit('chatMessage', {
-            id: this.parent.client.SELFID,
+            id: this.parent.client.SELF_ID,
             message: this.textInput.value
         });
         this.textInput.value = "";

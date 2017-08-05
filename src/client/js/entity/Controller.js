@@ -12,14 +12,13 @@ function Controller(controllerInfo, client) {
     this.range = controllerInfo.range;
     this.client = client;
 
-    if (this.id = this.client.SELF_ID) {
+    if (!this.SELF_PLAYER && this.id === this.client.SELF_ID) {
         this.client.active = this.active; //probably should change this
         this.client.SELF_PLAYER = this;
     }
 }
 
 Controller.prototype.update = function (controllerInfo) {
-    console.log("UPDATING");
     this.x = controllerInfo.x;
     this.y = controllerInfo.y;
     this.health = controllerInfo.health;
@@ -33,7 +32,7 @@ Controller.prototype.update = function (controllerInfo) {
     this.radius = controllerInfo.radius;
     this.range = controllerInfo.range;
 
-    if (this.id = this.client.SELF_ID) {
+    if (this.id === this.client.SELF_ID) {
         this.client.active = this.active; //probably should change this
     }
     if (this.client.active) {
@@ -54,9 +53,16 @@ Controller.prototype.show = function () {
     
     ctx.font = "20px Arial";
 
-    if (this.range) {
+
+    if (this.range && this.id === selfId) {
         ctx.beginPath();
-        ctx.fillStyle = "rgba(196, 41, 54, 0.2)";
+
+        if (this.active) {
+            ctx.fillStyle = "rgba(196, 41, 54, 0.2)";
+        }
+        else {
+            ctx.fillStyle = "rgba(66, 108, 175, 0.2)";
+        }
         ctx.arc(this.x, this.y, this.range, 0, 2 * Math.PI, false);
         ctx.fill();
         ctx.closePath();

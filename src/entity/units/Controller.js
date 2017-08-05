@@ -16,7 +16,7 @@ function Controller(id, gameServer) {
     this.health = 5;
     this.maxVel = 10;
     this.maxXVel = 10;
-    this.maxYSpeed = 10;
+    this.maxYVel = 10;
     this.timer = 0;
     this.xVel = 0;
     this.yVel = 0;
@@ -130,10 +130,10 @@ Controller.prototype.decreaseHealth = function (amount) {
 
 Controller.prototype.updatePosition = function () {
     if (this.pressingDown) {
-        this.yVel = lerp(this.yVel, this.maxYSpeed, 0.3);
+        this.yVel = lerp(this.yVel, this.maxYVel, 0.3);
     }
     if (this.pressingUp) {
-        this.yVel = lerp(this.yVel, -this.maxYSpeed, 0.3);
+        this.yVel = lerp(this.yVel, -this.maxYVel, 0.3);
     }
     if (this.pressingLeft) {
         this.xVel = lerp(this.xVel, -this.maxXVel, 0.3);

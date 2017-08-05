@@ -11,6 +11,8 @@ function Player(id, name, gameServer) {
     this.radius = 10;
     this.maxVel = 10;
 
+    this.setMaxVelocities();
+
     this.asteroids = [];
     this.asteroidChainPos = new Queue(); //maximum length of 10
 
@@ -99,7 +101,7 @@ Player.prototype.update = function () {
         this.slashTimer -= 1;
     }
 
-    if (this.gameServer.timeStamp % 5 === 0 && this.active) { //update every half-second
+    if (this.gameServer.timeStamp % 50 === 0 && this.active) { //update slowly
         this.updateAsteroidFeed();
     }
 
@@ -245,7 +247,7 @@ Player.prototype.selectAsteroid = function (x, y) {
 
     if (this.asteroids.length < 10) {
         this.gameServer.asteroidTree.find(mouseBound, function (asteroid) {
-            if (asteroid.owner !== this &&
+            if (!asteroid.owner &&
                 !asteroid.shooting &&
                 asteroid.radius < 30 &&
                 this.asteroids.length < 10) {
@@ -319,7 +321,7 @@ Player.prototype.levelUp = function () {
     this.level++;
     this.range += 100;
     this.radius += 5;
-    this.maxVel -= 2;
+    this.updateMaxVelocities(-0.5);
     this.power += 10; //power determines max size of things you can hold
 
     this.food = 0;
@@ -327,6 +329,18 @@ Player.prototype.levelUp = function () {
 
     console.log("LEVEL UP: " + this.radius);
 };
+
+
+Player.prototype.setMaxVelocities = function () {
+    this.maxXVel = this.maxVel * Math.sin(Math.PI/4);
+    this.maxYVel = this.maxVel * Math.cos(Math.PI/4);
+};
+
+Player.prototype.updateMaxVelocities = function (amount) {
+    this.maxVel += amount;
+    this.setMaxVelocities();
+};
+
 
 Player.prototype.removeAllAsteroids = function () {
     var i;

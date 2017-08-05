@@ -65,18 +65,22 @@ Client.prototype.initCanvases = function () {
     }.bind(this));
 
     document.addEventListener("mousemove", function (event) {
+        if (!this.SELF_PLAYER) {
+            return;
+        }
+
         var x = ((event.x / this.mainCanvas.offsetWidth * 1000) -
             this.mainCanvas.width / 2) / this.scaleFactor;
         var y = ((event.y / this.mainCanvas.offsetHeight * 500) -
             this.mainCanvas.height / 2) / this.scaleFactor;
 
-        if (this.SELF_PLAYER && square(x) + square(y) > square(this.SELF_PLAYER.range)) {
+        if (square(x) + square(y) > square(this.SELF_PLAYER.range)) {
             return;
         }
         if (this.active) {
             if (this.SLASH.length >= 2) {
                 if (square(this.SLASH[0].x - this.SLASH[1].x) +
-                square(this.SLASH[0].y - this.SLASH[1].y) > 300) {
+                    square(this.SLASH[0].y - this.SLASH[1].y) > 300) {
                     this.socket.emit("slash", {
                         id: this.SELF_ID,
                         x: (this.SLASH[0].x + this.SLASH[1].x) / 2,
@@ -96,8 +100,6 @@ Client.prototype.initCanvases = function () {
         }
 
 
-
-
         if (!this.pre) {
             this.pre = {
                 x: x,
@@ -114,11 +116,10 @@ Client.prototype.initCanvases = function () {
                 x: x,
                 y: y
             });
-            this.TRAIL.updateList(x,y);
+            this.TRAIL.updateList(x, y);
         }
     }.bind(this));
 };
-
 
 
 Client.prototype.initLists = function () {
@@ -190,9 +191,11 @@ Client.prototype.addEntities = function (packet) {
             }
             break;
         case "selfId":
-            this.SELF_ID = packet.selfId;
-            this.mainUI.gameUI.open();
-            this.TRAIL = new Entity.Trail(this);
+            if (!this.SELF_ID) {
+                this.SELF_ID = packet.selfId;
+                this.mainUI.gameUI.open();
+                this.TRAIL = new Entity.Trail(this);
+            }
             break;
         case "chatInfo":
             this.mainUI.gameUI.chatUI.addMessage(packet);
@@ -328,7 +331,7 @@ function lerp(a, b, ratio) {
 
 
 function square(a) {
-    return a*a;
+    return a * a;
 }
 
 module.exports = Client;

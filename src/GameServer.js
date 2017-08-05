@@ -177,7 +177,10 @@ GameServer.prototype.checkControllerCollision = function (controller) {
         if (asteroid.shooting && asteroid.prevOwner !== controller) {
             controller.decreaseHealth(Math.abs(asteroid.xVel) + Math.abs(asteroid.yVel));
             asteroid.onDelete();
-        }   
+        }
+        if (asteroid.glowing && asteroid.owner === controller) {
+            controller.consumeAsteroid(asteroid);
+        }
     }.bind(this));
     
 };
