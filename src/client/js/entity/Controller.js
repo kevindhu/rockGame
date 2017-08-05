@@ -12,12 +12,14 @@ function Controller(controllerInfo, client) {
     this.range = controllerInfo.range;
     this.client = client;
 
-    if (this.id = this.client.SELFID) {
+    if (this.id = this.client.SELF_ID) {
         this.client.active = this.active; //probably should change this
+        this.client.SELF_PLAYER = this;
     }
 }
 
 Controller.prototype.update = function (controllerInfo) {
+    console.log("UPDATING");
     this.x = controllerInfo.x;
     this.y = controllerInfo.y;
     this.health = controllerInfo.health;
@@ -25,8 +27,13 @@ Controller.prototype.update = function (controllerInfo) {
     this.theta = controllerInfo.theta;
     this.level = controllerInfo.level;
     this.active = controllerInfo.active;
+    if (this.radius !== controllerInfo.radius) {
+        console.log("NEW RADIUS:"  + controllerInfo.radius);
+    }
+    this.radius = controllerInfo.radius;
+    this.range = controllerInfo.range;
 
-    if (this.id = this.client.SELFID) {
+    if (this.id = this.client.SELF_ID) {
         this.client.active = this.active; //probably should change this
     }
     if (this.client.active) {
@@ -36,7 +43,7 @@ Controller.prototype.update = function (controllerInfo) {
 
 Controller.prototype.show = function () {
     var ctx = this.client.mainCtx;
-    var selfId = this.client.SELFID;
+    var selfId = this.client.SELF_ID;
     var fillAlpha;
     var strokeAlpha;
     var i;
@@ -68,7 +75,7 @@ Controller.prototype.show = function () {
     ctx.beginPath();
     //draw player object
     
-    var radius = 30;
+    var radius = this.radius;
     ctx.moveTo(this.x + radius, this.y);
     
     for (i = Math.PI / 4; i <= 2 * Math.PI - Math.PI / 4; i += Math.PI / 4) {

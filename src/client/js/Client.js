@@ -2,7 +2,8 @@ var Entity = require('./entity');
 var MainUI = require('./ui/MainUI');
 
 function Client() {
-    this.SELFID = null;
+    this.SELF_ID = null;
+    this.SELF_PLAYER = null;
     this.TRAIL = null;
 
     this.SLASH = [];
@@ -34,12 +35,12 @@ Client.prototype.initCanvases = function () {
 
 
     document.addEventListener("mousedown", function (event) {
-        if (this.CONTROLLER_LIST[this.SELFID]) {
+        if (this.SELF_ID) {
             var x = ((event.x / this.mainCanvas.offsetWidth * 1000) - this.mainCanvas.width / 2) / this.scaleFactor;
             var y = ((event.y / this.mainCanvas.offsetHeight * 500) - this.mainCanvas.height / 2) / this.scaleFactor;
 
             this.socket.emit("mouseDown", {
-                id: this.SELFID,
+                id: this.SELF_ID,
                 x: x,
                 y: y
             });
@@ -55,29 +56,29 @@ Client.prototype.initCanvases = function () {
         var y = ((event.y / this.mainCanvas.offsetHeight * 500) - this.mainCanvas.height / 2) / this.scaleFactor;
 
         this.socket.emit("mouseUp", {
-            id: this.SELFID,
+            id: this.SELF_ID,
             x: x,
             y: y
         });
-        
-        this.ARROW = null;
+
         this.CHAT_CLICK = false;
     }.bind(this));
 
     document.addEventListener("mousemove", function (event) {
-        var x = ((event.x / this.mainCanvas.offsetWidth * 1000) - this.mainCanvas.width / 2) / this.scaleFactor;
-        var y = ((event.y / this.mainCanvas.offsetHeight * 500) - this.mainCanvas.height / 2) / this.scaleFactor;
+        var x = ((event.x / this.mainCanvas.offsetWidth * 1000) -
+            this.mainCanvas.width / 2) / this.scaleFactor;
+        var y = ((event.y / this.mainCanvas.offsetHeight * 500) -
+            this.mainCanvas.height / 2) / this.scaleFactor;
 
-
-        if (square(x) + square(y) > 500 * 500) {
+        if (this.SELF_PLAYER && square(x) + square(y) > square(this.SELF_PLAYER.range)) {
             return;
         }
         if (this.active) {
             if (this.SLASH.length >= 2) {
-                if (square(this.SLASH[0].x - this.SLASH[1].x) + 
+                if (square(this.SLASH[0].x - this.SLASH[1].x) +
                 square(this.SLASH[0].y - this.SLASH[1].y) > 300) {
                     this.socket.emit("slash", {
-                        id: this.SELFID,
+                        id: this.SELF_ID,
                         x: (this.SLASH[0].x + this.SLASH[1].x) / 2,
                         y: (this.SLASH[0].y + this.SLASH[1].y) / 2
                     });
@@ -86,7 +87,7 @@ Client.prototype.initCanvases = function () {
             }
             else {
                 this.SLASH.push(
-                    {   
+                    {
                         x: x,
                         y: y
                     });
@@ -109,7 +110,7 @@ Client.prototype.initCanvases = function () {
                 y: y
             };
             this.socket.emit("mouseMove", {
-                id: this.SELFID,
+                id: this.SELF_ID,
                 x: x,
                 y: y
             });
@@ -140,7 +141,7 @@ Client.prototype.verify = function (data) {
         this.socket.emit("verify", {});
         this.socket.verified = true;
     }
-}; 
+};
 
 Client.prototype.handlePacket = function (data) {
     var packet, i;
@@ -184,12 +185,12 @@ Client.prototype.addEntities = function (packet) {
             addEntity(packet, this.ANIMATION_LIST, Entity.Animation);
             break;
         case "UIInfo":
-            if (this.SELFID === packet.playerId) {
+            if (this.SELF_ID === packet.playerId) {
                 this.mainUI.open(packet);
             }
             break;
         case "selfId":
-            this.SELFID = packet.selfId;
+            this.SELF_ID = packet.selfId;
             this.mainUI.gameUI.open();
             this.TRAIL = new Entity.Trail(this);
             break;
@@ -229,7 +230,7 @@ Client.prototype.updateEntities = function (packet) {
             this.mainUI.updateLeaderBoard();
             break;
         case "UIInfo":
-            if (this.SELFID === packet.playerId) {
+            if (this.SELF_ID === packet.playerId) {
                 this.mainUI.update(packet);
             }
             break;
@@ -262,7 +263,7 @@ Client.prototype.deleteEntities = function (packet) {
             deleteEntity(packet, this.ANIMATION_LIST);
             break;
         case "UIInfo":
-            if (this.SELFID === packet.id) {
+            if (this.SELF_ID === packet.id) {
                 this.mainUI.close(packet.action);
             }
             break;
@@ -271,7 +272,6 @@ Client.prototype.deleteEntities = function (packet) {
 
 Client.prototype.drawScene = function (data) {
     var id;
-    var selfPlayer = this.CONTROLLER_LIST[this.SELFID];
     var entityList = [
         this.TILE_LIST,
         this.CONTROLLER_LIST,
@@ -291,11 +291,11 @@ Client.prototype.drawScene = function (data) {
 
         this.mainCtx.translate(this.mainCanvas.width / 2, this.mainCanvas.height / 2);
         this.mainCtx.scale(this.scaleFactor, this.scaleFactor);
-        this.mainCtx.translate(-selfPlayer.x, -selfPlayer.y);
+        this.mainCtx.translate(-this.SELF_PLAYER.x, -this.SELF_PLAYER.y);
     }.bind(this);
 
 
-    if (!selfPlayer) {
+    if (!this.SELF_PLAYER) {
         return;
     }
 
@@ -309,7 +309,7 @@ Client.prototype.drawScene = function (data) {
         var list = entityList[i];
         for (id in list) {
             var entity = list[id];
-            if (inBounds(selfPlayer, entity.x, entity.y)) {
+            if (inBounds(this.SELF_PLAYER, entity.x, entity.y)) {
                 entity.show();
             }
         }

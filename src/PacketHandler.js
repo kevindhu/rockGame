@@ -230,7 +230,9 @@ PacketHandler.prototype.updateControllersPackets = function (controller) {
         level: controller.level,
         selected: controller.selected,
         active: controller.active,
-        slash: controller.slash
+        slash: controller.slash,
+        radius: controller.radius,
+        range: controller.range
     });
 };
 

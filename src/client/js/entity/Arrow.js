@@ -16,7 +16,7 @@ function Arrow(x, y, client) {
 Arrow.prototype.show = function () {
     var canvas = this.client.draftCanvas;
     var ctx = this.client.mainCtx;
-    var selfPlayer = this.client.CONTROLLER_LIST[this.client.SELFID];
+    var selfPlayer = this.client.CONTROLLER_LIST[this.client.SELF_ID];
     var scaleFactor = this.client.scaleFactor;
 
     if (this.postX) {

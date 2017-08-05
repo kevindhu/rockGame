@@ -50,7 +50,7 @@ Home.prototype.show = function () {
     ctx.arc(this.x, this.y, this.radius, 0, 2 * Math.PI, false);
     ctx.fill();
 
-    var selfPlayer = this.client.CONTROLLER_LIST[this.client.SELFID];
+    var selfPlayer = this.client.CONTROLLER_LIST[this.client.SELF_ID];
 
     if (inBoundsClose(selfPlayer, this.x, this.y)) {
         if (this.faction)

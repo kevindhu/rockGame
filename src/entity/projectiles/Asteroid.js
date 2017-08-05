@@ -21,6 +21,7 @@ function Asteroid(x, y, material, gameServer) {
     this.ricochetTimer = 0;
     this.theta = 0;
 
+
     if (material) {
         this.setMaterial(material);
     }
@@ -102,6 +103,7 @@ Asteroid.prototype.getRandomThetas = function () {
 
 Asteroid.prototype.removeOwner = function () {
     this.owner = null;
+    this.resetFeed();
     this.removePaths();
 };
 
@@ -133,7 +135,7 @@ Asteroid.prototype.decreaseHealth = function (amount) {
     if (this.health <= 0) {
         this.split();
     }
-}
+};
 
 
 
@@ -184,7 +186,10 @@ Asteroid.prototype.setRadius = function (radius) {
 
     this.maxHealth = this.radius;
     this.health = this.maxHealth;
-}
+
+    this.maxFeed = this.radius;
+    this.resetFeed();
+};
 
 
 Asteroid.prototype.addShooting = function (owner, x,y) {
@@ -209,7 +214,7 @@ Asteroid.prototype.addShooting = function (owner, x,y) {
 Asteroid.prototype.removeShooting = function () {
     this.shooting = false;
     this.prevOwner = null;
-}
+};
 
 Asteroid.prototype.follow = function (owner) {
     this.x = owner.x;
@@ -411,7 +416,6 @@ Asteroid.prototype.moveOut = function (asteroid) {
 
 };
 
-
 Asteroid.prototype.ricochet = function (asteroid) {
     console.log("RICOCHET");
     var preXVel = this.xVel;
@@ -473,7 +477,17 @@ Asteroid.prototype.ricochet = function (asteroid) {
 };
 
 
+Asteroid.prototype.addFeed = function () {
+    this.feed += 1;
+    if (this.owner && this.feed >= this.maxFeed) {
+        this.owner.consumeAsteroid(this);
+    }
+};
 
+
+Asteroid.prototype.resetFeed = function () {
+    this.feed = 0;
+};
 
 
 Asteroid.prototype.addPath = function (x,y) {

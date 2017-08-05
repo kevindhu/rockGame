@@ -4,8 +4,8 @@ function Trail(client) {
 }
 
 Trail.prototype.updateList = function (x,y) {
-    var currX = this.client.CONTROLLER_LIST[this.client.SELFID].x + x;
-    var currY = this.client.CONTROLLER_LIST[this.client.SELFID].y + y;
+    var currX = this.client.SELF_PLAYER.x + x;
+    var currY = this.client.SELF_PLAYER.y + y;
 
     this.realPath.push({
         x: currX,

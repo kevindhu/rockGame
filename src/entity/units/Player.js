@@ -26,21 +26,21 @@ function Player(id, name, gameServer) {
     this.slash.theta = null;
     this.slashTimer = 0;
 
-    this.range = 500;
-
     this.theta = 0;
+
+    this.resetLevels();
+
     this.init();
 }
 
 EntityFunctions.inherits(Player, Controller);
 
 
-
 Player.prototype.populateAsteroidChain = function () {
     this.asteroidChainPos = new Queue();
     var theta = this.theta;
-    var x,y;
-    for (var i = 0; i< 10; i++) { //10 possible nodes in the queue
+    var x, y;
+    for (var i = 0; i < 10; i++) { //10 possible nodes in the queue
         x = this.x + 10 * i * Math.cos(theta);
         y = this.y + 10 * i * Math.sin(theta);
         this.asteroidChainPos.enqueue(
@@ -55,7 +55,7 @@ Player.prototype.populateAsteroidChain = function () {
 
 Player.prototype.switch = function () {
     this.active = !this.active;
-}
+};
 
 
 Player.prototype.addSlash = function (pos) {
@@ -63,14 +63,13 @@ Player.prototype.addSlash = function (pos) {
         this.slash = [];
     }
     this.slash.push(pos);
-}
+};
 
 
 Player.prototype.onDelete = function () {
     this.removeAllAsteroids();
     Player.super_.prototype.onDelete.apply(this);
 };
-
 
 Player.prototype.getTheta = function (pos1, pos2) {
     var newTheta = Math.atan((pos2.y - pos1.y) / (pos2.x - pos1.x));
@@ -79,23 +78,29 @@ Player.prototype.getTheta = function (pos1, pos2) {
         newTheta += Math.PI;
     }
     return newTheta % (2 * Math.PI);
-}
-
-Player.prototype.createBoundary = function (boundary) {
-    var playerBoundary = {};
-    playerBoundary.minx = this.x + boundary.minX;
-    playerBoundary.miny = this.y + boundary.minY;
-    playerBoundary.maxx = this.x + boundary.maxX;
-    playerBoundary.maxy = this.y + boundary.maxY;
-    playerBoundary.player = this.id;
-    return playerBoundary;
 };
+
+
+Player.prototype.updateAsteroidFeed = function () {
+    //add more asteroid glow if starting to be consumed
+    var i, asteroid;
+
+    for (i = 0; i<this.asteroids.length; i++) {
+        asteroid = this.asteroids[i];
+        asteroid.addFeed();
+    }
+};
+
 
 Player.prototype.update = function () {
     Player.super_.prototype.update.apply(this);
 
     if (this.slashTimer > 0) {
-        this.slashTimer -=1;
+        this.slashTimer -= 1;
+    }
+
+    if (this.gameServer.timeStamp % 500 && this.active) { //update every half-second
+        this.updateAsteroidFeed();
     }
 
 
@@ -109,8 +114,6 @@ Player.prototype.update = function () {
         this.slashAsteroid();
     }
 };
-
-
 
 
 Player.prototype.slashAsteroid = function () {
@@ -131,8 +134,7 @@ Player.prototype.slashAsteroid = function () {
         }
     }.bind(this));
     this.slash = [];
-}
-
+};
 
 
 Player.prototype.updateAsteroidChain = function () {
@@ -144,14 +146,13 @@ Player.prototype.updateAsteroidChain = function () {
     this.updateQueuePositions();
 };
 
-Player.prototype.updateQueuePositions =function () {
+Player.prototype.updateQueuePositions = function () {
     var asteroid;
-    for (var i = 0; i<this.asteroids.length; i++)  {
+    for (var i = 0; i < this.asteroids.length; i++) {
         asteroid = this.asteroids[i];
         asteroid.queuePosition = this.asteroidChainPos.peek(9 - i);
     }
-}
-
+};
 
 
 Player.prototype.decreaseHealth = function (amount) {
@@ -170,12 +171,24 @@ Player.prototype.decreaseHealth = function (amount) {
     this.packetHandler.updateControllersPackets(this);
 };
 
+
 Player.prototype.increaseHealth = function (amount) {
     if (this.health <= 10) {
         this.health += amount;
     }
 };
 
+
+Player.prototype.resetLevels = function () {
+    this.level = 0;
+    this.range = 500;
+    this.radius = 10;
+    this.maxVel = 10;
+    this.power = 0; //power determines max size of things you can hold
+
+    this.food = 0;
+    this.maxFood = 2;
+};
 
 Player.prototype.updateChunk = function () {
     var oldChunks = this.findNeighboringChunks();
@@ -186,8 +199,9 @@ Player.prototype.updateChunk = function () {
 };
 
 Player.prototype.findChunkDifference = function (chunks1, chunks2) {
+    var id;
     var delta = {};
-    for (var id in chunks1) {
+    for (id in chunks1) {
         if (chunks2[id] === undefined) {
             delta[id] = id;
         }
@@ -231,7 +245,7 @@ Player.prototype.selectAsteroid = function (x, y) {
 
     if (this.asteroids.length < 10) {
         this.gameServer.asteroidTree.find(mouseBound, function (asteroid) {
-            if (asteroid.owner !== this && 
+            if (asteroid.owner !== this &&
                 !asteroid.shooting &&
                 asteroid.radius < 30 &&
                 this.asteroids.length < 10) {
@@ -244,53 +258,78 @@ Player.prototype.selectAsteroid = function (x, y) {
     }
 };
 
-
-
-
 Player.prototype.resetAsteroidQueues = function () {
     var asteroid;
-    for (var i = 0; i<this.asteroids.length; i++) {
+    for (var i = 0; i < this.asteroids.length; i++) {
         asteroid = this.asteroids[i];
         asteroid.resetPathQueue();
     }
 };
 
-
-Player.prototype.moveAsteroids = function (x,y) {
+Player.prototype.moveAsteroids = function (x, y) {
     var asteroid;
-    for (var i = 0; i<this.asteroids.length; i++) {
+    for (var i = 0; i < this.asteroids.length; i++) {
         asteroid = this.asteroids[i];
-        asteroid.addPath(x,y);
+        asteroid.addPath(x, y);
     }
 };
 
-
-
-Player.prototype.shootAsteroid = function (x,y) {
+Player.prototype.shootAsteroid = function (x, y) {
     var asteroid = this.asteroids[0];
 
     if (!asteroid) return;
 
     this.removeAsteroid(asteroid);
-    asteroid.addShooting(this, x,y);
+    asteroid.addShooting(this, x, y);
 };
-
 
 Player.prototype.removeAsteroid = function (asteroid) {
     var index = this.asteroids.indexOf(asteroid);
     if (index !== -1) {
-        this.asteroids.splice(index,1);
+        this.asteroids.splice(index, 1);
         asteroid.removeOwner();
     }
     this.updateQueuePositions();
 };
 
+Player.prototype.consumeAsteroid = function (asteroid) {
+    this.eat(asteroid.feed);
 
+    this.removeAsteroid(asteroid);
+    asteroid.onDelete();
+};
 
+Player.prototype.eat = function (amount) {
+    if (amount > 0) {
+        this.food ++;
+    }
+    if (this.food > this.maxFood) {
+        this.levelUp();
+    }
+};
 
+Player.prototype.levelUp = function () {
+    //increase health
+    //decrease speed
+    //update character model
+    //reset food and maxFood
+
+    //level up animation
+
+    this.level ++;
+    this.range += 100;
+    this.radius += 5;
+    this.maxVel -= 2;
+    this.power += 10; //power determines max size of things you can hold
+
+    this.food = 0;
+    this.maxFood ++;
+
+    console.log("LEVEL UP: " + this.radius);
+};
 
 Player.prototype.removeAllAsteroids = function () {
-    var i, asteroid;
+    var i;
     for (i = this.asteroids.length - 1; i >= 0; i--) {
         this.removeAsteroid(this.asteroids[i]);
     }
@@ -300,15 +339,15 @@ Player.prototype.onDeath = function () {
     this.reset();
 };
 
-
 Player.prototype.reset = function () { //should delete this eventually, or only use during debugging
+    this.resetLevels();
+
     this.x = entityConfig.WIDTH / 2;
     this.y = entityConfig.WIDTH / 2;
 
-    this.maxVel = 10;
     this.xVel = 0;
     this.yVel = 0;
-    this.health = 5;
+
     this.stationary = false;
     this.updateQuadItem();
 };
@@ -321,9 +360,8 @@ function getName(name) {
     return name;
 }
 
-
 function square(x) {
-    return x*x;
+    return x * x;
 }
 
 module.exports = Player;
