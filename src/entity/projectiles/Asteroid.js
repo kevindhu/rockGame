@@ -209,8 +209,8 @@ Asteroid.prototype.addShooting = function (owner, x, y) {
         y: y
     };
 
-    this.xVel = 20 * Math.cos(this.theta);
-    this.yVel = 20 * Math.sin(this.theta);
+    this.xVel = 40 * Math.cos(this.theta);
+    this.yVel = 40 * Math.sin(this.theta);
 };
 
 
@@ -289,13 +289,13 @@ Asteroid.prototype.move = function () {
 
             if (inBounds(this.x, this.queuePosition.x, 30) &&
                 inBounds(this.y, this.queuePosition.y, 30)) {
-                this.xVel = lerp(this.xVel, 0, 0.15);
-                this.yVel = lerp(this.yVel, 0, 0.15);
+                this.xVel = lerp(this.xVel, 0, 0.2);
+                this.yVel = lerp(this.yVel, 0, 0.2);
             }
             else {
                 //var totalPlayerVel = Math.sqrt(square(this.owner.xVel) + square(this.owner.yVel));
-                this.xVel = lerp(this.xVel, this.owner.maxVel * 0.5 * Math.cos(this.theta), 0.15);
-                this.yVel = lerp(this.yVel, this.owner.maxVel * 0.5 * Math.sin(this.theta), 0.15);
+                this.xVel = lerp(this.xVel, this.owner.maxVel * 0.5 * Math.cos(this.theta), 0.02);
+                this.yVel = lerp(this.yVel, this.owner.maxVel * 0.5 * Math.sin(this.theta), 0.02);
             }
         }
         else if (square(this.x - this.owner.x) + square(this.y - this.owner.y) > square(this.owner.range + 400)) {
@@ -313,11 +313,11 @@ Asteroid.prototype.move = function () {
         }
         this.getTheta(this.currPath);
         if (this.owner) {
-            this.xVel = lerp(this.xVel, this.owner.maxVel * (1 - (this.mass / 100)) * Math.cos(this.theta), 0.15);
-            this.yVel = lerp(this.yVel, this.owner.maxVel * (1 - (this.mass / 100)) * Math.sin(this.theta), 0.15);
+            this.xVel = lerp(this.xVel, this.owner.maxVel * (1 - (this.mass / 100)) * Math.cos(this.theta), 0.02);
+            this.yVel = lerp(this.yVel, this.owner.maxVel * (1 - (this.mass / 100)) * Math.sin(this.theta), 0.02);
         }
-        //this.xVel = lerp(this.xVel, this.maxVel * Math.cos(this.theta), 0.15);
-        //this.yVel = lerp(this.yVel, this.maxVel * Math.sin(this.theta), 0.15);
+        //this.xVel = lerp(this.xVel, this.maxVel * Math.cos(this.theta), 0.02);
+        //this.yVel = lerp(this.yVel, this.maxVel * Math.sin(this.theta), 0.02);
     }
 
     this.findAsteroids();
@@ -333,8 +333,8 @@ Asteroid.prototype.move = function () {
     }
 
     else if (Math.abs(this.xVel) > 0.01 && Math.abs(this.yVel) > 0.01) { //decay movement velocity
-        this.xVel = lerp(this.xVel, 0, 0.05);
-        this.yVel = lerp(this.yVel, 0, 0.05);
+        this.xVel = lerp(this.xVel, 0, 0.02);
+        this.yVel = lerp(this.yVel, 0, 0.02);
     }
 
 
