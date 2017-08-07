@@ -182,6 +182,7 @@ Player.prototype.resetLevels = function () {
     this.range = 500;
     this.radius = 10;
     this.maxVel = 10;
+    this.maxGrabRadius = 50;
     this.power = 0; //power determines max size of things you can hold
 
     this.food = 0;
@@ -245,7 +246,7 @@ Player.prototype.selectAsteroid = function (x, y) {
         this.gameServer.asteroidTree.find(mouseBound, function (asteroid) {
             if (!asteroid.owner &&
                 !asteroid.shooting &&
-                asteroid.radius < 30 &&
+                asteroid.radius < this.maxGrabRadius &&
                 this.asteroids.length < 10) {
                 this.asteroids.push(asteroid);
                 asteroid.qIndex = this.asteroids.length - 1;
@@ -317,6 +318,7 @@ Player.prototype.levelUp = function () {
     this.level++;
     this.range += 100;
     this.radius += 5;
+    this.maxGrabRadius += 5;
     this.updateMaxVelocities(-0.5);
     this.power += 10; //power determines max size of things you can hold
 

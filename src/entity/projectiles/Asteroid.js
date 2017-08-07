@@ -3,7 +3,7 @@ var EntityFunctions = require('../EntityFunctions');
 var Queue = require('../../modules/Queue');
 var lerp = require('lerp');
 
-function Asteroid(x, y, material, gameServer) {
+function Asteroid(x, y, material, radius, gameServer) {
     this.gameServer = gameServer;
     this.packetHandler = gameServer.packetHandler;
 
@@ -32,9 +32,15 @@ function Asteroid(x, y, material, gameServer) {
         this.setMaterial(this.getRandomMaterial());
     }
 
+    if (radius) {
+        this.setRadius(radius);
+    }
+    else {
+        this.setRadius(getRandom(15, 200)); //change to entityConfig!!!
+    }
+
     this.getRandomThetas();
 
-    this.setRadius(getRandom(15, 200)); //change to entityConfig!!!
 
     this.currPath = null;
     this.pathQueue = new Queue();
@@ -116,10 +122,10 @@ Asteroid.prototype.split = function () {
         this.onDelete();
         return;
     }
-    var clone = new Asteroid(this.x, this.y, this.material, this.gameServer);
+    var clone = new Asteroid(this.x + 1, this.y + 1, this.material, this.radius/2 + getRandom(-1, 1), this.gameServer);
 
     this.setRadius(this.radius / 2);
-    clone.setRadius(this.radius + getRandom(-1, 1));
+
 
     this.theta = getRandom(0, 2 * Math.PI);
     clone.theta = -this.theta + getRandom(-1, 1);
@@ -290,8 +296,8 @@ Asteroid.prototype.move = function () {
             }
             else {
                 //var totalPlayerVel = Math.sqrt(square(this.owner.xVel) + square(this.owner.yVel));
-                this.xVel = lerp(this.xVel, this.owner.maxVel * 1.5 * Math.cos(this.theta), 0.3);
-                this.yVel = lerp(this.yVel, this.owner.maxVel * 1.5 * Math.sin(this.theta), 0.3);
+                this.xVel = lerp(this.xVel, this.owner.maxVel * 1.2 * Math.cos(this.theta), 0.3);
+                this.yVel = lerp(this.yVel, this.owner.maxVel * 1.2 * Math.sin(this.theta), 0.3);
             }
         }
         else if (square(this.x - this.owner.x) + square(this.y - this.owner.y) > square(this.owner.range + 400)) {
@@ -410,8 +416,6 @@ Asteroid.prototype.moveOut = function (asteroid) {
     var xSpeed = Math.abs(xBuffer - xDelta) / 100;
     var ySpeed = Math.abs(yBuffer - yDelta) / 100;
 
-    //console.log(xSpeed, ySpeed);
-
     if (this.x - asteroid.x > 0) {
         this.xVel += xSpeed;
     }
@@ -428,7 +432,6 @@ Asteroid.prototype.moveOut = function (asteroid) {
 
     var delta = 0.005;
     this.displayThetaVel += getRandom(-delta, delta);
-
 };
 
 Asteroid.prototype.ricochet = function (asteroid) {
@@ -456,8 +459,8 @@ Asteroid.prototype.ricochet = function (asteroid) {
 
     if (isNaN(phi)) {
         console.log("PHI IS NaN wtf");
-        this.onDelete(); //YOU NEED BREAKPOINTS!
     }
+
 
     var v1 = normal(this.xVel, this.yVel);
     var v2 = normal(asteroid.xVel, asteroid.yVel);
@@ -470,11 +473,15 @@ Asteroid.prototype.ricochet = function (asteroid) {
     var theta2 = asteroid.theta;
 
 
+    var yVelProx = this.yVel;
+
     this.xVel = (v1 * Math.cos(theta1 - phi) * (m1 - m2) + 2 * m2 * v2 * Math.cos(theta2 - phi))
         / (m1 + m2) * Math.cos(phi) + v1 * Math.sin(theta1 - phi) * Math.cos(phi + Math.PI / 2);
 
     this.yVel = (v1 * Math.cos(theta1 - phi) * (m1 - m2) + 2 * m2 * v2 * Math.cos(theta2 - phi))
         / (m1 + m2) * Math.sin(phi) + v1 * Math.sin(theta1 - phi) * Math.sin(phi + Math.PI / 2);
+
+
 
 
     var delta = Math.sqrt(square(this.xVel - preXVel) + square(this.yVel - preYVel)) / this.mass;

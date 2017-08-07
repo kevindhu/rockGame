@@ -42,13 +42,6 @@ Asteroid.prototype.show = function () {
     ctx.lineWidth = 2;
 
     ctx.beginPath();
-    if (this.material === "sulfer") {
-        ctx.fillStyle = "rgb(239,213,123)";
-    }
-    else if (this.material === "copper") {
-        ctx.fillStyle = "rgb(239,213,123)";
-    }
-
     if (this.shooting) {
         ctx.fillStyle = "purple";
     }
@@ -67,6 +60,9 @@ Asteroid.prototype.show = function () {
     startY = this.radius * Math.sin(theta);
     ctx.moveTo(this.x + startX, this.y + startY);
 
+
+
+    ctx.beginPath();
     for (i = 0; i <= this.thetas.length; i++) {
         theta = this.displayTheta + this.thetas[i];
         radius = this.radii[i];
@@ -119,7 +115,7 @@ Asteroid.prototype.show = function () {
         y: this.radii[l - 1] * Math.sin(this.displayTheta + this.thetas[l - 1])
     };
 
-    ctx.fillStyle = "rgb(239,213,123)";
+    ctx.fillStyle = this.defaultRGB;
 
     startX = this.radius * Math.cos(this.displayTheta) + this.x;
     startY = this.radius * Math.sin(this.displayTheta) + this.y;
@@ -135,7 +131,7 @@ Asteroid.prototype.show = function () {
     ctx.closePath();
 
 
-    if (this.currPath) {
+    if (this.currPath && 1 === 2) {
         ctx.beginPath();
         ctx.fillStyle = "green";
         ctx.arc(this.currPath.x, this.currPath.y, 10, 0, 2 * Math.PI, false);
@@ -181,12 +177,33 @@ Asteroid.prototype.addRadii = function () {
 };
 
 Asteroid.prototype.addColors = function () {
+    var defaultRGB = {};
+
+    if (this.material === "sulfer") {
+        defaultRGB = {
+            r: 239,
+            g: 213,
+            b: 123
+        };
+    }
+    else if (this.material === "copper") {
+        defaultRGB = {
+            r: 120,
+            g: 213,
+            b: 123
+        };
+    }
+
+    this.defaultRGB = "rgb(" + defaultRGB.r + "," +
+        defaultRGB.g + "," + defaultRGB.b + ")";
+
+
     var rgb = {};
     for (var i = 0; i < this.thetas.length; i++) {
         rgb = {
-            r: Math.floor(229 + getRandom(-20, 10)),
-            g: Math.floor(213 + getRandom(-40, 0)),
-            b: Math.floor(133 + getRandom(-20, 50))
+            r: Math.floor(defaultRGB.r + getRandom(-20, 10)),
+            g: Math.floor(defaultRGB.g + getRandom(-40, 0)),
+            b: Math.floor(defaultRGB.b + getRandom(-20, 50))
         };
         this.colors[i] = "rgb(" + rgb.r + "," +
             rgb.g + "," + rgb.b + ")";
@@ -200,7 +217,7 @@ Asteroid.prototype.updateRadii = function (amount) {
     var i = Math.round(getRandom(0, this.radii.length - 1));
 
     this.radii[i] = this.radii[i] - getRandom(0, delta);
-}
+};
 
 
 function getRandom(min, max) {

@@ -175,8 +175,8 @@ GameServer.prototype.checkControllerCollision = function (controller) {
 
     this.asteroidTree.find(controllerBound, function (asteroid) {
         if (asteroid.shooting && asteroid.prevOwner !== controller) {
+            asteroid.decreaseHealth(controller.maxHealth);
             controller.decreaseHealth(Math.abs(asteroid.xVel) + Math.abs(asteroid.yVel));
-            asteroid.onDelete();
         }
         if (asteroid.glowing && asteroid.owner === controller) {
             controller.consumeAsteroid(asteroid);
@@ -389,6 +389,7 @@ GameServer.prototype.createAsteroid = function () {
     return new Entity.Asteroid(
         Arithmetic.getRandomInt(entityConfig.BORDER_WIDTH, entityConfig.WIDTH - entityConfig.BORDER_WIDTH),
         Arithmetic.getRandomInt(entityConfig.BORDER_WIDTH, entityConfig.WIDTH - entityConfig.BORDER_WIDTH),
+        null,
         null,
         this
     );
