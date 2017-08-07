@@ -60,11 +60,9 @@ Player.prototype.switch = function () {
 };
 
 
-Player.prototype.addSlash = function (pos) {
-    if (this.slash.length >= 1) {
-        this.slash = [];
-    }
-    this.slash.push(pos);
+Player.prototype.addSlash = function (slashInfo) {
+    this.slash = slashInfo;
+    this.slashAsteroid();
 };
 
 
@@ -111,16 +109,13 @@ Player.prototype.update = function () {
         this.preX = this.x;
         this.preY = this.y;
     }
-
-    if (this.slash && this.slash.length > 0) {
-        this.slashAsteroid();
-    }
 };
 
 
 Player.prototype.slashAsteroid = function () {
-    var x = this.slash[0].x;
-    var y = this.slash[0].y;
+    var x = this.slash.x;
+    var y = this.slash.y;
+    var id = this.slash.slashId;
     var slashBound = {
         minx: x - 30,
         miny: y - 30,
@@ -130,12 +125,13 @@ Player.prototype.slashAsteroid = function () {
 
     this.gameServer.asteroidTree.find(slashBound, function (asteroid) {
         if (asteroid.owner !== this && this.slashTimer <= 0) {
-            asteroid.decreaseHealth(5);
+            asteroid.decreaseHealth(20);
             this.slashTimer = 5;
-            this.packetHandler.addSlashAnimationPackets(this, x, y)
+            this.packetHandler.addSlashAnimationPackets(this, x, y, id);
         }
     }.bind(this));
     this.slash = [];
+
 };
 
 

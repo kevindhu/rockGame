@@ -158,7 +158,7 @@ PacketHandler.prototype.addAsteroidAnimationPackets = function (asteroid) {
 };
 
 
-PacketHandler.prototype.addSlashAnimationPackets = function (controller, x, y) {
+PacketHandler.prototype.addSlashAnimationPackets = function (controller, x, y, id) {
     this.CHUNK_PACKETS[controller.chunk].push(
         {
             master: "add",
@@ -166,9 +166,10 @@ PacketHandler.prototype.addSlashAnimationPackets = function (controller, x, y) {
             type: "slash",
             id: controller.id,
             x: x,
-            y: y
+            y: y,
+            slashId: id
         })
-}
+};
 
 
 PacketHandler.prototype.addTilePackets = function (tile, ifInit) {

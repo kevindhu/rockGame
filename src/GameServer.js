@@ -313,7 +313,8 @@ GameServer.prototype.start = function () {
             if (player && player.active) {
                 player.addSlash({
                     x: player.x + data.x, 
-                    y: player.y + data.y
+                    y: player.y + data.y,
+                    slashId: data.slashId
                 });
             }
         }.bind(this));
@@ -324,7 +325,7 @@ GameServer.prototype.start = function () {
             if (player && player.active) {
                 player.shootAsteroid(player.x + data.x, player.y + data.y);
             } 
-        }.bind(this))
+        }.bind(this));
 
 
 
@@ -380,8 +381,7 @@ GameServer.prototype.start = function () {
 };
 
 GameServer.prototype.createPlayer = function (socket, info) {
-    var player = new Entity.Player(socket.id, info.name, this);
-    return player;
+    return new Entity.Player(socket.id, info.name, this);
 };
 
 
@@ -392,7 +392,7 @@ GameServer.prototype.createAsteroid = function () {
         null,
         this
     );
-}
+};
 
 
 Object.size = function (obj) {

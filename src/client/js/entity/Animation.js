@@ -1,4 +1,6 @@
 function Animation(animationInfo, client) {
+
+    this.client = client;
     this.type = animationInfo.type;
     this.id = animationInfo.id;
     this.x = animationInfo.x;
@@ -7,17 +9,16 @@ function Animation(animationInfo, client) {
     this.timer = getRandom(10, 14);
 
     if (this.type === "slash") {
-        this.pre = {
-            x: this.x + getRandom(30, 70), 
-            y: this.y + getRandom(30, 70)
-        }
-        this.post = {
-            x: this.x - getRandom(30, 70),
-            y: this.y - getRandom(30, 70)
-        }
-    }
+        this.slashId = animationInfo.slashId;
+        console.log(this.slashId);
+        var slash = this.client.findSlash(this.slashId);
 
-    this.client = client;
+
+        this.pre = slash[0];
+        this.post = slash[1];
+
+        this.client.SLASH_ARRAY = []
+    }
 }
 
 
@@ -28,14 +29,14 @@ Animation.prototype.show = function () {
 
 
     if (this.type === "slash") {
+        var player = this.client.SELF_PLAYER;
         ctx.beginPath();
 
         ctx.strokeStyle = "rgba(242, 31, 66, 0.6)";
         ctx.lineWidth = 15;
 
-        ctx.moveTo(this.pre.x, this.pre.y);
-        ctx.lineTo(this.x, this.y);
-        ctx.lineTo(this.post.x, this.post.y);
+        ctx.moveTo(player.x + this.pre.x, player.y + this.pre.y);
+        ctx.lineTo(player.x + this.post.x, player.y + this.post.y);
 
         ctx.stroke();
         ctx.closePath();

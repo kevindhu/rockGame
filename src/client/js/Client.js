@@ -7,7 +7,7 @@ function Client() {
     this.TRAIL = null;
 
     this.SLASH = [];
-
+    this.SLASH_ARRAY = [];
     this.mouseMoveTimer = 0;
     this.init();
 }
@@ -74,17 +74,22 @@ Client.prototype.initCanvases = function () {
         var y = ((event.y / this.mainCanvas.offsetHeight * 500) -
             this.mainCanvas.height / 2) / this.scaleFactor;
 
-        if (square(x) + square(y) > square(this.SELF_PLAYER.range)) {
+        if (square(x) + square(y) > square(this.SELF_PLAYER.range)) { //if not in range
             return;
         }
         if (this.active) {
             if (this.SLASH.length >= 2) {
                 if (square(this.SLASH[0].x - this.SLASH[1].x) +
-                    square(this.SLASH[0].y - this.SLASH[1].y) > 300) {
+                    square(this.SLASH[0].y - this.SLASH[1].y) > 1000) {
+
+                    this.SLASH.id = Math.random();
+                    this.SLASH_ARRAY.push(this.SLASH);
+
                     this.socket.emit("slash", {
                         id: this.SELF_ID,
                         x: (this.SLASH[0].x + this.SLASH[1].x) / 2,
-                        y: (this.SLASH[0].y + this.SLASH[1].y) / 2
+                        y: (this.SLASH[0].y + this.SLASH[1].y) / 2,
+                        slashId: this.SLASH.id
                     });
                 }
                 this.SLASH = [];
@@ -161,6 +166,7 @@ Client.prototype.handlePacket = function (data) {
         }
     }
 };
+
 
 Client.prototype.addEntities = function (packet) {
     var addEntity = function (packet, list, entity, array) {
@@ -324,6 +330,19 @@ Client.prototype.drawScene = function (data) {
     translateScene();
 };
 
+
+
+Client.prototype.findSlash = function (id) {
+    var i, slash;
+    for (i = 0; i<this.SLASH_ARRAY.length; i++) {
+        slash = this.SLASH_ARRAY[i];
+        if (slash.id === id) {
+            this.SLASH_ARRAY.splice(0,i); //cut all the slashes before it
+            return slash;
+        }
+    }
+    return false;
+};
 
 function lerp(a, b, ratio) {
     return a + ratio * (b - a);
