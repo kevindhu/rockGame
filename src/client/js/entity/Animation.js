@@ -10,26 +10,18 @@ function Animation(animationInfo, client) {
 
     if (this.type === "slash") {
         this.slashId = animationInfo.slashId;
-        console.log(this.slashId);
         var slash = this.client.findSlash(this.slashId);
-
-
         this.pre = slash[0];
         this.post = slash[1];
-
-        this.client.SLASH_ARRAY = []
     }
 }
 
 
 Animation.prototype.show = function () {
-    var home;
     var ctx = this.client.mainCtx;
+    var player = this.client.SELF_PLAYER;
 
-
-
-    if (this.type === "slash") {
-        var player = this.client.SELF_PLAYER;
+    if (this.type === "slash" && player) {
         ctx.beginPath();
 
         ctx.strokeStyle = "rgba(242, 31, 66, 0.6)";

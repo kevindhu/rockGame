@@ -24,7 +24,6 @@ Client.prototype.initSocket = function () {
 
     this.socket.on('initVerification', this.verify.bind(this));
     this.socket.on('updateEntities', this.handlePacket.bind(this));
-    this.socket.on('drawScene', this.drawScene.bind(this));
     this.socket.on('chatMessage', this.mainUI)
 };
 Client.prototype.initCanvases = function () {
@@ -188,8 +187,11 @@ Client.prototype.addEntities = function (packet) {
             break;
         case "asteroidInfo":
             addEntity(packet, this.ASTEROID_LIST, Entity.Asteroid);
+            break;
         case "animationInfo":
-            addEntity(packet, this.ANIMATION_LIST, Entity.Animation);
+            if (packet.id === this.SELF_ID) {
+                addEntity(packet, this.ANIMATION_LIST, Entity.Animation);
+            }
             break;
         case "UIInfo":
             if (this.SELF_ID === packet.playerId) {
@@ -292,12 +294,9 @@ Client.prototype.drawScene = function (data) {
         return x < (player.x + range) && x > (player.x - range)
             && y < (player.y + range) && y > (player.y - range);
     }.bind(this);
-
-
     var translateScene = function () {
         this.mainCtx.setTransform(1, 0, 0, 1, 0, 0);
         this.scaleFactor = lerp(this.scaleFactor, this.mainScaleFactor, 0.3);
-
         this.mainCtx.translate(this.mainCanvas.width / 2, this.mainCanvas.height / 2);
         this.mainCtx.scale(this.scaleFactor, this.scaleFactor);
         this.mainCtx.translate(-this.SELF_PLAYER.x, -this.SELF_PLAYER.y);
@@ -308,6 +307,7 @@ Client.prototype.drawScene = function (data) {
         return;
     }
 
+    translateScene();
     this.mainCtx.clearRect(0, 0, 11000, 11000);
 
     this.mainCtx.fillStyle = "#1d1f21";
@@ -326,22 +326,26 @@ Client.prototype.drawScene = function (data) {
     if (this.TRAIL && !this.active) {
         this.TRAIL.show();
     }
-
-    translateScene();
 };
-
 
 
 Client.prototype.findSlash = function (id) {
     var i, slash;
-    for (i = 0; i<this.SLASH_ARRAY.length; i++) {
+    for (i = 0; i < this.SLASH_ARRAY.length; i++) {
         slash = this.SLASH_ARRAY[i];
         if (slash.id === id) {
-            this.SLASH_ARRAY.splice(0,i); //cut all the slashes before it
+            this.SLASH_ARRAY.splice(0, i); //cut all the slashes before it
             return slash;
         }
     }
     return false;
+};
+
+
+
+
+Client.prototype.start = function () {
+    setInterval(this.drawScene.bind(this), 1000 / 60);
 };
 
 function lerp(a, b, ratio) {

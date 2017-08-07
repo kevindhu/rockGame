@@ -136,16 +136,16 @@ Controller.prototype.updatePosition = function () {
         this.yVel = lerp(this.yVel, -this.maxYVel, 0.3);
     }
     if (this.pressingLeft) {
-        this.xVel = lerp(this.xVel, -this.maxXVel, 0.3);
+        this.xVel = lerp(this.xVel, -this.maxXVel, 0.2);
     }
     if (this.pressingRight) {
-        this.xVel = lerp(this.xVel, this.maxXVel, 0.3);
+        this.xVel = lerp(this.xVel, this.maxXVel, 0.2);
     }
     if (!this.pressingRight && !this.pressingLeft) { //decay x Vel
-        this.xVel = lerp(this.xVel, 0, 0.3);
+        this.xVel = lerp(this.xVel, 0, 0.2);
     }
     if (!this.pressingUp && !this.pressingDown) { //decay y Vel
-        this.yVel = lerp(this.yVel, 0, 0.3);
+        this.yVel = lerp(this.yVel, 0, 0.2);
     }
     if (onBoundary(this.x + this.xVel)) {
         this.xVel = 0;

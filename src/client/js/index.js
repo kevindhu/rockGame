@@ -2,6 +2,7 @@ var Client = require('./Client.js');
 var MainUI = require('./ui/MainUI');
 
 var client = new Client();
+client.start();
 
 
 document.onkeydown = function (event) {

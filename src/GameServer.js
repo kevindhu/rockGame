@@ -70,7 +70,6 @@ GameServer.prototype.initControllers = function () {
 };
 
 
-
 GameServer.prototype.initAsteroids = function () {
     this.asteroidTree = new QuadNode({
         minx: this.minx,
@@ -182,7 +181,7 @@ GameServer.prototype.checkControllerCollision = function (controller) {
             controller.consumeAsteroid(asteroid);
         }
     }.bind(this));
-    
+
 };
 
 GameServer.prototype.checkCollisions = function () {
@@ -201,7 +200,6 @@ GameServer.prototype.updateControllers = function () {
 };
 
 
-
 GameServer.prototype.updateAsteroids = function () {
     var id, asteroid;
     this.spawnAsteroids();
@@ -211,7 +209,6 @@ GameServer.prototype.updateAsteroids = function () {
         asteroid.update();
     }
 };
-
 
 
 GameServer.prototype.update = function () {
@@ -243,7 +240,7 @@ GameServer.prototype.start = function () {
     console.log('Started Server!');
 
     /** INIT SERVER OBJECTS **/
-    this.initChunks();      
+    this.initChunks();
     this.initTiles();
     this.initAsteroids();
     this.initControllers();
@@ -256,7 +253,7 @@ GameServer.prototype.start = function () {
         var player;
         socket.id = Math.random();
         socket.timer = 0;
-        socket.life = 10;
+        socket.life = 100;
         socket.verified = false;
         socket.stage = 0;
 
@@ -312,7 +309,7 @@ GameServer.prototype.start = function () {
 
             if (player && player.active) {
                 player.addSlash({
-                    x: player.x + data.x, 
+                    x: player.x + data.x,
                     y: player.y + data.y,
                     slashId: data.slashId
                 });
@@ -324,9 +321,8 @@ GameServer.prototype.start = function () {
 
             if (player && player.active) {
                 player.shootAsteroid(player.x + data.x, player.y + data.y);
-            } 
+            }
         }.bind(this));
-
 
 
         socket.on('keyEvent', function (data) {
@@ -365,7 +361,6 @@ GameServer.prototype.start = function () {
         }.bind(this));
 
 
-
         socket.on('disconnect', function () {
             console.log("Client #" + socket.id + " has left the server");
             if (player) {
@@ -377,7 +372,7 @@ GameServer.prototype.start = function () {
     }.bind(this));
 
     /** START MAIN LOOP **/
-    setInterval(this.update.bind(this), 1000 / 25);
+    setInterval(this.update.bind(this), 1000 / 60);
 };
 
 GameServer.prototype.createPlayer = function (socket, info) {
@@ -386,13 +381,33 @@ GameServer.prototype.createPlayer = function (socket, info) {
 
 
 GameServer.prototype.createAsteroid = function () {
-    return new Entity.Asteroid(
-        Arithmetic.getRandomInt(entityConfig.BORDER_WIDTH, entityConfig.WIDTH - entityConfig.BORDER_WIDTH),
-        Arithmetic.getRandomInt(entityConfig.BORDER_WIDTH, entityConfig.WIDTH - entityConfig.BORDER_WIDTH),
-        null,
-        null,
-        this
-    );
+    var emptySpace = false;
+    var radius;
+    var x, y;
+
+    while (!emptySpace) {
+        radius = Arithmetic.getRandomInt(15, 200);
+        x = Arithmetic.getRandomInt(entityConfig.BORDER_WIDTH, entityConfig.WIDTH - entityConfig.BORDER_WIDTH);
+        y = Arithmetic.getRandomInt(entityConfig.BORDER_WIDTH, entityConfig.WIDTH - entityConfig.BORDER_WIDTH);
+
+        var entityBound = {
+            minx: x - radius,
+            miny: y - radius,
+            maxx: x + radius,
+            maxy: y + radius
+        };
+
+        var check = null;
+        this.asteroidTree.find(entityBound, function (asteroid) {
+            check = asteroid;
+        }.bind(this));
+
+        if (!check) {
+            emptySpace = true;
+        }
+    }
+
+    return new Entity.Asteroid(x, y, null, radius, this);
 };
 
 

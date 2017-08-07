@@ -326,7 +326,6 @@ PacketHandler.prototype.sendPackets = function () {
             for (id in chunks) {
                 socket.emit('updateEntities', this.CHUNK_PACKETS[id]);
             }
-            socket.emit('drawScene', {});
         }
     }
     this.resetPackets();
