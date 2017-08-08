@@ -29,7 +29,7 @@ Asteroid.prototype.update = function (asteroidInfo) {
     this.maxHealth = asteroidInfo.maxHealth;
     this.shooting = asteroidInfo.shooting;
     if (this.health !== asteroidInfo.health) {
-        this.updateRadii((this.health - asteroidInfo.health) / this.maxHealth);
+        //this.updateRadii((this.health - asteroidInfo.health) / this.maxHealth);
         this.health = asteroidInfo.health;
     }
     this.glowing = asteroidInfo.glowing;
