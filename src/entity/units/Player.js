@@ -9,7 +9,7 @@ function Player(id, name, gameServer) {
     this.name = getName(name);
     this.type = "Player";
     this.radius = 10;
-    this.maxVel = 5;
+    this.maxVel = 20;
 
     this.setMaxVelocities();
 

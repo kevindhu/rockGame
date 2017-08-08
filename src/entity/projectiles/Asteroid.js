@@ -130,11 +130,11 @@ Asteroid.prototype.split = function () {
     this.theta = getRandom(0, 2 * Math.PI);
     clone.theta = -this.theta + getRandom(-1, 1);
 
-    this.xVel = 20 * Math.cos(this.theta);
-    this.yVel = 20 * Math.sin(this.theta);
+    //this.xVel = 20 * Math.cos(this.theta);
+    //this.yVel = 20 * Math.sin(this.theta);
 
-    clone.xVel = 20 * Math.cos(clone.theta);
-    clone.yVel = 20 * Math.sin(clone.theta);
+    //clone.xVel = 20 * Math.cos(clone.theta);
+    //clone.yVel = 20 * Math.sin(clone.theta);
 };
 
 
@@ -294,8 +294,8 @@ Asteroid.prototype.move = function () {
             }
             else {
                 //var totalPlayerVel = Math.sqrt(square(this.owner.xVel) + square(this.owner.yVel));
-                this.xVel = lerp(this.xVel, this.owner.maxVel * 0.5 * Math.cos(this.theta), 0.02);
-                this.yVel = lerp(this.yVel, this.owner.maxVel * 0.5 * Math.sin(this.theta), 0.02);
+                this.xVel = lerp(this.xVel, this.owner.maxVel * 1.2 * Math.cos(this.theta), 0.2);
+                this.yVel = lerp(this.yVel, this.owner.maxVel * 1.2 * Math.sin(this.theta), 0.2);
             }
         }
         else if (square(this.x - this.owner.x) + square(this.y - this.owner.y) > square(this.owner.range + 400)) {
@@ -373,7 +373,7 @@ Asteroid.prototype.findAsteroids = function () {
             var v1 = normal(this.xVel, this.yVel);
             var v2 = normal(asteroid.xVel, asteroid.yVel);
 
-            if (!this.owner && Math.abs(this.x - asteroid.x) < this.radius && Math.abs(this.y - asteroid.y) < this.radius) {
+            if (v1 + v2 < 30 && !this.owner && Math.abs(this.x - asteroid.x) < this.radius && Math.abs(this.y - asteroid.y) < this.radius) {
                 this.moveOut(asteroid);
                 asteroid.moveOut(this);
             } else if (this.ricochetTimer <= 0) {
@@ -412,11 +412,10 @@ Asteroid.prototype.moveOut = function (asteroid) {
     var yDelta = Math.abs(this.y - asteroid.y);
     var dist = normal(xDelta, yDelta);
 
-    var xBuffer = (this.radius + asteroid.radius) * xDelta/this.mass;
-    var yBuffer = (this.radius + asteroid.radius) * yDelta/this.mass;
+    var maxDist = (this.radius + asteroid.radius);
 
-    var xSpeed = Math.abs(xBuffer - xDelta) / 10;
-    var ySpeed = Math.abs(yBuffer - yDelta) / 10;
+    var xSpeed = (maxDist - xDelta) / (30 * this.mass);
+    var ySpeed = (maxDist - yDelta) / (30 * this.mass);
 
     if (this.x > asteroid.x) {
         this.xVel += xSpeed;

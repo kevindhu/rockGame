@@ -345,7 +345,7 @@ Client.prototype.findSlash = function (id) {
 
 
 Client.prototype.start = function () {
-    setInterval(this.drawScene.bind(this), 1000 / 60);
+    setInterval(this.drawScene.bind(this), 1000 / 25);
 };
 
 function lerp(a, b, ratio) {

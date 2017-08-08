@@ -372,7 +372,7 @@ GameServer.prototype.start = function () {
     }.bind(this));
 
     /** START MAIN LOOP **/
-    setInterval(this.update.bind(this), 1000 / 60);
+    setInterval(this.update.bind(this), 1000 / 25);
 };
 
 GameServer.prototype.createPlayer = function (socket, info) {
