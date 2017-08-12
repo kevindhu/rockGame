@@ -135,6 +135,7 @@ PacketHandler.prototype.addAsteroidPackets = function (asteroid, ifInit) {
         maxHealth: asteroid.maxHealth,
         material: asteroid.material,
         displayTheta: asteroid.displayTheta,
+        theta: asteroid.theta,
         thetas : asteroid.thetas
     };
     if (ifInit) {
@@ -239,6 +240,11 @@ PacketHandler.prototype.updateControllersPackets = function (controller) {
 
 
 PacketHandler.prototype.updateAsteroidsPackets = function (asteroid) {
+    if (asteroid.theta > 300) {
+        console.log("ASS");
+    }
+
+
     this.CHUNK_PACKETS[asteroid.chunk].push({
         master: "update",
         class: "asteroidInfo",
@@ -251,6 +257,7 @@ PacketHandler.prototype.updateAsteroidsPackets = function (asteroid) {
         targetPt: asteroid.targetPt,
         health: asteroid.health,
         maxHealth: asteroid.maxHealth,
+        theta: asteroid.theta,
         displayTheta: asteroid.displayTheta,
         shooting: asteroid.shooting,
         glowing: asteroid.glowing

@@ -7,6 +7,7 @@ function Asteroid(asteroidInfo, client) {
     this.maxHealth = asteroidInfo.maxHealth;
     this.material = asteroidInfo.material;
     this.displayTheta = asteroidInfo.displayTheta;
+    this.theta = asteroidInfo.theta;
     this.thetas = asteroidInfo.thetas;
     this.radii = [];
     this.colors = [];
@@ -28,6 +29,7 @@ Asteroid.prototype.update = function (asteroidInfo) {
     this.targetPt = asteroidInfo.targetPt;
     this.maxHealth = asteroidInfo.maxHealth;
     this.shooting = asteroidInfo.shooting;
+    this.theta = asteroidInfo.theta;
     if (this.health !== asteroidInfo.health) {
         //this.updateRadii((this.health - asteroidInfo.health) / this.maxHealth);
         this.health = asteroidInfo.health;
@@ -59,7 +61,6 @@ Asteroid.prototype.show = function () {
     startX = this.radius * Math.cos(theta);
     startY = this.radius * Math.sin(theta);
     ctx.moveTo(this.x + startX, this.y + startY);
-
 
 
     ctx.beginPath();
@@ -152,9 +153,23 @@ Asteroid.prototype.show = function () {
         ctx.fill();
         ctx.closePath();
     }
+    if (this.theta) {
+        ctx.strokeStyle = "blue";
+        ctx.lineWidth = 30;
+        var endX = this.x + 100 * Math.cos(this.theta);
+        var endY = this.y + 100 * Math.sin(this.theta);
 
+        ctx.beginPath();
+        ctx.moveTo(this.x, this.y);
+        ctx.lineTo(endX, endY);
+
+        ctx.stroke();
+        ctx.closePath();
+
+    }
 
     if (this.health && this.maxHealth) { //health bar
+        ctx.lineWidth = 10;
         ctx.beginPath();
         ctx.strokeStyle = "black";
         ctx.rect(this.x, this.y, 100, 20);

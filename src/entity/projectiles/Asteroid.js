@@ -20,7 +20,7 @@ function Asteroid(x, y, material, radius, gameServer) {
     this.timer = 0;
     this.ricochetTimer = 0;
 
-    this.theta = 0;
+    this.theta = getRandom(0,2);
     this.displayTheta = 0;
     this.displayThetaVel = 0;
 
@@ -339,6 +339,8 @@ Asteroid.prototype.move = function () {
 
     this.gameServer.asteroidTree.remove(this.quadItem);
     this.gameServer.asteroidTree.insert(this.quadItem);
+
+    //console.log(this.theta);
 };
 
 
@@ -368,7 +370,6 @@ Asteroid.prototype.findAsteroids = function () {
                 //asteroid.moveOut(this);
             } else if (this.ricochetTimer <= 0) {
                 this.ricochet(asteroid);
-                asteroid.ricochet(this);
 
                 this.shooting = false;
                 asteroid.shooting = false;
@@ -429,29 +430,8 @@ Asteroid.prototype.ricochet = function (asteroid) {
     var preXVel = this.xVel;
     var preYVel = this.yVel;
 
-    if (Math.abs(asteroid.x - this.x) < 0.01) {
-        if (asteroid.x - this.x > 0) {
-            asteroid.x += 1;
-        }
-        else {
-            asteroid.x -= 1;
-        }
-    }
-    if (Math.abs(asteroid.y - this.y) < 0.1) {
-        if (asteroid.y - this.y > 0) {
-            asteroid.y += 1;
-        }
-        else {
-            asteroid.y -= 1;
-        }
-    }
-
-
     var phi = Math.atan2(asteroid.y - this.y, asteroid.x - this.x);
-
-    if (isNaN(phi)) {
-        console.log("phi is NaN");
-    }
+    var phi2 = Math.atan2(this.y - asteroid.y, this.x - asteroid.x);
 
     var v1 = normal(this.xVel, this.yVel);
     var v2 = normal(asteroid.xVel, asteroid.yVel);
@@ -470,16 +450,29 @@ Asteroid.prototype.ricochet = function (asteroid) {
         / (m1 + m2) * Math.sin(phi) + v1 * Math.sin(theta1 - phi) * Math.sin(phi + Math.PI / 2);
 
 
-    this.theta = Math.atan2(this.yVel, this.xVel) % (2 * Math.PI);
 
+
+    asteroid.xVel = (v2 * Math.cos(theta2 - phi2) * (m2 - m1) + 2 * m1 * v1 * Math.cos(theta1 - phi2))
+        / (m1 + m2) * Math.cos(phi2) + v2 * Math.sin(theta2 - phi2) * Math.cos(phi2 + Math.PI / 2);
+
+    asteroid.yVel = (v2 * Math.cos(theta2 - phi) * (m1 - m2) + 2 * m1 * v1 * Math.cos(theta1 - phi))
+        / (m1 + m2) * Math.sin(phi2) + v1 * Math.sin(theta2 - phi2) * Math.sin(phi2 + Math.PI / 2);
+
+
+
+    this.theta = Math.atan2(this.yVel, this.xVel);
 
 
     var delta = Math.sqrt(square(this.xVel - preXVel) + square(this.yVel - preYVel)) / this.mass;
     this.displayThetaVel = getRandom(-delta, delta);
     if (5 * delta > 1) { //filter for low dmg
         this.decreaseHealth(5 * delta);
+        asteroid.decreaseHealth(5 * delta);
     } //damage asteroids
+
+
     this.ricochetTimer = 1;
+    asteroid.ricochetTimer = 1;
 
 };
 
@@ -516,7 +509,7 @@ Asteroid.prototype.addPath = function (x, y) {
     if (!this.currPath) {
         this.currPath = this.pathQueue.dequeue();
     }
-}
+};
 
 Asteroid.prototype.removePaths = function () {
     this.pathQueue = new Queue();
