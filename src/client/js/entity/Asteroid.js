@@ -153,7 +153,7 @@ Asteroid.prototype.show = function () {
         ctx.fill();
         ctx.closePath();
     }
-    if (this.theta) {
+    if (this.theta && 1===2) {
         ctx.strokeStyle = "blue";
         ctx.lineWidth = 30;
         var endX = this.x + 100 * Math.cos(this.theta);

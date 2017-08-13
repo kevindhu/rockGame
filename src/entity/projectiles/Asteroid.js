@@ -366,8 +366,8 @@ Asteroid.prototype.findAsteroids = function () {
             var v2 = normal(asteroid.xVel, asteroid.yVel);
 
             if (v1 + v2 < 5 && !this.owner) {
-                //this.moveOut(asteroid);
-                //asteroid.moveOut(this);
+                this.moveOut(asteroid);
+                asteroid.moveOut(this);
             } else if (this.ricochetTimer <= 0) {
                 this.ricochet(asteroid);
 
@@ -433,6 +433,7 @@ Asteroid.prototype.ricochet = function (asteroid) {
     var phi = Math.atan2(asteroid.y - this.y, asteroid.x - this.x);
     var phi2 = Math.atan2(this.y - asteroid.y, this.x - asteroid.x);
 
+
     var v1 = normal(this.xVel, this.yVel);
     var v2 = normal(asteroid.xVel, asteroid.yVel);
 
@@ -449,9 +450,6 @@ Asteroid.prototype.ricochet = function (asteroid) {
     this.yVel = (v1 * Math.cos(theta1 - phi) * (m1 - m2) + 2 * m2 * v2 * Math.cos(theta2 - phi))
         / (m1 + m2) * Math.sin(phi) + v1 * Math.sin(theta1 - phi) * Math.sin(phi + Math.PI / 2);
 
-
-
-
     asteroid.xVel = (v2 * Math.cos(theta2 - phi2) * (m2 - m1) + 2 * m1 * v1 * Math.cos(theta1 - phi2))
         / (m1 + m2) * Math.cos(phi2) + v2 * Math.sin(theta2 - phi2) * Math.cos(phi2 + Math.PI / 2);
 
@@ -461,6 +459,7 @@ Asteroid.prototype.ricochet = function (asteroid) {
 
 
     this.theta = Math.atan2(this.yVel, this.xVel);
+    //asteroid.theta = Math.atan2(asteroid.yVel, asteroid.xVel);
 
 
     var delta = Math.sqrt(square(this.xVel - preXVel) + square(this.yVel - preYVel)) / this.mass;
@@ -471,9 +470,8 @@ Asteroid.prototype.ricochet = function (asteroid) {
     } //damage asteroids
 
 
-    this.ricochetTimer = 1;
-    asteroid.ricochetTimer = 1;
-
+    this.ricochetTimer = 5;
+    asteroid.ricochetTimer = 5;
 };
 
 
