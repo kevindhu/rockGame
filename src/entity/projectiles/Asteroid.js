@@ -200,7 +200,8 @@ Asteroid.prototype.setRadius = function (radius) {
 
 Asteroid.prototype.addShooting = function (owner, x, y) {
     this.shooting = true;
-    this.prevOwner = owner;
+    this.shooter = owner;
+    this.tempNeutral = owner;
     this.shootTimer = 60;
 
     this.getTheta({
@@ -220,7 +221,7 @@ Asteroid.prototype.addShooting = function (owner, x, y) {
 
 Asteroid.prototype.removeShooting = function () {
     this.shooting = false;
-    this.prevOwner = null;
+    this.shooter = null;
 };
 
 Asteroid.prototype.follow = function (owner) {
@@ -353,31 +354,31 @@ Asteroid.prototype.move = function () {
 
 Asteroid.prototype.findAsteroids = function () {
     this.gameServer.asteroidTree.find(this.quadItem.bound, function (asteroid) {
-        if (asteroid.id !== this.id &&
+        if (asteroid.id !== this.id && //find other asteroids!
             Math.abs(this.xVel) > 0 &&
             Math.abs(this.yVel) > 0) {
+
             if (this.owner) { //check if asteroid belongs to same owner
-                if (this.owner === asteroid.owner || asteroid.shooting &&
-                    asteroid.prevOwner === this.owner) {
+                if (this.owner === asteroid.owner) {
                     return;
                 }
             }
 
-            if (this.shooting) {
-                if (this.prevOwner === asteroid.owner) {
-                    return;
-                }
+            //check if temporarily neutral to shooter
+            if (this.tempNeutral && this.tempNeutral === asteroid.owner ||
+                asteroid.tempNeutral && asteroid.tempNeutral === this.owner) {
+                return;
             }
 
-            var v1 = normal(this.xVel, this.yVel);
-            var v2 = normal(asteroid.xVel, asteroid.yVel);
+
+            asteroid.tempNeutral = false;
+            this.tempNeutral = false;
 
             if (this.splitting && asteroid.splitting) {
                 this.moveOut(asteroid);
             } else if (this.ricochetTimer <= 0) {
                 this.splitting = false;
                 this.ricochet(asteroid);
-
                 this.shooting = false;
                 asteroid.shooting = false;
             }

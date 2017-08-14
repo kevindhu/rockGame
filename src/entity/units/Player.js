@@ -28,6 +28,8 @@ function Player(id, name, gameServer) {
     this.slash.theta = null;
     this.slashTimer = 0;
 
+    this.kills = 0;
+
     this.theta = 0;
 
     this.resetLevels();
