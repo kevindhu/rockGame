@@ -488,8 +488,8 @@ Asteroid.prototype.ricochet = function (asteroid) {
     } //damage asteroids
 
 
-    this.ricochetTimer = 5;
-    asteroid.ricochetTimer = 5;
+    this.ricochetTimer = 20;
+    asteroid.ricochetTimer = 20;
 };
 
 

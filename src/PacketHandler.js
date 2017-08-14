@@ -240,9 +240,14 @@ PacketHandler.prototype.updateControllersPackets = function (controller) {
 
 
 PacketHandler.prototype.updateAsteroidsPackets = function (asteroid) {
-    if (asteroid.theta > 300) {
-        console.log("ASS");
+    var owner;
+    if (asteroid.owner) {
+        owner = asteroid.owner.id;
     }
+    else {
+        owner = null;
+    }
+
 
 
     this.CHUNK_PACKETS[asteroid.chunk].push({
@@ -251,6 +256,7 @@ PacketHandler.prototype.updateAsteroidsPackets = function (asteroid) {
         id: asteroid.id,
         x: asteroid.x,
         y: asteroid.y,
+        owner: owner,
         radius: asteroid.radius,
         currPath: asteroid.currPath,
         queuePosition: asteroid.queuePosition,

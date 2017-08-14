@@ -30,6 +30,7 @@ Asteroid.prototype.update = function (asteroidInfo) {
     this.maxHealth = asteroidInfo.maxHealth;
     this.shooting = asteroidInfo.shooting;
     this.theta = asteroidInfo.theta;
+    this.owner = asteroidInfo.owner;
     if (this.health !== asteroidInfo.health) {
         //this.updateRadii((this.health - asteroidInfo.health) / this.maxHealth);
         this.health = asteroidInfo.health;
@@ -63,6 +64,10 @@ Asteroid.prototype.show = function () {
     startY = this.radius * Math.sin(theta);
 
 
+    if (this.owner) {
+        ctx.strokeStyle = "green";
+        ctx.lineWidth = 40;
+    }
     if (this.fast) {
         ctx.strokeStyle = "red";
         ctx.lineWidth = 40;

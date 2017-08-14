@@ -52,7 +52,7 @@ Player.prototype.populateAsteroidChain = function () {
             });
     }
     this.updateQueuePositions();
-}
+};
 
 
 Player.prototype.switch = function () {
@@ -185,6 +185,8 @@ Player.prototype.resetLevels = function () {
     this.maxGrabRadius = 50;
     this.power = 0; //power determines max size of things you can hold
 
+
+    this.asteroidLength = 10;
     this.food = 0;
     this.maxFood = 2;
 };
@@ -242,14 +244,12 @@ Player.prototype.selectAsteroid = function (x, y) {
     };
 
 
-    if (this.asteroids.length < 10) {
+    if (this.asteroids.length < this.asteroidLength) {
         this.gameServer.asteroidTree.find(mouseBound, function (asteroid) {
             if (!asteroid.owner &&
                 !asteroid.shooting &&
-                asteroid.radius < this.maxGrabRadius &&
-                this.asteroids.length < 10) {
+                asteroid.radius < this.maxGrabRadius) {
                 this.asteroids.push(asteroid);
-                asteroid.qIndex = this.asteroids.length - 1;
                 asteroid.addOwner(this);
                 this.populateAsteroidChain();
             }
@@ -312,7 +312,7 @@ Player.prototype.levelUp = function () {
     //decrease speed
     //update character model
     //reset food and maxFood
-
+    //level up length of asteroids
     //level up animation
 
     this.level++;
@@ -321,7 +321,7 @@ Player.prototype.levelUp = function () {
     this.maxGrabRadius += 100;
     this.updateMaxVelocities(-0.5);
     this.power += 10; //power determines max size of things you can hold
-
+    this.asteroidLength += 2;
     this.food = 0;
     this.maxFood++;
 
