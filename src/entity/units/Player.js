@@ -250,6 +250,7 @@ Player.prototype.selectAsteroid = function (x, y) {
         this.gameServer.asteroidTree.find(mouseBound, function (asteroid) {
             if (!asteroid.owner &&
                 !asteroid.shooting &&
+                !asteroid.fast &&
                 asteroid.radius < this.maxGrabRadius) {
                 this.asteroids.push(asteroid);
                 asteroid.addOwner(this);
@@ -332,8 +333,8 @@ Player.prototype.levelUp = function () {
 
 
 Player.prototype.setMaxVelocities = function () {
-    this.maxXVel = this.maxVel * Math.sin(Math.PI/4);
-    this.maxYVel = this.maxVel * Math.cos(Math.PI/4);
+    this.maxXVel = this.maxVel * Math.sin(Math.PI / 4);
+    this.maxYVel = this.maxVel * Math.cos(Math.PI / 4);
 };
 
 Player.prototype.updateMaxVelocities = function (amount) {

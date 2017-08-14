@@ -45,7 +45,6 @@ Client.prototype.initCanvases = function () {
             });
         }
     }.bind(this));
-
     document.addEventListener("mouseup", function (event) {
         if (!this.CHAT_CLICK) {
             this.mainUI.gameUI.chatUI.close();
@@ -135,7 +134,7 @@ Client.prototype.initLists = function () {
 Client.prototype.initViewers = function () {
     this.keys = [];
     this.scaleFactor = 1;
-    this.mainScaleFactor = 1;
+    this.mainScaleFactor = 0.5;
     this.mainUI = new MainUI(this, this.socket);
     this.mainUI.playerNamerUI.open();
 };
