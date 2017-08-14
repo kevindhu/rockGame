@@ -317,7 +317,7 @@ Player.prototype.levelUp = function () {
 
     this.level++;
     this.range += 100;
-    this.radius += 5;
+    this.radius += 10;
     this.maxGrabRadius += 100;
     this.updateMaxVelocities(-0.5);
     this.power += 10; //power determines max size of things you can hold

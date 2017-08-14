@@ -260,7 +260,8 @@ PacketHandler.prototype.updateAsteroidsPackets = function (asteroid) {
         theta: asteroid.theta,
         displayTheta: asteroid.displayTheta,
         shooting: asteroid.shooting,
-        glowing: asteroid.glowing
+        glowing: asteroid.glowing,
+        fast: asteroid.fast
     });
 };
 

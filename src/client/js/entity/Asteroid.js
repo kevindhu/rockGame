@@ -35,6 +35,7 @@ Asteroid.prototype.update = function (asteroidInfo) {
         this.health = asteroidInfo.health;
     }
     this.glowing = asteroidInfo.glowing;
+    this.fast = asteroidInfo.fast;
 };
 
 
@@ -47,12 +48,12 @@ Asteroid.prototype.show = function () {
     if (this.shooting) {
         ctx.fillStyle = "purple";
     }
-
     if (this.glowing) {
         ctx.beginPath();
         ctx.fillStyle = "rgba(244, 164, 66, 0.2)";
         ctx.arc(this.x, this.y, this.radius + 20, 0, 2 * Math.PI, false);
         ctx.fill();
+        ctx.stroke();
         ctx.closePath();
     }
 
@@ -60,6 +61,12 @@ Asteroid.prototype.show = function () {
     theta = this.displayTheta;
     startX = this.radius * Math.cos(theta);
     startY = this.radius * Math.sin(theta);
+
+
+    if (this.fast) {
+        ctx.strokeStyle = "red";
+        ctx.lineWidth = 40;
+    }
     ctx.moveTo(this.x + startX, this.y + startY);
 
 
@@ -73,6 +80,7 @@ Asteroid.prototype.show = function () {
         ctx.lineTo(this.x + x, this.y + y);
     }
     ctx.lineTo(this.x + startX, this.y + startY);
+    ctx.stroke();
     ctx.fill();
     ctx.closePath();
 
@@ -153,7 +161,7 @@ Asteroid.prototype.show = function () {
         ctx.fill();
         ctx.closePath();
     }
-    if (this.theta && 1===2) {
+    if (this.theta && 1 === 2) {
         ctx.strokeStyle = "blue";
         ctx.lineWidth = 30;
         var endX = this.x + 100 * Math.cos(this.theta);

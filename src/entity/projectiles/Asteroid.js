@@ -20,9 +20,11 @@ function Asteroid(x, y, material, radius, gameServer) {
     this.timer = 0;
     this.ricochetTimer = 0;
 
-    this.theta = getRandom(0,2);
+    this.theta = getRandom(0, 2);
     this.displayTheta = 0;
     this.displayThetaVel = 0;
+
+    this.fast = false;
 
 
     if (material) {
@@ -40,7 +42,6 @@ function Asteroid(x, y, material, radius, gameServer) {
     }
 
     this.getRandomThetas();
-
 
     this.currPath = null;
     this.pathQueue = new Queue();
@@ -130,6 +131,9 @@ Asteroid.prototype.split = function () {
     this.theta = getRandom(0, 2 * Math.PI);
     clone.theta = -this.theta + getRandom(-1, 1);
 
+    this.splitting = true;
+    clone.splitting = true;
+
     //this.xVel = 20 * Math.cos(this.theta);
     //this.yVel = 20 * Math.sin(this.theta);
 
@@ -209,8 +213,8 @@ Asteroid.prototype.addShooting = function (owner, x, y) {
         y: y
     };
 
-    this.xVel = 20 * Math.cos(this.theta);
-    this.yVel = 20 * Math.sin(this.theta);
+    this.xVel = 80 * Math.cos(this.theta);
+    this.yVel = 80 * Math.sin(this.theta);
 };
 
 
@@ -332,6 +336,9 @@ Asteroid.prototype.move = function () {
     }
 
 
+    this.fast = normal(this.xVel, this.yVel) > 20;
+
+
     this.x += this.xVel;
     this.y += this.yVel;
     this.displayTheta += this.displayThetaVel;
@@ -365,10 +372,10 @@ Asteroid.prototype.findAsteroids = function () {
             var v1 = normal(this.xVel, this.yVel);
             var v2 = normal(asteroid.xVel, asteroid.yVel);
 
-            if (v1 + v2 < 5 && !this.owner) {
+            if (this.splitting && asteroid.splitting) {
                 this.moveOut(asteroid);
-                asteroid.moveOut(this);
             } else if (this.ricochetTimer <= 0) {
+                this.splitting = false;
                 this.ricochet(asteroid);
 
                 this.shooting = false;
@@ -398,33 +405,43 @@ Asteroid.prototype.moveOut = function (asteroid) {
         }
     }
 
-
     var xDelta = Math.abs(this.x - asteroid.x);
     var yDelta = Math.abs(this.y - asteroid.y);
-    var dist = normal(xDelta, yDelta);
-
     var maxDist = (this.radius + asteroid.radius);
 
-    var xSpeed = (maxDist - xDelta) / (50 * this.mass);
-    var ySpeed = (maxDist - yDelta) / (50 * this.mass);
+    var xSpeed = (maxDist - xDelta) / (10 * this.mass); //always positive
+    var ySpeed = (maxDist - yDelta) / (10 * this.mass);
+
+    var thisXVel = 0;
+    var thisYVel = 0;
 
     if (this.x > asteroid.x) {
-        this.xVel += xSpeed;
+        thisXVel = xSpeed;
     }
     else {
-        this.xVel -= xSpeed;
+        thisXVel = -xSpeed;
     }
 
     if (this.y > asteroid.y) {
-        this.yVel += ySpeed;
+        thisYVel = ySpeed;
     }
     else {
-        this.yVel -= ySpeed;
+        thisYVel = -ySpeed;
     }
+
+    this.xVel += thisXVel;
+    this.yVel += thisYVel;
+
+    asteroid.xVel -= thisXVel;
+    asteroid.yVel -= thisYVel;
 
     var delta = 0.005;
     this.displayThetaVel += getRandom(-delta, delta);
+    asteroid.displayThetaVel += getRandom(-delta, delta);
+
 };
+
+
 
 Asteroid.prototype.ricochet = function (asteroid) {
     var preXVel = this.xVel;
@@ -457,13 +474,14 @@ Asteroid.prototype.ricochet = function (asteroid) {
         / (m1 + m2) * Math.sin(phi2) + v1 * Math.sin(theta2 - phi2) * Math.sin(phi2 + Math.PI / 2);
 
 
-
     this.theta = Math.atan2(this.yVel, this.xVel);
-    //asteroid.theta = Math.atan2(asteroid.yVel, asteroid.xVel);
+    asteroid.theta = Math.atan2(asteroid.yVel, asteroid.xVel);
 
 
     var delta = Math.sqrt(square(this.xVel - preXVel) + square(this.yVel - preYVel)) / this.mass;
     this.displayThetaVel = getRandom(-delta, delta);
+
+
     if (5 * delta > 1) { //filter for low dmg
         this.decreaseHealth(5 * delta);
         asteroid.decreaseHealth(5 * delta);
@@ -511,11 +529,11 @@ Asteroid.prototype.addPath = function (x, y) {
 
 Asteroid.prototype.removePaths = function () {
     this.pathQueue = new Queue();
-}
+};
 
 Asteroid.prototype.addOwner = function (player) {
     this.owner = player;
-}
+};
 
 Asteroid.prototype.addQuadItem = function () {
     this.quadItem = {
