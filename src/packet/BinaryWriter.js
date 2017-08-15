@@ -7,7 +7,7 @@
  * License: Apache License, Version 2.0
  */
 
-const allocMax = 1048576;
+const allocMax = 20000;
 
 
 function BinaryWriter() {
@@ -18,17 +18,19 @@ function BinaryWriter() {
 module.exports = BinaryWriter;
 
 BinaryWriter.prototype.writeUInt8 = function (value) {
-    this.sharedBuffer.writeUInt8(value, this.allocLength++, true);
+    this.sharedBuffer.writeUInt8(value, this.allocLength, true);
+    this.allocLength += 1;
 };
 
 BinaryWriter.prototype.writeUInt16 = function (value) {
-    this.sharedBuffer.writeUInt16LE(value, this.allocLength, true);
+    this.sharedBuffer.writeUInt16BE(value, this.allocLength, true);
     this.allocLength += 2;
 };
 
 BinaryWriter.prototype.writeUInt32 = function (value) {
-    this.sharedBuffer.writeUInt32LE(value, this.allocLength, true);
+    this.sharedBuffer.writeUInt32BE(value, this.allocLength, true);
     this.allocLength += 4;
+    //console.log(this.sharedBuffer);
 };
 
 BinaryWriter.prototype.writeFloat = function (value) {

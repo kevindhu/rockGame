@@ -10,7 +10,7 @@ function Asteroid(x, y, material, radius, gameServer) {
 
     this.handler = new AsteroidHandler(this, gameServer);
 
-    this.id = Math.random();
+    this.id = Math.floor(Math.random() * 1000000);
     this.x = x;
     this.y = y;
 
@@ -158,6 +158,7 @@ Asteroid.prototype.decreaseHealth = function (amount) {
 Asteroid.prototype.update = function () {
     if (overBoundary(this.x) || overBoundary(this.y)) {
         this.onDelete();
+        return;
     }
 
     if (this.timer > 0) { //what is the use of this?
@@ -351,19 +352,13 @@ Asteroid.prototype.move = function () {
     this.displayTheta += this.displayThetaVel;
 
 
-    this.gameServer.asteroidTree.remove(this.quadItem);
-    this.gameServer.asteroidTree.insert(this.quadItem);
-
     //console.log(this.theta);
 };
 
 
 Asteroid.prototype.findAsteroids = function () {
     this.gameServer.asteroidTree.find(this.quadItem.bound, function (asteroid) {
-        if (asteroid.id !== this.id && //find other asteroids!
-            Math.abs(this.xVel) > 0 &&
-            Math.abs(this.yVel) > 0) {
-
+        if (asteroid.id !== this.id) {
             if (this.owner) { //check if asteroid belongs to same owner
                 if (this.owner === asteroid.owner) {
                     return;
@@ -383,7 +378,7 @@ Asteroid.prototype.findAsteroids = function () {
             var v1 = normal(this.xVel, this.yVel);
             var v2 = normal(asteroid.xVel, asteroid.yVel);
 
-            if (this.splitting && asteroid.splitting || v1 + v2 < 10) {
+            if (this.splitting && asteroid.splitting || v1 + v2 < 3) {
                 this.moveOut(asteroid);
             } else if (this.ricochetTimer <= 0) {
                 this.splitting = false;
@@ -419,8 +414,8 @@ Asteroid.prototype.moveOut = function (asteroid) {
     var yDelta = Math.abs(this.y - asteroid.y);
     var maxDist = (this.radius + asteroid.radius);
 
-    var xSpeed = (maxDist - xDelta) / (10 * this.mass); //always positive
-    var ySpeed = (maxDist - yDelta) / (10 * this.mass);
+    var xSpeed = (maxDist - xDelta) / (20 * this.mass); //always positive
+    var ySpeed = (maxDist - yDelta) / (20 * this.mass);
 
     var thisXVel = 0;
     var thisYVel = 0;
@@ -497,8 +492,8 @@ Asteroid.prototype.ricochet = function (asteroid) {
     } //damage asteroids
 
 
-    this.ricochetTimer = 20;
-    asteroid.ricochetTimer = 20;
+    this.ricochetTimer = 6;
+    asteroid.ricochetTimer = 6;
 };
 
 

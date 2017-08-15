@@ -4,14 +4,49 @@ const BinaryWriter = require('../../packet/BinaryWriter');
 function AsteroidHandler(asteroid, gameServer) {
     this.asteroid = asteroid;
     this.gameServer = gameServer;
-    this.adder = new BinaryWriter();
-    this.updater = new BinaryWriter();
-    this.deleter = new BinaryWriter();
 }
 
 
 
 AsteroidHandler.prototype.addInfo = function () {
+    var writer = new BinaryWriter();
+    var asteroid = this.asteroid;
+
+    // Write update record
+    writer.writeUInt32(asteroid.id >>> 0);         // Asteroid ID
+
+    (asteroid.owner) ? writer.writeUInt32(asteroid.owner.id >>> 0) : //Asteroid owner id
+        writer.writeUInt32(0 >>> 0);
+
+
+    writer.writeUInt32(asteroid.x * 100 >> 0);                // Coordinate X
+    writer.writeUInt32(asteroid.y * 100 >> 0);                // Coordinate Y
+
+    console.log(asteroid.id >>> 0);
+    console.log(asteroid.x, asteroid.y);
+
+
+    writer.writeUInt16(asteroid.radius >>> 0);             //Radius
+
+    writer.writeUInt8(asteroid.health >>> 0);
+    writer.writeUInt8(asteroid.maxHealth >>> 0);
+    writer.writeUInt8(asteroid.displayTheta >>> 0); // display theta
+
+    var flags = 0;
+    if (asteroid.glowing)
+        flags |= 0x01;               // isGlowing
+    if (asteroid.fast)
+        flags |= 0x10;               // isFast
+    writer.writeUInt8(flags >>> 0);
+    writer.writeUInt16(0);           //terminate flags
+
+    writer.writeUInt16(0 >> 0); //terminate asteroid record
+
+    return writer.toBuffer();
+};
+
+
+AsteroidHandler.prototype.updateInfo = function () {
     var writer = this.adder;
     var asteroid = this.asteroid;
 
@@ -26,9 +61,8 @@ AsteroidHandler.prototype.addInfo = function () {
     writer.writeUInt32(asteroid.y >> 0);                // Coordinate Y
     writer.writeUInt16(asteroid.radius >>> 0);             //Radius
 
-    writer.writeUInt16(asteroid.health >>> 0);
-    writer.writeUInt16(asteroid.maxHealth >>> 0);
-
+    writer.writeUInt8(asteroid.health >>> 0);
+    writer.writeUInt8(asteroid.maxHealth >>> 0);
     writer.writeUInt8(asteroid.displayTheta >>> 0); // display theta
 
     var flags = 0;
@@ -42,38 +76,6 @@ AsteroidHandler.prototype.addInfo = function () {
     writer.writeUInt32(0 >> 0); //terminate asteroid record
 
     return writer.toBuffer();
-};
-
-
-AsteroidHandler.prototype.updateInfo = function () {
-    var writer = this.updater;
-    var asteroid = this.asteroid;
-
-    // Write update record
-    writer.writeUInt32(asteroid.id >>> 0);         // Asteroid ID
-
-    (asteroid.owner) ? writer.writeUInt32(asteroid.owner.id >>> 0) : //Asteroid owner id
-        writer.writeUInt32(0 >>> 0);
-
-
-    writer.writeUInt32(asteroid.x >> 0);                // Coordinate X
-    writer.writeUInt32(asteroid.y >> 0);                // Coordinate Y
-    writer.writeUInt16(asteroid.radius >>> 0);             //Radius
-
-    writer.writeUInt16(asteroid.health >>> 0);
-    writer.writeUInt16(asteroid.maxHealth >>> 0);
-
-    writer.writeUInt8(asteroid.displayTheta >>> 0); // display theta
-
-    var flags = 0;
-    if (asteroid.glowing)
-        flags |= 0x01;               // isGlowing
-    if (asteroid.fast)
-        flags |= 0x10;               // isFast
-    writer.writeUInt8(flags >>> 0);
-    writer.writeUInt16(0);           //terminate flags
-
-    writer.writeUInt32(0 >> 0); //terminate asteroid record
 };
 
 

@@ -251,7 +251,7 @@ GameServer.prototype.start = function () {
 
     io.sockets.on('connection', function (socket) {
         var player;
-        socket.id = Math.random();
+        socket.id = Math.floor(Math.random() * 1000000);
         socket.timer = 0;
         socket.life = 100;
         socket.verified = false;

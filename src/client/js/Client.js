@@ -1,5 +1,6 @@
 var Entity = require('./entity');
 var MainUI = require('./ui/MainUI');
+var BinaryReader = require('./BinaryReader');
 
 function Client() {
     this.SELF_ID = null;
@@ -24,7 +25,10 @@ Client.prototype.initSocket = function () {
 
     this.socket.on('initVerification', this.verify.bind(this));
     this.socket.on('updateEntities', this.handlePacket.bind(this));
-    this.socket.on('chatMessage', this.mainUI)
+    this.socket.on('chatMessage', this.mainUI);
+    this.socket.on('updateLOL', this.handleLOL.bind(this));
+
+
 };
 Client.prototype.initCanvases = function () {
     this.mainCanvas = document.getElementById("main_canvas");
@@ -146,6 +150,29 @@ Client.prototype.verify = function (data) {
         this.socket.verified = true;
     }
 };
+
+
+Client.prototype.handleLOL =  function (data) {
+    var reader = new BinaryReader(data);
+
+    if (reader.length() > 20) {
+        console.log("YIPEEEE");
+        console.log(reader.readInt8());
+
+        console.log(reader.readInt32()); //asteroid id
+        console.log(reader.readInt32()); //owner id
+
+        console.log(reader.readInt32()); //real x
+        console.log(reader.readInt32()); //real y
+
+
+
+    }
+
+
+
+};
+
 
 Client.prototype.handlePacket = function (data) {
     var packet, i;
