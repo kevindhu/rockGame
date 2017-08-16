@@ -1,6 +1,7 @@
 var Entity = require('./entity');
 var QuadNode = require('./modules/QuadNode');
 var Chunk = require('./Chunk');
+var B2 = require('./modules/B2');
 var PacketHandler = require('./PacketHandler');
 const entityConfig = require('./entity/entityConfig');
 const Arithmetic = require('./modules/Arithmetic');
@@ -16,17 +17,14 @@ function GameServer() {
     this.CONTROLLER_LIST = {};
 
     this.ASTEROID_LIST = {};
+    this.ROCK_LIST = {};
 
     this.TILE_LIST = {};
-    this.HOME_LIST = {};
-    this.LASER_LIST = {};
 
     //these are all updaters (updated every tick of server loop until deleted)
 
     this.controllerTree = null;
-    this.homeTree = null;
     this.tileTree = null;
-    this.towerTree = null;
 
     this.minx = entityConfig.BORDER_WIDTH;
     this.miny = entityConfig.BORDER_WIDTH;
@@ -44,6 +42,13 @@ GameServer.prototype.initChunks = function () {
         this.CHUNKS[i] = new Chunk(i, this);
     }
 };
+
+GameServer.prototype.initB2 = function () {
+    var gravity = new B2.b2Vec2(0, 0);
+    this.box2d_world = new B2.b2World(gravity, false); //no sleep, need dynamic bodies over static bodies to work
+};
+
+
 
 GameServer.prototype.initTiles = function () {
     this.tileTree = new QuadNode({
@@ -81,15 +86,15 @@ GameServer.prototype.initAsteroids = function () {
     for (var i = 0; i < entityConfig.SHARDS; i++) {
         this.createAsteroid();
     }
-}
+};
 
-GameServer.prototype.initHomes = function () {
-    this.homeTree = new QuadNode({
-        minx: this.minx,
-        miny: this.miny,
-        maxx: this.maxx,
-        maxy: this.maxy
-    });
+GameServer.prototype.initRocks = function () {
+    var x,y,i,rock;
+    for (i = 0; i < 10; i++) {
+        x = Arithmetic.getRandomInt(entityConfig.BORDER_WIDTH, entityConfig.WIDTH - entityConfig.BORDER_WIDTH);
+        y = Arithmetic.getRandomInt(entityConfig.BORDER_WIDTH, entityConfig.WIDTH - entityConfig.BORDER_WIDTH);
+        rock = new Entity.Rock(this, x, y);
+    }
 };
 
 
@@ -146,21 +151,6 @@ GameServer.prototype.spawnAsteroids = function () {
     if (Object.size(this.ASTEROID_LIST) < entityConfig.SHARDS) {
         this.createAsteroid();
     }
-};
-
-GameServer.prototype.getEntityTile = function (entity) {
-    var entityBound = {
-        minx: entity.x - entityConfig.SHARD_WIDTH,
-        miny: entity.y - entityConfig.SHARD_WIDTH,
-        maxx: entity.x + entityConfig.SHARD_WIDTH,
-        maxy: entity.y + entityConfig.SHARD_WIDTH
-    };
-    var ret = null;
-
-    this.tileTree.find(entityBound, function (tile) {
-        ret = tile;
-    }.bind(this));
-    return ret;
 };
 
 
@@ -241,8 +231,10 @@ GameServer.prototype.start = function () {
 
     /** INIT SERVER OBJECTS **/
     this.initChunks();
+    this.initB2();
     this.initTiles();
     this.initAsteroids();
+    this.initRocks();
     this.initControllers();
     this.initHomes();
 

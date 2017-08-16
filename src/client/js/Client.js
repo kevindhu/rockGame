@@ -132,6 +132,7 @@ Client.prototype.initCanvases = function () {
 Client.prototype.initLists = function () {
     this.CONTROLLER_LIST = {};
     this.TILE_LIST = {};
+    this.ROCK_LIST = {};
     this.ASTEROID_LIST = {};
     this.ANIMATION_LIST = {};
 };
@@ -159,11 +160,11 @@ Client.prototype.handleLOL =  function (data) {
         console.log("YIPEEEE");
         console.log(reader.readInt8());
 
-        console.log(reader.readInt32()); //asteroid id
-        console.log(reader.readInt32()); //owner id
+        //console.log(reader.readInt32()); //asteroid id
+        //console.log(reader.readInt32()); //owner id
 
-        console.log(reader.readInt32()); //real x
-        console.log(reader.readInt32()); //real y
+        //console.log(reader.readInt32()); //real x
+        //console.log(reader.readInt32()); //real y
 
 
 
@@ -205,6 +206,9 @@ Client.prototype.addEntities = function (packet) {
     }.bind(this);
 
     switch (packet.class) {
+        case "rockInfo":
+            addEntity(packet, this.ROCK_LIST, Entity.Rock);
+            break;
         case "tileInfo":
             addEntity(packet, this.TILE_LIST, Entity.Tile);
             break;
@@ -266,6 +270,9 @@ Client.prototype.updateEntities = function (packet) {
             updateEntity(packet, this.FACTION_LIST);
             this.mainUI.updateLeaderBoard();
             break;
+        case "rockInfo":
+            updateEntity(packet, this.ROCK_LIST);
+            break;
         case "UIInfo":
             if (this.SELF_ID === packet.playerId) {
                 this.mainUI.update(packet);
@@ -313,7 +320,8 @@ Client.prototype.drawScene = function (data) {
         this.TILE_LIST,
         this.CONTROLLER_LIST,
         this.ASTEROID_LIST,
-        this.ANIMATION_LIST
+        this.ANIMATION_LIST,
+        this.ROCK_LIST
     ];
     var inBounds = function (player, x, y) {
         var range = this.mainCanvas.width / (0.7 * this.scaleFactor);

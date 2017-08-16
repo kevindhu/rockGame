@@ -7,19 +7,19 @@ var BORDER_WIDTH = 0;
 
 var small = function () {
     CHUNKS = 1;
-    WIDTH = 2000;
-    TILES_INPUT = 20;
-    SHARDS = 10;
-    BORDER_WIDTH = 400;
+    WIDTH = 10000;
+    TILES_INPUT = 200;
+    SHARDS = 50;
+    BORDER_WIDTH = 2000;
 };
 
 
 var medium = function () {
-    CHUNKS = 4;
-    WIDTH = 5000;
+    CHUNKS = 36;
+    WIDTH = 20000;
     TILES_INPUT = 1000;
-    SHARDS = 800;
-    BORDER_WIDTH = 300;
+    SHARDS = 1000;
+    BORDER_WIDTH = 5000;
 };
 
 
@@ -39,7 +39,6 @@ var superLarge = function () {
     SHARDS = 100000;
     BORDER_WIDTH = 50000;
 };
-
 
 small();
 

@@ -170,7 +170,7 @@ Asteroid.prototype.update = function () {
     }
 
     this.move();
-    //this.updateChunk(); //cant use this when they are out of bounds!!!
+    //this.updateChunk(); //not useful when only one chunk!
     this.updateQuadItem();
     this.packetHandler.updateAsteroidsPackets(this);
 };
@@ -219,8 +219,8 @@ Asteroid.prototype.addShooting = function (owner, x, y) {
         y: y
     };
 
-    this.xVel = 60 * Math.cos(this.theta);
-    this.yVel = 60 * Math.sin(this.theta);
+    this.xVel = 45 * Math.cos(this.theta);
+    this.yVel = 45 * Math.sin(this.theta);
 };
 
 
@@ -351,8 +351,6 @@ Asteroid.prototype.move = function () {
     this.y += this.yVel;
     this.displayTheta += this.displayThetaVel;
 
-
-    //console.log(this.theta);
 };
 
 
@@ -378,7 +376,7 @@ Asteroid.prototype.findAsteroids = function () {
             var v1 = normal(this.xVel, this.yVel);
             var v2 = normal(asteroid.xVel, asteroid.yVel);
 
-            if (this.splitting && asteroid.splitting || v1 + v2 < 3) {
+            if (this.splitting && asteroid.splitting || v1 + v2 < 1) {
                 this.moveOut(asteroid);
             } else if (this.ricochetTimer <= 0) {
                 this.splitting = false;
@@ -414,8 +412,8 @@ Asteroid.prototype.moveOut = function (asteroid) {
     var yDelta = Math.abs(this.y - asteroid.y);
     var maxDist = (this.radius + asteroid.radius);
 
-    var xSpeed = (maxDist - xDelta) / (20 * this.mass); //always positive
-    var ySpeed = (maxDist - yDelta) / (20 * this.mass);
+    var xSpeed = (maxDist - xDelta) / (10 * this.mass); //always positive
+    var ySpeed = (maxDist - yDelta) / (10 * this.mass);
 
     var thisXVel = 0;
     var thisYVel = 0;

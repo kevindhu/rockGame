@@ -1,6 +1,7 @@
 const entityConfig = require('./entity/entityConfig');
 const Arithmetic = require('./modules/Arithmetic');
 const BinaryWriter = require('./packet/BinaryWriter');
+var B2 = require('./modules/B2');
 
 
 function PacketHandler(gameServer) {
@@ -18,23 +19,31 @@ function PacketHandler(gameServer) {
 
 function Packet() {
     this.addAsteroids = new BinaryWriter();
+    this.addAsteroids.length = 0;
     this.addControllers = new BinaryWriter();
+    this.addAsteroids.length = 0;
 
     this.updateAsteroids = new BinaryWriter();
+    this.addAsteroids.length = 0;
     this.updateControllers = new BinaryWriter();
+    this.addAsteroids.length = 0;
 
     this.deleteAsteroids = new BinaryWriter();
+    this.addAsteroids.length = 0;
     this.deleteControllers = new BinaryWriter();
+    this.addAsteroids.length = 0;
+
+
 }
 
 Packet.prototype.build = function () {
     var writer = new BinaryWriter();
 
     // Write update record
-    writer.writeUInt8(0x13);
+    writer.writeUInt8(this.addAsteroids.length);
     writer.writeBytes(this.addAsteroids.toBuffer());
 
-    writer.writeUInt8(0x2);
+    writer.writeUInt8(this.addControllers.length);
     writer.writeBytes(this.addControllers.toBuffer());
 
     writer.writeUInt8(0x3);
@@ -88,6 +97,7 @@ PacketHandler.prototype.createChunkPacket = function (chunk, id) {
     populate(CONTROLLER_LIST, this.addControllerPackets);
     populate(ASTEROID_LIST, this.addAsteroidPackets);
     populate(this.gameServer.CHUNKS[chunk].TILE_LIST, this.addTilePackets);
+    populate(this.gameServer.CHUNKS[chunk].ROCK_LIST, this.addRockPackets);
     if (id) {
         initPacket.push({
             master: "add",
@@ -107,12 +117,13 @@ PacketHandler.prototype._createChunkPacket = function (chunk) {
     var populateBit = function (list, writer, call) {
         for (var i in list) {
             var entity = list[i];
-            writer.writeBytes(call(entity,true));
+            call(entity, writer);
         }
     };
 
     var packet = new Packet();
-    //populateBit(CONTROLLER_LIST, packet.addControllers, this._addControllerPackets);
+
+    //populateBit(CONTROLLER_LIST, this._addControllerPackets, packet.addControllers);
     populateBit(ASTEROID_LIST, packet.addAsteroids, this._addAsteroidPackets);
 
     var buffer = packet.build();
@@ -132,7 +143,7 @@ PacketHandler.prototype.deleteChunkPacket = function (chunk) {
     };
 
     populate(this.gameServer.CHUNKS[chunk].CONTROLLER_LIST, this.deleteControllerPackets);
-    populate(this.gameServer.CHUNKS[chunk].TILE_LIST, this.deleteTilePackets); //make this thing work
+    //populate(this.gameServer.CHUNKS[chunk].TILE_LIST, this.deleteTilePackets); //make this thing work
     populate(this.gameServer.CHUNKS[chunk].ASTEROID_LIST, this.deleteAsteroidPackets);
     return deletePacket;
 };
@@ -147,14 +158,12 @@ PacketHandler.prototype._addControllerPackets = function (controller, ifInit) {
         this._CHUNK_PACKETS[controller.chunk].addControllers.writeBytes(info);
     }
 };
-PacketHandler.prototype._addAsteroidPackets = function (asteroid, ifInit) {
+PacketHandler.prototype._addAsteroidPackets = function (asteroid, writer) {
     var info = asteroid.handler.addInfo();
-    if (ifInit) {
-        return info;
-    }
-    else {
-        this._CHUNK_PACKETS[asteroid.chunk].addAsteroids.writeBytes(info);
-    }
+
+    writer = writer ? writer : this._CHUNK_PACKETS[asteroid.chunk].addAsteroids;
+    writer.writeBytes(info);
+    writer.length ++;
 };
 
 
@@ -283,6 +292,51 @@ PacketHandler.prototype.addChatPackets = function (name, message) {
         name: name,
         chatMessage: message
     });
+};
+
+
+PacketHandler.prototype.addRockPackets = function (rock, ifInit) {
+    var vector = rock.body.GetPosition();
+    var realPos = new B2.b2Vec2(vector.x, -(vector.y - entityConfig.WIDTH));
+
+    var info = {
+        master: "add",
+        class: "rockInfo",
+        id: rock.id,
+        x: realPos.x,
+        y: realPos.y
+    };
+    if (ifInit) {
+        return info;
+    }
+    else {
+        this.CHUNK_PACKETS[rock.chunk].push(info);
+    }
+};
+
+
+
+
+
+
+
+PacketHandler.prototype.updateRockPackets = function (rock, ifInit) {
+    var vector = rock.body.GetPosition();
+    var realPos = new B2.b2Vec2(vector.x, -(vector.y - entityConfig.WIDTH));
+
+    var info = {
+        master: "update",
+        class: "rockInfo",
+        id: rock.id,
+        x: realPos.x,
+        y: realPos.y
+    };
+    if (ifInit) {
+        return info;
+    }
+    else {
+        this.CHUNK_PACKETS[rock.chunk].push(info);
+    }
 };
 
 PacketHandler.prototype.updateControllersPackets = function (controller) {

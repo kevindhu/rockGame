@@ -22,9 +22,6 @@ AsteroidHandler.prototype.addInfo = function () {
     writer.writeUInt32(asteroid.x * 100 >> 0);                // Coordinate X
     writer.writeUInt32(asteroid.y * 100 >> 0);                // Coordinate Y
 
-    console.log(asteroid.id >>> 0);
-    console.log(asteroid.x, asteroid.y);
-
 
     writer.writeUInt16(asteroid.radius >>> 0);             //Radius
 

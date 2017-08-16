@@ -35,6 +35,8 @@ function Player(id, name, gameServer) {
     this.resetLevels();
 
     this.init();
+
+    this.asteroidLength = 10;
 }
 
 EntityFunctions.inherits(Player, Controller);
@@ -44,7 +46,7 @@ Player.prototype.populateAsteroidChain = function () {
     this.asteroidChainPos = new Queue();
     var theta = this.theta;
     var x, y;
-    for (var i = 0; i < 10; i++) { //10 possible nodes in the queue
+    for (var i = 0; i < this.asteroidLength; i++) {
         x = this.x + 10 * i * Math.cos(theta);
         y = this.y + 10 * i * Math.sin(theta);
         this.asteroidChainPos.enqueue(
@@ -150,7 +152,7 @@ Player.prototype.updateQueuePositions = function () {
     var asteroid;
     for (var i = 0; i < this.asteroids.length; i++) {
         asteroid = this.asteroids[i];
-        asteroid.queuePosition = this.asteroidChainPos.peek(9 - i);
+        asteroid.queuePosition = this.asteroidChainPos.peek(this.asteroidLength - 1 - i);
     }
 };
 
@@ -187,8 +189,6 @@ Player.prototype.resetLevels = function () {
     this.maxGrabRadius = 50;
     this.power = 0; //power determines max size of things you can hold
 
-
-    this.asteroidLength = 10;
     this.food = 0;
     this.maxFood = 2;
 };
@@ -327,6 +327,7 @@ Player.prototype.levelUp = function () {
     this.asteroidLength += 2;
     this.food = 0;
     this.maxFood++;
+    this.populateAsteroidChain();
 
     console.log("LEVEL UP: " + this.radius);
 };
@@ -365,6 +366,7 @@ Player.prototype.reset = function () { //should delete this eventually, or only 
 
     this.stationary = false;
     this.updateQuadItem();
+    this.populateAsteroidChain();
 };
 
 
