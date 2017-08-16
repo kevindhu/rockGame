@@ -163,7 +163,7 @@ PacketHandler.prototype._addAsteroidPackets = function (asteroid, writer) {
 
     writer = writer ? writer : this._CHUNK_PACKETS[asteroid.chunk].addAsteroids;
     writer.writeBytes(info);
-    writer.length ++;
+    writer.length++;
 };
 
 
@@ -315,12 +315,7 @@ PacketHandler.prototype.addRockPackets = function (rock, ifInit) {
 };
 
 
-
-
-
-
-
-PacketHandler.prototype.updateRockPackets = function (rock, ifInit) {
+PacketHandler.prototype.updateRockPackets = function (rock) {
     var vector = rock.body.GetPosition();
     var realPos = new B2.b2Vec2(vector.x, -(vector.y - entityConfig.WIDTH));
 
@@ -331,12 +326,10 @@ PacketHandler.prototype.updateRockPackets = function (rock, ifInit) {
         x: realPos.x,
         y: realPos.y
     };
-    if (ifInit) {
-        return info;
-    }
-    else {
-        this.CHUNK_PACKETS[rock.chunk].push(info);
-    }
+
+
+    this.CHUNK_PACKETS[rock.chunk].push(info);
+
 };
 
 PacketHandler.prototype.updateControllersPackets = function (controller) {

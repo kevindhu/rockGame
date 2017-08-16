@@ -48,7 +48,6 @@ Controller.prototype.onDelete = function () {
 
 
 Controller.prototype.update = function () {
-    var tile = this.gameServer.getEntityTile(this);
     this.updatePosition();
     this.updateQuadItem();
     this.updateChunk();

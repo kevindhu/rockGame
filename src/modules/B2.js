@@ -1,4 +1,4 @@
-const Box2D = require('./box2d');
+const Box2D = require("box2dweb");
 
 module.exports = {
     b2Vec2: Box2D.Common.Math.b2Vec2,

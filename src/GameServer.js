@@ -90,10 +90,10 @@ GameServer.prototype.initAsteroids = function () {
 
 GameServer.prototype.initRocks = function () {
     var x,y,i,rock;
-    for (i = 0; i < 10; i++) {
+    for (i = 0; i < 70; i++) {
         x = Arithmetic.getRandomInt(entityConfig.BORDER_WIDTH, entityConfig.WIDTH - entityConfig.BORDER_WIDTH);
         y = Arithmetic.getRandomInt(entityConfig.BORDER_WIDTH, entityConfig.WIDTH - entityConfig.BORDER_WIDTH);
-        rock = new Entity.Rock(this, x, y);
+        rock = new Entity.Rock(x,y, this);
     }
 };
 
@@ -201,15 +201,34 @@ GameServer.prototype.updateAsteroids = function () {
 };
 
 
+GameServer.prototype.updateRocks = function () {
+    var id, rock;
+
+    for (id in this.ROCK_LIST) {
+        rock = this.ROCK_LIST[id];
+        rock.tick();
+    }
+};
+
+GameServer.prototype.updateBox2d = function () {
+    this.box2d_world.Step(1 / 20, 8, 3);
+
+    //important to clear forces, otherwise forces will keep applying
+    this.box2d_world.ClearForces();
+};
+
+
 GameServer.prototype.update = function () {
     this.timeStamp = Date.now();
 
+    this.updateBox2d();
 
     this.initNewClients();
-    this.checkCollisions();
+    //this.checkCollisions();
 
     this.updateControllers();
-    this.updateAsteroids();
+    //this.updateAsteroids();
+    this.updateRocks();
 
     this.packetHandler.sendPackets();
 };
@@ -233,10 +252,9 @@ GameServer.prototype.start = function () {
     this.initChunks();
     this.initB2();
     this.initTiles();
-    this.initAsteroids();
+    //this.initAsteroids();
     this.initRocks();
     this.initControllers();
-    this.initHomes();
 
     /** START WEBSOCKET SERVICE **/
     var io = require('socket.io')(server, {});

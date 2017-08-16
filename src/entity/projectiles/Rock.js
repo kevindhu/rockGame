@@ -1,16 +1,24 @@
-const B2 = require("../../modules/B2");
-const B2Common = require("../../modules/B2Common");
+var B2 = require("../../modules/B2");
+var B2Common = require("../../modules/B2Common");
 var EntityFunctions = require('../EntityFunctions');
 var lerp = require('lerp');
 
 function Rock(x, y, gameServer) {
+    this.gameServer = gameServer;
+    this.packetHandler = gameServer.packetHandler;
+
     this.id = Math.random();
     this.x = x;
     this.y = y;
 
-    this.gameServer = gameServer;
-    this.body = B2Common.createBox(this.gameServer.box2d_world, this.x, this.y, this.width, this.height);
+
+    this.body = B2Common.createBox(this.gameServer.box2d_world, this.x, this.y, 50, 50);
+
+    this.getRandomVelocity();
+    this.init();
 }
+
+
 
 
 Rock.prototype.init = function () {
@@ -18,15 +26,21 @@ Rock.prototype.init = function () {
     this.gameServer.CHUNKS[this.chunk].ROCK_LIST[this.id] = this;
     this.gameServer.ROCK_LIST[this.id] = this;
     this.packetHandler.addRockPackets(this);
-
 };
 
 
 
 Rock.prototype.tick = function () {
-    this.decayVelocity();
+    //this.decayVelocity();
+    this.packetHandler.updateRockPackets(this);
 };
 
+
+Rock.prototype.getRandomVelocity = function () {
+    var v = this.body.GetLinearVelocity();
+    v.Add(new B2.b2Vec2(getRandom(-100, 100), getRandom(-100,100)));
+    this.body.SetLinearVelocity(v);
+};
 
 Rock.prototype.decayVelocity = function () {
     var b = this.body;
@@ -39,3 +53,9 @@ Rock.prototype.decayVelocity = function () {
     b.SetLinearVelocity(v);
 };
 
+
+function getRandom(min, max) {
+    return Math.random() * (max - min) + min;
+}
+
+module.exports = Rock;
