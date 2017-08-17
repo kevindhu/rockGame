@@ -27,13 +27,13 @@ Rock.prototype.init = function () {
 };
 
 Rock.prototype.setB2 = function () {
-    this.body = B2Common.createBox(this.gameServer.box2d_world, this, this.x, this.y, 0.4, 0.4);
+    this.body = B2Common.createBox(this.gameServer.box2d_world, this, this.x, this.y, 0.2, 0.2);
     this.getRandomVelocity();
 };
 
 
 Rock.prototype.tick = function () {
-    //this.decayVelocity();
+    this.decayVelocity();
     this.packetHandler.updateRockPackets(this);
     this.move();
 };
@@ -48,14 +48,19 @@ Rock.prototype.move = function () {
         var v = this.body.GetLinearVelocity();
         this.getTheta(this.queuePosition);
 
-        if (inBounds(x, this.queuePosition.x, 0.01) &&
-            inBounds(y, this.queuePosition.y, 0.01)) {
-            v.x = lerp(v.x, 0, 0.2);
-            v.y = lerp(v.y, 0, 0.2);
+        if (inBounds(x, this.queuePosition.x, 0.5) &&
+            inBounds(y, this.queuePosition.y, 0.5)) {
+            this.queuePosition = null;
         }
         else {
-            v.x = lerp(v.x, this.owner.maxVel * 2 * Math.cos(this.theta), 0.2);
-            v.y = lerp(v.y, this.owner.maxVel * 2 * Math.sin(this.theta), 0.2);
+            if (!this.owner.default) {
+                v.x = lerp(v.x, this.owner.maxVel * 5 * Math.cos(this.theta), 0.2);
+                v.y = lerp(v.y, this.owner.maxVel * 5 * Math.sin(this.theta), 0.2);
+            }
+            else {
+                v.x = lerp(v.x, this.owner.maxVel * 5 * Math.cos(this.theta), 0.2);
+                v.y = lerp(v.y, this.owner.maxVel * 5 * Math.sin(this.theta), 0.2);
+            }
         }
         this.body.SetLinearVelocity(v);
     }
@@ -84,8 +89,14 @@ Rock.prototype.decayVelocity = function () {
     var b = this.body;
     var v = b.GetLinearVelocity();
 
-    v.x = lerp(v.x, 0, 0.05);
-    v.y = lerp(v.y, 0, 0.05);
+    if (!this.owner || this.owner.default) {
+        v.x = lerp(v.x, 0, 0.2);
+        v.y = lerp(v.y, 0, 0.2);
+    }
+    else {
+        v.x = lerp(v.x, 0, 0.003);
+        v.y = lerp(v.y, 0, 0.003);
+    }
 
     //set the new velocity
     b.SetLinearVelocity(v);

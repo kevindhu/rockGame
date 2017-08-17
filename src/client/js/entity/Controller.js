@@ -81,11 +81,11 @@ Controller.prototype.show = function () {
     ctx.beginPath();
     //draw player object
     
-    var radius = this.radius;
+    var radius = this.radius * 5;
     ctx.moveTo(this.x + radius, this.y);
     
     for (i = Math.PI / 4; i <= 2 * Math.PI - Math.PI / 4; i += Math.PI / 4) {
-        theta = i + getRandom(-(this.maxHealth / this.health) / 7, (this.maxHealth / this.health) / 7);
+        theta = i;
         x = radius * Math.cos(theta);
         y = radius * Math.sin(theta);
         ctx.lineTo(this.x + x, this.y + y);

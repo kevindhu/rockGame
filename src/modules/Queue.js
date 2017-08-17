@@ -17,7 +17,7 @@ function Queue(){
 
     this.peek = function (i) {
         return a[i];
-    }
+    };
 
     this.length = function () {
         return a.length;

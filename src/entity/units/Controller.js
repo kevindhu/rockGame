@@ -161,7 +161,7 @@ Controller.prototype.updatePosition = function () {
 
 
 Controller.prototype.checkStationary = function () {
-    if (Math.abs(this.yVel) <= 0.05 && Math.abs(this.xVel) <= 0.05) {
+    if (Math.abs(this.yVel) <= 0.01 && Math.abs(this.xVel) <= 0.01) {
         this.yVel = 0;
         this.xVel = 0;
         this.stationary = true;

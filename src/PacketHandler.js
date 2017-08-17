@@ -313,19 +313,12 @@ PacketHandler.prototype.updateRockPackets = function (rock) {
     pos = new B2.b2Vec2(pos.x * 100, pos.y * 100);
 
     var qPosition = null;
-    if (rock.queuePosition) {
-        qPosition = {
-            x: rock.queuePosition.x * 100,
-            y: rock.queuePosition.y * 100
-        };
-    }
     var info = {
         master: "update",
         class: "rockInfo",
         id: rock.id,
         x: pos.x,
-        y: pos.y,
-        queuePosition: qPosition
+        y: pos.y
     };
 
 

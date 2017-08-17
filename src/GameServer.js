@@ -90,7 +90,7 @@ GameServer.prototype.initAsteroids = function () {
 
 GameServer.prototype.initRocks = function () {
     var x, y, i, rock;
-    for (i = 0; i < 1; i++) {
+    for (i = 0; i < 80; i++) {
         x = Arithmetic.getRandomInt(entityConfig.BORDER_WIDTH, entityConfig.WIDTH - entityConfig.BORDER_WIDTH);
         y = Arithmetic.getRandomInt(entityConfig.BORDER_WIDTH, entityConfig.WIDTH - entityConfig.BORDER_WIDTH);
         rock = new Entity.Rock(x, y, this);
@@ -152,8 +152,6 @@ GameServer.prototype.spawnAsteroids = function () {
         this.createAsteroid();
     }
 };
-
-
 
 
 GameServer.prototype.updateControllers = function () {
@@ -272,9 +270,11 @@ GameServer.prototype.start = function () {
         socket.on('mouseDown', function (data) {
             var player = this.CONTROLLER_LIST[data.id];
 
-
             if (player) {
-                //CUT THE ASTEROID
+                if (Math.abs(data.x) / 100 < 1 && Math.abs(data.y) / 100 < 1) { //if starting from player
+                    player.startNewTail();
+                    console.log("STARTING NEW TAIL");
+                }
             }
         }.bind(this));
 
@@ -282,14 +282,18 @@ GameServer.prototype.start = function () {
             var player = this.CONTROLLER_LIST[data.id];
 
             if (player) {
-                player.selectAsteroid(player.x + data.x/100, player.y + data.y/100);
+                player.selectAsteroid(player.x + data.x / 100, player.y + data.y / 100);
+
+                if (!player.default && player.clicked) {
+                    player.mAttemptEnqueue(player.x + data.x / 100, player.y + data.y / 100);
+                }
             }
         }.bind(this));
 
         socket.on('slash', function (data) {
             var player = this.CONTROLLER_LIST[data.id];
 
-            if (player && 1===2) {
+            if (player && 1 === 2) {
                 player.addSlash({
                     x: player.x + data.x,
                     y: player.y + data.y,
@@ -303,6 +307,9 @@ GameServer.prototype.start = function () {
 
             if (player && player.active) {
                 player.shootAsteroid(player.x + data.x, player.y + data.y);
+            }
+            if (player.clicked) {
+                player.endNewTail();
             }
         }.bind(this));
 

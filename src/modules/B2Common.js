@@ -9,7 +9,7 @@ module.exports = {
 function createBox(world, user, x, y, width, height) {
     var options = {
         'density': 1.0,
-        'friction': 1.0,
+        'friction': 0.1,
         'restitution': 0.0,
 
         'linearDamping': 0.0,
