@@ -2,6 +2,7 @@ var Entity = require('./entity');
 var QuadNode = require('./modules/QuadNode');
 var Chunk = require('./Chunk');
 var B2 = require('./modules/B2');
+var B2Common = require('./modules/B2Common');
 var PacketHandler = require('./PacketHandler');
 const entityConfig = require('./entity/entityConfig');
 const Arithmetic = require('./modules/Arithmetic');
@@ -49,7 +50,6 @@ GameServer.prototype.initB2 = function () {
 };
 
 
-
 GameServer.prototype.initTiles = function () {
     this.tileTree = new QuadNode({
         minx: this.minx,
@@ -89,11 +89,11 @@ GameServer.prototype.initAsteroids = function () {
 };
 
 GameServer.prototype.initRocks = function () {
-    var x,y,i,rock;
-    for (i = 0; i < 70; i++) {
+    var x, y, i, rock;
+    for (i = 0; i < 1; i++) {
         x = Arithmetic.getRandomInt(entityConfig.BORDER_WIDTH, entityConfig.WIDTH - entityConfig.BORDER_WIDTH);
         y = Arithmetic.getRandomInt(entityConfig.BORDER_WIDTH, entityConfig.WIDTH - entityConfig.BORDER_WIDTH);
-        rock = new Entity.Rock(x,y, this);
+        rock = new Entity.Rock(x, y, this);
     }
 };
 
@@ -154,33 +154,7 @@ GameServer.prototype.spawnAsteroids = function () {
 };
 
 
-GameServer.prototype.checkControllerCollision = function (controller) {
-    var controllerBound = {
-        minx: controller.x - controller.radius,
-        miny: controller.y - controller.radius,
-        maxx: controller.x + controller.radius,
-        maxy: controller.y + controller.radius
-    };
 
-    this.asteroidTree.find(controllerBound, function (asteroid) {
-        if (asteroid.fast && asteroid.tempNeutral !== controller) {
-            asteroid.decreaseHealth(controller.maxHealth);
-            controller.decreaseHealth(Math.abs(asteroid.xVel) + Math.abs(asteroid.yVel));
-        }
-        if (asteroid.glowing && asteroid.owner === controller) {
-            controller.consumeAsteroid(asteroid);
-        }
-    }.bind(this));
-
-};
-
-GameServer.prototype.checkCollisions = function () {
-    var id;
-    for (id in this.CONTROLLER_LIST) {
-        var controller = this.CONTROLLER_LIST[id];
-        this.checkControllerCollision(controller);
-    }
-};
 
 GameServer.prototype.updateControllers = function () {
     for (var id in this.CONTROLLER_LIST) {
@@ -211,7 +185,7 @@ GameServer.prototype.updateRocks = function () {
 };
 
 GameServer.prototype.updateBox2d = function () {
-    this.box2d_world.Step(1 / 20, 8, 3);
+    this.box2d_world.Step(1 / 20, 4, 3);
 
     //important to clear forces, otherwise forces will keep applying
     this.box2d_world.ClearForces();
@@ -251,6 +225,7 @@ GameServer.prototype.start = function () {
     /** INIT SERVER OBJECTS **/
     this.initChunks();
     this.initB2();
+    this.setupCollisionHandler();
     this.initTiles();
     //this.initAsteroids();
     this.initRocks();
@@ -299,25 +274,22 @@ GameServer.prototype.start = function () {
 
 
             if (player) {
-                //CUT THE ASTROID
+                //CUT THE ASTEROID
             }
         }.bind(this));
 
         socket.on('mouseMove', function (data) {
-
-
             var player = this.CONTROLLER_LIST[data.id];
 
-            if (player && !player.active) {
-                player.selectAsteroid(player.x + data.x, player.y + data.y);
-                player.moveAsteroids(player.x + data.x, player.y + data.y);
+            if (player) {
+                player.selectAsteroid(player.x + data.x/100, player.y + data.y/100);
             }
         }.bind(this));
 
         socket.on('slash', function (data) {
             var player = this.CONTROLLER_LIST[data.id];
 
-            if (player && player.active) {
+            if (player && 1===2) {
                 player.addSlash({
                     x: player.x + data.x,
                     y: player.y + data.y,
@@ -355,11 +327,6 @@ GameServer.prototype.start = function () {
                 case 38:
                 case 87:
                     player.pressingUp = data.state;
-                    break;
-                case 32:
-                    if (data.state) {
-                        player.switch();
-                    }
                     break;
                 case "hehe xd": //swirling motion
                     if (data.state) {
@@ -420,6 +387,36 @@ GameServer.prototype.createAsteroid = function () {
     return new Entity.Asteroid(x, y, null, radius, this);
 };
 
+
+GameServer.prototype.setupCollisionHandler = function () {
+
+    B2.b2ContactListener.prototype.BeginContact = function (contact) {
+        var a = contact.GetFixtureA().GetUserData();
+        var b = contact.GetFixtureB().GetUserData();
+
+        if (a instanceof Entity.Rock && b instanceof Entity.Player) {
+            b.addRock(a);
+        }
+        if (a instanceof Entity.Player && b instanceof Entity.Rock) {
+            a.addRock(b);
+        }
+    }.bind(this);
+
+
+    B2.b2ContactListener.prototype.PreSolve = function (contact) {
+        var a = contact.GetFixtureA().GetUserData();
+        var b = contact.GetFixtureB().GetUserData();
+
+        if (a instanceof Entity.Rock && b instanceof Entity.Player) {
+            contact.SetEnabled(false);
+        }
+        if (a instanceof Entity.Player && b instanceof Entity.Rock) {
+            contact.SetEnabled(false);
+        }
+    }.bind(this);
+
+
+};
 
 Object.size = function (obj) {
     var size = 0, key;

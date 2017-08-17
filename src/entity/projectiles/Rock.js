@@ -10,35 +10,73 @@ function Rock(x, y, gameServer) {
     this.id = Math.random();
     this.x = x;
     this.y = y;
+    this.theta = 0;
 
+    this.queuePosition = null;
+    this.owner = null;
 
-    this.body = B2Common.createBox(this.gameServer.box2d_world, this.x, this.y, 50, 50);
-
-    this.getRandomVelocity();
     this.init();
 }
 
-
-
-
 Rock.prototype.init = function () {
+    this.setB2();
     this.chunk = EntityFunctions.findChunk(this.gameServer, this);
     this.gameServer.CHUNKS[this.chunk].ROCK_LIST[this.id] = this;
     this.gameServer.ROCK_LIST[this.id] = this;
     this.packetHandler.addRockPackets(this);
 };
 
+Rock.prototype.setB2 = function () {
+    this.body = B2Common.createBox(this.gameServer.box2d_world, this, this.x, this.y, 0.4, 0.4);
+    this.getRandomVelocity();
+};
 
 
 Rock.prototype.tick = function () {
     //this.decayVelocity();
     this.packetHandler.updateRockPackets(this);
+    this.move();
 };
 
 
+
+Rock.prototype.move = function () {
+    var x = this.body.GetPosition().x;
+    var y = this.body.GetPosition().y;
+
+    if (this.queuePosition) {
+        var v = this.body.GetLinearVelocity();
+        this.getTheta(this.queuePosition);
+
+        if (inBounds(x, this.queuePosition.x, 0.01) &&
+            inBounds(y, this.queuePosition.y, 0.01)) {
+            v.x = lerp(v.x, 0, 0.2);
+            v.y = lerp(v.y, 0, 0.2);
+        }
+        else {
+            v.x = lerp(v.x, this.owner.maxVel * 2 * Math.cos(this.theta), 0.2);
+            v.y = lerp(v.y, this.owner.maxVel * 2 * Math.sin(this.theta), 0.2);
+        }
+        this.body.SetLinearVelocity(v);
+    }
+};
+
+
+function inBounds(x1, x2, range) {
+    return Math.abs(x1 - x2) < range;
+}
+
+
+Rock.prototype.getTheta = function (target, hard) {
+    var x = this.body.GetPosition().x;
+    var y = this.body.GetPosition().y;
+
+    this.theta = Math.atan2(target.y - y, target.x - x) % (2 * Math.PI);
+};
+
 Rock.prototype.getRandomVelocity = function () {
     var v = this.body.GetLinearVelocity();
-    v.Add(new B2.b2Vec2(getRandom(-100, 100), getRandom(-100,100)));
+    v.Add(new B2.b2Vec2(getRandom(-0.4, 0.4), getRandom(-0.4,0.4)));
     this.body.SetLinearVelocity(v);
 };
 

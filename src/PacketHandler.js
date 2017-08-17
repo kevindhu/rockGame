@@ -32,8 +32,6 @@ function Packet() {
     this.addAsteroids.length = 0;
     this.deleteControllers = new BinaryWriter();
     this.addAsteroids.length = 0;
-
-
 }
 
 Packet.prototype.build = function () {
@@ -165,15 +163,13 @@ PacketHandler.prototype._addAsteroidPackets = function (asteroid, writer) {
     writer.writeBytes(info);
     writer.length++;
 };
-
-
 PacketHandler.prototype._updateControllersPackets = function (controller) {
     var temp = {
         master: "update",
         class: "controllerInfo",
         id: controller.id,
-        x: controller.x,
-        y: controller.y,
+        x: controller.x * 100,
+        y: controller.y * 100,
         health: controller.health,
         maxHealth: controller.maxHealth,
         theta: controller.theta,
@@ -188,13 +184,10 @@ PacketHandler.prototype._updateControllersPackets = function (controller) {
     var info = controller.handler.updateInfo();
     this._CHUNK_PACKETS[controller.chunk].updateControllers.writeBytes(info);
 };
-
-
 PacketHandler.prototype._updateAsteroidsPackets = function (asteroid) {
     var info = asteroid.handler.updateInfo();
     this._CHUNK_PACKETS[asteroid.chunk].updateAsteroids.writeBytes(info);
 };
-
 PacketHandler.prototype._deleteControllerPackets = function (controller, chunk) {
     var info = controller.handler.deleteInfo();
     if (chunk) {
@@ -220,10 +213,10 @@ PacketHandler.prototype.addTilePackets = function (tile, ifInit) {
         master: "add",
         class: "tileInfo",
         id: tile.id,
-        x: tile.x,
-        y: tile.y,
+        x: tile.x * 100,
+        y: tile.y * 100,
+        length: tile.length * 100,
         color: tile.color,
-        length: tile.length,
         alert: tile.alert
     };
 };
@@ -234,8 +227,8 @@ PacketHandler.prototype.addControllerPackets = function (controller, ifInit) {
         class: "controllerInfo",
         id: controller.id,
         name: controller.name,
-        x: controller.x,
-        y: controller.y,
+        x: controller.x * 100,
+        y: controller.y * 100,
         health: controller.health,
         maxHealth: controller.maxHealth,
         theta: controller.theta,
@@ -256,8 +249,8 @@ PacketHandler.prototype.addAsteroidPackets = function (asteroid, ifInit) {
         master: "add",
         class: "asteroidInfo",
         id: asteroid.id,
-        x: asteroid.x,
-        y: asteroid.y,
+        x: asteroid.x * 100,
+        y: asteroid.y * 100,
         radius: asteroid.radius,
         health: asteroid.health,
         maxHealth: asteroid.maxHealth,
@@ -297,7 +290,7 @@ PacketHandler.prototype.addChatPackets = function (name, message) {
 
 PacketHandler.prototype.addRockPackets = function (rock, ifInit) {
     var vector = rock.body.GetPosition();
-    var realPos = new B2.b2Vec2(vector.x, -(vector.y - entityConfig.WIDTH));
+    var realPos = new B2.b2Vec2(vector.x * 100, vector.y * 100);
 
     var info = {
         master: "add",
@@ -316,15 +309,23 @@ PacketHandler.prototype.addRockPackets = function (rock, ifInit) {
 
 
 PacketHandler.prototype.updateRockPackets = function (rock) {
-    var vector = rock.body.GetPosition();
-    var realPos = new B2.b2Vec2(vector.x, -(vector.y - entityConfig.WIDTH));
+    var pos = rock.body.GetPosition();
+    pos = new B2.b2Vec2(pos.x * 100, pos.y * 100);
 
+    var qPosition = null;
+    if (rock.queuePosition) {
+        qPosition = {
+            x: rock.queuePosition.x * 100,
+            y: rock.queuePosition.y * 100
+        };
+    }
     var info = {
         master: "update",
         class: "rockInfo",
         id: rock.id,
-        x: realPos.x,
-        y: realPos.y
+        x: pos.x,
+        y: pos.y,
+        queuePosition: qPosition
     };
 
 
@@ -337,8 +338,8 @@ PacketHandler.prototype.updateControllersPackets = function (controller) {
         master: "update",
         class: "controllerInfo",
         id: controller.id,
-        x: controller.x,
-        y: controller.y,
+        x: controller.x * 100,
+        y: controller.y * 100,
         health: controller.health,
         maxHealth: controller.maxHealth,
         theta: controller.theta,

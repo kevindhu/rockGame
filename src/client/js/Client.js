@@ -79,7 +79,7 @@ Client.prototype.initCanvases = function () {
         if (square(x) + square(y) > square(this.SELF_PLAYER.range)) { //if not in range
             return;
         }
-        if (this.active) {
+        if (1===2) {
             if (this.SLASH.length >= 2) {
                 if (square(this.SLASH[0].x - this.SLASH[1].x) +
                     square(this.SLASH[0].y - this.SLASH[1].y) > 1000) {

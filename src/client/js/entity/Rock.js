@@ -1,12 +1,13 @@
-function Rock(asteroidInfo, client) {
-    this.x = asteroidInfo.x;
-    this.y = asteroidInfo.y;
+function Rock(rockInfo, client) {
+    this.x = rockInfo.x;
+    this.y = rockInfo.y;
     this.client = client;
 }
 
-Rock.prototype.update = function (asteroidInfo) {
-    this.x = asteroidInfo.x;
-    this.y = asteroidInfo.y;
+Rock.prototype.update = function (rockInfo) {
+    this.x = rockInfo.x;
+    this.y = rockInfo.y;
+    this.queuePosition = rockInfo.queuePosition;
 };
 
 
@@ -18,6 +19,12 @@ Rock.prototype.show = function () {
     ctx.arc(this.x, this.y, 20, 0, 2 * Math.PI, false);
     ctx.fill();
     ctx.stroke();
+
+    if (this.queuePosition) {
+        ctx.arc(this.queuePosition.x, this.queuePosition.y, 10, 0, 2 * Math.PI, false);
+        ctx.fill();
+        ctx.stroke();
+    }
     ctx.closePath();
 };
 

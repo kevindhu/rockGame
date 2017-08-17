@@ -13,5 +13,7 @@ module.exports = {
     b2CircleShape: Box2D.Collision.Shapes.b2CircleShape,
     b2DebugDraw: Box2D.Dynamics.b2DebugDraw,
     b2MouseJointDef: Box2D.Dynamics.Joints.b2MouseJointDef,
-    b2EdgeShape: Box2D.Collision.Shapes.b2EdgeShape
+    b2EdgeShape: Box2D.Collision.Shapes.b2EdgeShape,
+    b2ContactListener: Box2D.Dynamics.b2ContactListener,
+    b2Contact: Box2D.Dynamics.Contacts.b2Contact
 };

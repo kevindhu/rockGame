@@ -14,7 +14,7 @@ function Controller(id, gameServer) {
     this.stationary = true;
     this.maxHealth = 5;
     this.health = 5;
-    this.maxVel = 10;
+    this.maxVel = 1;
     this.maxXVel = 10;
     this.maxYVel = 10;
     this.timer = 0;
@@ -161,7 +161,7 @@ Controller.prototype.updatePosition = function () {
 
 
 Controller.prototype.checkStationary = function () {
-    if (Math.abs(this.yVel) <= 0.3 && Math.abs(this.xVel) <= 0.3) {
+    if (Math.abs(this.yVel) <= 0.05 && Math.abs(this.xVel) <= 0.05) {
         this.yVel = 0;
         this.xVel = 0;
         this.stationary = true;

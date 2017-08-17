@@ -6,7 +6,7 @@ module.exports = {
 
 
 
-function createBox(world, x, y, width, height) {
+function createBox(world, user, x, y, width, height) {
     var options = {
         'density': 1.0,
         'friction': 1.0,
@@ -18,7 +18,7 @@ function createBox(world, x, y, width, height) {
         'gravityScale': 1.0,
         'type': B2.b2Body.b2_dynamicBody,
         'fixedRotation': false,
-        'userData': null
+        'userData': user
     };
 
     var body_def = new B2.b2BodyDef();
@@ -35,6 +35,7 @@ function createBox(world, x, y, width, height) {
     fix_def.restitution = options.restitution;
     fix_def.shape = new B2.b2PolygonShape();
     fix_def.userData = options.userData;
+    //fix_def.filter.maskBits = 0x0000;
 
     fix_def.shape.SetAsBox(width / 2, height / 2);
 
