@@ -21,7 +21,6 @@ function Tile(x, y, gameServer) {
 Tile.prototype.init = function () {
     this.setRandomColor();
     this.addQuadItem();
-    this.gameServer.tileTree.insert(this.quadItem);
     this.gameServer.TILE_LIST[this.id] = this;
     this.chunk = EntityFunctions.findChunk(this.gameServer, this);
     this.gameServer.CHUNKS[this.chunk].TILE_LIST[this.id] = this;

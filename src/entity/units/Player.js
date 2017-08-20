@@ -11,7 +11,7 @@ function Player(id, name, gameServer) {
     this.name = getName(name);
     this.type = "Player";
     this.radius = 10;
-    this.maxVel = 0.4;
+    this.maxVel = 10;
 
     this.setMaxVelocities();
 
@@ -64,7 +64,8 @@ Player.prototype.update = function () {
     }
 
     if (!this.default) {
-        this.translateQueuePositions(this.xVel, this.yVel);
+        //console.log(this.xVel, this.yVel);
+        this.translateQueuePositions();
     }
 
 
@@ -82,7 +83,7 @@ Player.prototype.update = function () {
 
 
 Player.prototype.createCircle = function (radius) {
-    console.log("CREATING NEW CIRCLE");
+    console.log("CREATING NEW CIRCLE with radius: " + radius);
     this.default = false;
     var delta = 2 * Math.PI / this.rocks.length;
     var theta, rock;
@@ -91,10 +92,15 @@ Player.prototype.createCircle = function (radius) {
         theta = delta * i;
         rock = this.rocks[i];
         rock.queuePosition = {
-            x: radius * Math.cos(theta),
-            y: radius * Math.sin(theta)
-        }
+            x: this.x + radius * Math.cos(theta),
+            y: this.y + radius * Math.sin(theta)
+        };
     }
+
+    this.pX = this.x;
+    this.pY = this.y;
+
+
 };
 
 
@@ -102,7 +108,7 @@ Player.prototype.resetLevels = function () {
     this.level = 0;
     this.range = 500;
     this.radius = 10;
-    this.maxVel = 0.3;
+    this.maxVel = 10;
     this.maxGrabRadius = 50;
     this.power = 0; //power determines max size of things you can hold
 
@@ -264,21 +270,25 @@ Player.prototype.updateQueuePositions = function () {
     }
 };
 
-Player.prototype.translateQueuePositions = function (x, y) {
+Player.prototype.translateQueuePositions = function () {
     var rock;
+    var x = this.x - this.pX;
+    var y = this.y - this.pY;
+
+    this.pX = this.x;
+    this.pY = this.y;
 
     for (var i = 0; i < this.rocks.length; i++) {
         rock = this.rocks[i];
 
-        rock.queuePosition = this.rockQueue.peek(this.rockMaxLength - 1 - i);
         if (rock.queuePosition) {
             rock.queuePosition.x += x;
             rock.queuePosition.y += y;
         }
 
         var v = rock.body.GetLinearVelocity();
-        v.x = 20 * x;
-        v.y = 20 * y;
+        v.x += 4 * x;
+        v.y += 4 * y;
 
         rock.body.SetLinearVelocity(v);
 
@@ -350,10 +360,7 @@ Player.prototype.removeRock = function (rock) {
 };
 
 
-Player.prototype.setMaxVelocities = function () {
-    this.maxXVel = this.maxVel * Math.sin(Math.PI / 4);
-    this.maxYVel = this.maxVel * Math.cos(Math.PI / 4);
-};
+
 
 Player.prototype.updateMaxVelocities = function (amount) {
     this.maxVel += amount;

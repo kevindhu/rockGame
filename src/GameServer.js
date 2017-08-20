@@ -17,15 +17,10 @@ function GameServer() {
 
     this.CONTROLLER_LIST = {};
 
-    this.ASTEROID_LIST = {};
     this.ROCK_LIST = {};
 
     this.TILE_LIST = {};
 
-    //these are all updaters (updated every tick of server loop until deleted)
-
-    this.controllerTree = null;
-    this.tileTree = null;
 
     this.minx = entityConfig.BORDER_WIDTH;
     this.miny = entityConfig.BORDER_WIDTH;
@@ -51,12 +46,6 @@ GameServer.prototype.initB2 = function () {
 
 
 GameServer.prototype.initTiles = function () {
-    this.tileTree = new QuadNode({
-        minx: this.minx,
-        miny: this.miny,
-        maxx: this.maxx,
-        maxy: this.maxy
-    });
     for (var i = 0; i < Math.sqrt(entityConfig.TILES); i++) {
         for (var j = 0; j < Math.sqrt(entityConfig.TILES); j++) {
             new Entity.Tile(entityConfig.BORDER_WIDTH + this.tileLength * i,
@@ -65,32 +54,12 @@ GameServer.prototype.initTiles = function () {
     }
 };
 
-GameServer.prototype.initControllers = function () {
-    this.controllerTree = new QuadNode({
-        minx: this.minx,
-        miny: this.miny,
-        maxx: this.maxx,
-        maxy: this.maxy
-    });
-};
 
 
-GameServer.prototype.initAsteroids = function () {
-    this.asteroidTree = new QuadNode({
-        minx: this.minx,
-        miny: this.miny,
-        maxx: this.maxx,
-        maxy: this.maxy
-    });
-
-    for (var i = 0; i < entityConfig.SHARDS; i++) {
-        this.createAsteroid();
-    }
-};
 
 GameServer.prototype.initRocks = function () {
     var x, y, i, rock;
-    for (i = 0; i < 80; i++) {
+    for (i = 0; i < 50; i++) {
         x = Arithmetic.getRandomInt(entityConfig.BORDER_WIDTH, entityConfig.WIDTH - entityConfig.BORDER_WIDTH);
         y = Arithmetic.getRandomInt(entityConfig.BORDER_WIDTH, entityConfig.WIDTH - entityConfig.BORDER_WIDTH);
         rock = new Entity.Rock(x, y, this);
@@ -225,9 +194,7 @@ GameServer.prototype.start = function () {
     this.initB2();
     this.setupCollisionHandler();
     this.initTiles();
-    //this.initAsteroids();
     this.initRocks();
-    this.initControllers();
 
     /** START WEBSOCKET SERVICE **/
     var io = require('socket.io')(server, {});
@@ -350,36 +317,6 @@ GameServer.prototype.createPlayer = function (socket, info) {
     return new Entity.Player(socket.id, info.name, this);
 };
 
-
-GameServer.prototype.createAsteroid = function () {
-    var emptySpace = false;
-    var radius;
-    var x, y;
-
-    while (!emptySpace) {
-        radius = Arithmetic.getRandomInt(15, 200);
-        x = Arithmetic.getRandomInt(entityConfig.BORDER_WIDTH, entityConfig.WIDTH - entityConfig.BORDER_WIDTH);
-        y = Arithmetic.getRandomInt(entityConfig.BORDER_WIDTH, entityConfig.WIDTH - entityConfig.BORDER_WIDTH);
-
-        var entityBound = {
-            minx: x - radius,
-            miny: y - radius,
-            maxx: x + radius,
-            maxy: y + radius
-        };
-
-        var check = null;
-        this.asteroidTree.find(entityBound, function (asteroid) {
-            check = asteroid;
-        }.bind(this));
-
-        if (!check) {
-            emptySpace = true;
-        }
-    }
-
-    return new Entity.Asteroid(x, y, null, radius, this);
-};
 
 
 GameServer.prototype.setupCollisionHandler = function () {

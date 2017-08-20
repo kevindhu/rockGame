@@ -1,3 +1,5 @@
+var B2 = require("../../modules/B2");
+var B2Common = require("../../modules/B2Common");
 const entityConfig = require('../entityConfig');
 var EntityFunctions = require('../EntityFunctions');
 const Arithmetic = require('../../modules/Arithmetic');
@@ -11,13 +13,8 @@ function Controller(id, gameServer) {
 
     this.radius = 20;
 
-    this.stationary = true;
     this.maxHealth = 5;
     this.health = 5;
-    this.maxVel = 1;
-    this.maxXVel = 10;
-    this.maxYVel = 10;
-    this.timer = 0;
     this.xVel = 0;
     this.yVel = 0;
     this.theta = 0;
@@ -30,17 +27,27 @@ function Controller(id, gameServer) {
 }
 
 Controller.prototype.init = function () {
-    this.addQuadItem();
+    this.setMaxVelocities();
+    this.initB2();
     this.gameServer.CONTROLLER_LIST[this.id] = this;
     this.chunk = EntityFunctions.findChunk(this.gameServer, this);
     this.gameServer.CHUNKS[this.chunk].CONTROLLER_LIST[this.id] = this;
     this.gameServer.packetHandler.addControllerPackets(this);
 };
 
+Controller.prototype.setMaxVelocities = function () {
+    this.maxXVel = this.maxVel * Math.sin(Math.PI / 4);
+    this.maxYVel = this.maxVel * Math.cos(Math.PI / 4);
+};
+
+
+Controller.prototype.initB2 = function () {
+    this.body = B2Common.createBox(this.gameServer.box2d_world, this, this.x, this.y, 0.5, 0.5);
+
+
+};
 
 Controller.prototype.onDelete = function () {
-    this.gameServer.controllerTree.remove(this.quadItem);
-
     delete this.gameServer.CONTROLLER_LIST[this.id];
     delete this.gameServer.CHUNKS[this.chunk].CONTROLLER_LIST[this.id];
     this.packetHandler.deleteControllerPackets(this);
@@ -49,12 +56,10 @@ Controller.prototype.onDelete = function () {
 
 Controller.prototype.update = function () {
     this.updatePosition();
-    this.updateQuadItem();
     this.updateChunk();
 
     this.packetHandler.updateControllersPackets(this);
 };
-
 
 
 Controller.prototype.updateChunk = function () {
@@ -67,9 +72,6 @@ Controller.prototype.updateChunk = function () {
 };
 
 
-
-
-
 Controller.prototype.ricochet = function (controller) {
     var xAdd = Math.abs(controller.x - this.x) / 20;
     var yAdd = Math.abs(controller.y - this.y) / 20;
@@ -79,47 +81,20 @@ Controller.prototype.ricochet = function (controller) {
     if (yAdd < 0) {
         yAdd = 4;
     }
-    var xImpulse = (4 - xAdd)/10;
-    var yImpulse = (4 - yAdd)/10;
+    var xImpulse = (4 - xAdd) / 10;
+    var yImpulse = (4 - yAdd) / 10;
 
 
-    this.xVel += (controller.x > this.x) ? -xImpulse: xImpulse;
-    this.yVel += (controller.y > this.y) ? -yImpulse: yImpulse;
+    this.xVel += (controller.x > this.x) ? -xImpulse : xImpulse;
+    this.yVel += (controller.y > this.y) ? -yImpulse : yImpulse;
 };
 
-
-Controller.prototype.addQuadItem = function () {
-    this.quadItem = {
-        cell: this,
-        bound: {
-            minx: this.x - this.radius,
-            miny: this.y - this.radius,
-            maxx: this.x + this.radius,
-            maxy: this.y + this.radius
-        }
-    };
-    this.gameServer.controllerTree.insert(this.quadItem);
-};
-
-Controller.prototype.updateQuadItem = function () {
-    if (!this.stationary) { //also maybe add a timer so it doesn't update every frame
-        this.quadItem.bound = {
-            minx: this.x - this.radius,
-            miny: this.y - this.radius,
-            maxx: this.x + this.radius,
-            maxy: this.y + this.radius
-        };
-        this.gameServer.controllerTree.remove(this.quadItem);
-        this.gameServer.controllerTree.insert(this.quadItem);
-    }
-};
 
 Controller.prototype.increaseHealth = function (amount) {
     if (this.health <= 10) {
         this.health += amount;
     }
 };
-
 Controller.prototype.decreaseHealth = function (amount) {
     this.health -= amount;
     if (this.health <= 0) {
@@ -152,45 +127,19 @@ Controller.prototype.updatePosition = function () {
     if (onBoundary(this.y + this.yVel)) {
         this.yVel = 0;
     }
-    this.checkStationary();
-    this.checkStuck();
-    this.y += this.yVel;
-    this.x += this.xVel;
+
+    var vel = this.body.GetLinearVelocity();
+    vel.x = this.xVel;
+    vel.y = this.yVel;
+
+    this.body.SetLinearVelocity(vel);
+
+
+    this.x = this.body.GetPosition().x;
+    this.y = this.body.GetPosition().y;
 };
 
 
-
-Controller.prototype.checkStationary = function () {
-    if (Math.abs(this.yVel) <= 0.01 && Math.abs(this.xVel) <= 0.01) {
-        this.yVel = 0;
-        this.xVel = 0;
-        this.stationary = true;
-    }
-    else {
-        this.stationary = false;
-    }
-};
-
-
-Controller.prototype.checkStuck = function () {
-    var resolveStuck = function (coord) {
-        var newCoord;
-        if (overBoundary(coord)) {
-            if (coord < entityConfig.WIDTH / 2) {
-                newCoord = entityConfig.BORDER_WIDTH + 100;
-                return newCoord;
-            }
-            else {
-                newCoord = entityConfig.WIDTH - entityConfig.BORDER_WIDTH - 100;
-                return newCoord;
-            }
-        }
-        return coord;
-    };
-
-    this.x = resolveStuck(this.x);
-    this.y = resolveStuck(this.y);
-};
 
 
 function onBoundary(coord) {

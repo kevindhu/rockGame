@@ -48,18 +48,18 @@ Rock.prototype.move = function () {
         var v = this.body.GetLinearVelocity();
         this.getTheta(this.queuePosition);
 
-        if (inBounds(x, this.queuePosition.x, 0.5) &&
-            inBounds(y, this.queuePosition.y, 0.5)) {
-            this.queuePosition = null;
+        if (inBounds(x, this.queuePosition.x, 0.2) &&
+            inBounds(y, this.queuePosition.y, 0.2)) {
+            //this.queuePosition = null;
         }
         else {
             if (!this.owner.default) {
-                v.x = lerp(v.x, this.owner.maxVel * 5 * Math.cos(this.theta), 0.2);
-                v.y = lerp(v.y, this.owner.maxVel * 5 * Math.sin(this.theta), 0.2);
+                v.x = lerp(v.x, this.owner.maxVel * 1 * Math.cos(this.theta), 0.2);
+                v.y = lerp(v.y, this.owner.maxVel * 1 * Math.sin(this.theta), 0.2);
             }
             else {
-                v.x = lerp(v.x, this.owner.maxVel * 5 * Math.cos(this.theta), 0.2);
-                v.y = lerp(v.y, this.owner.maxVel * 5 * Math.sin(this.theta), 0.2);
+                v.x = lerp(v.x, this.owner.maxVel * 2 * Math.cos(this.theta), 0.2);
+                v.y = lerp(v.y, this.owner.maxVel * 2 * Math.sin(this.theta), 0.2);
             }
         }
         this.body.SetLinearVelocity(v);
@@ -89,14 +89,9 @@ Rock.prototype.decayVelocity = function () {
     var b = this.body;
     var v = b.GetLinearVelocity();
 
-    if (!this.owner || this.owner.default) {
-        v.x = lerp(v.x, 0, 0.2);
-        v.y = lerp(v.y, 0, 0.2);
-    }
-    else {
-        v.x = lerp(v.x, 0, 0.003);
-        v.y = lerp(v.y, 0, 0.003);
-    }
+    v.x = lerp(v.x, 0, 0.2);
+    v.y = lerp(v.y, 0, 0.2);
+
 
     //set the new velocity
     b.SetLinearVelocity(v);
