@@ -42,14 +42,34 @@ Client.prototype.initCanvases = function () {
             var x = ((event.x / this.mainCanvas.offsetWidth * 1000) - this.mainCanvas.width / 2) / this.scaleFactor;
             var y = ((event.y / this.mainCanvas.offsetHeight * 500) - this.mainCanvas.height / 2) / this.scaleFactor;
 
-            this.socket.emit("mouseDown", {
-                id: this.SELF_ID,
-                x: x,
-                y: y
-            });
+
+
+            if (Math.abs(x) + Math.abs(y) < 200) {
+                this.playerClicked = true;
+                this.circleConstruct = [];
+                this.circleStageCount = 0;
+            }
+            else {
+                this.socket.emit("startMining", {
+                    id: this.SELF_ID,
+                    x: x,
+                    y: y
+                });
+            }
         }
     }.bind(this));
     document.addEventListener("mouseup", function (event) {
+        if (this.playerClicked) {
+            if (this.circleStageCount > 3) { //made a full circle (at least 3 quadrants covered)
+                this.sendCircle(this.circleConstruct);
+            }
+            this.playerClicked = false;
+            this.circleConstruct = [];
+            this.circleStageCount = 0;
+
+            this.TRAIL = new Entity.Trail(this);
+        }
+
         if (!this.CHAT_CLICK) {
             this.mainUI.gameUI.chatUI.close();
         }
@@ -79,6 +99,9 @@ Client.prototype.initCanvases = function () {
         if (square(x) + square(y) > square(this.SELF_PLAYER.range)) { //if not in range
             return;
         }
+
+
+
         if (1===2) {
             if (this.SLASH.length >= 2) {
                 if (square(this.SLASH[0].x - this.SLASH[1].x) +
@@ -104,8 +127,7 @@ Client.prototype.initCanvases = function () {
                     });
             }
             return;
-        }
-
+        } //for slashing
 
         if (!this.pre) {
             this.pre = {
@@ -113,21 +135,64 @@ Client.prototype.initCanvases = function () {
                 y: y
             }
         }
-        else if (square(this.pre.x - x) + square(this.pre.y - y) > 400) {
+        else if (square(this.pre.x - x) + square(this.pre.y - y) > 80) {
             this.pre = {
                 x: x,
                 y: y
             };
-            this.socket.emit("mouseMove", {
-                id: this.SELF_ID,
-                x: x,
-                y: y
-            });
-            this.TRAIL.updateList(x, y);
+
+            if (this.playerClicked) {
+                if (this.pre.x > 0 && this.pre.y < 0) {
+                    //quadrant 1
+                    if (!this.circleConstruct[0]) {
+                        this.circleConstruct[0] = this.pre;
+                        this.circleStageCount ++;
+                    }
+                }
+                if (this.pre.x < 0 && this.pre.y < 0) {
+                    //quadrant 2
+                    if (!this.circleConstruct[1]) {
+                        this.circleConstruct[1] = this.pre;
+                        this.circleStageCount ++;
+                    }
+                }
+                if (this.pre.x < 0 && this.pre.y > 0) {
+                    //quadrant 3
+                    if (!this.circleConstruct[2]) {
+                        this.circleConstruct[2] = this.pre;
+                        this.circleStageCount ++;
+                    }
+                }
+                if (this.pre.x > 0 && this.pre.y > 0) {
+                    //quadrant 4
+                    if (!this.circleConstruct[3]) {
+                        this.circleConstruct[3] = this.pre;
+                        this.circleStageCount ++;
+                    }
+                }
+
+                this.TRAIL.updateList(x, y);
+            }
         }
     }.bind(this));
 };
 
+
+
+Client.prototype.sendCircle = function (construct) {
+
+    var radiiNormal = function (vector) {
+        return Math.sqrt(vector.x * vector.x + vector.y * vector.y);
+    };
+
+    var maxRadius = Math.max(radiiNormal(construct[0]), radiiNormal(construct[1]), radiiNormal(construct[2]),
+        radiiNormal(construct[3]));
+
+    this.socket.emit("createCircle", {
+        id: this.SELF_ID,
+        radius: maxRadius
+    });
+};
 
 Client.prototype.initLists = function () {
     this.CONTROLLER_LIST = {};
@@ -157,7 +222,6 @@ Client.prototype.handleLOL =  function (data) {
     var reader = new BinaryReader(data);
 
     if (reader.length() > 20) {
-        console.log("YIPEEEE");
         console.log(reader.readInt8());
 
         //console.log(reader.readInt32()); //asteroid id

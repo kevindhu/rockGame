@@ -11,13 +11,12 @@ function Player(id, name, gameServer) {
     this.name = getName(name);
     this.type = "Player";
     this.radius = 10;
-    this.maxVel = 0.2;
+    this.maxVel = 0.4;
 
     this.setMaxVelocities();
 
     this.rocks = [];
     this.rockQueue = new Queue(); //maximum length of 10
-    this.rockQueueConstruct = new Queue();
 
     this.x = entityConfig.WIDTH / 2;
     this.y = entityConfig.WIDTH / 2;
@@ -82,11 +81,28 @@ Player.prototype.update = function () {
 };
 
 
+Player.prototype.createCircle = function (radius) {
+    console.log("CREATING NEW CIRCLE");
+    this.default = false;
+    var delta = 2 * Math.PI / this.rocks.length;
+    var theta, rock;
+
+    for (var i = 0; i < this.rocks.length; i++) {
+        theta = delta * i;
+        rock = this.rocks[i];
+        rock.queuePosition = {
+            x: radius * Math.cos(theta),
+            y: radius * Math.sin(theta)
+        }
+    }
+};
+
+
 Player.prototype.resetLevels = function () {
     this.level = 0;
     this.range = 500;
     this.radius = 10;
-    this.maxVel = 1;
+    this.maxVel = 0.3;
     this.maxGrabRadius = 50;
     this.power = 0; //power determines max size of things you can hold
 
@@ -205,13 +221,15 @@ Player.prototype.startNewTail = function () {
     this.default = false;
     this.clicked = true;
     this.newLength = 0;
+    this.circleStage = 0; // for circles
 };
 
 Player.prototype.endNewTail = function () {
     this.newLength = 0;
     this.clicked = false;
-    this.buildQueueConstruct();
 };
+
+
 
 
 Player.prototype.mAttemptEnqueue = function (x, y) {
@@ -234,19 +252,8 @@ Player.prototype.mAttemptEnqueue = function (x, y) {
 };
 
 
-Player.prototype.buildQueueConstruct = function () {
-    this.rockQueue = this.rockQueueConstruct;
-    this.rockQueueConstruct = new Queue();
 
-    this.updateQueuePositions();
-};
 
-Player.prototype.mAddToRockQueueConstruct = function (x, y) {
-    this.rockQueueConstruct.enqueue({
-        x: x,
-        y: y
-    });
-};
 
 
 Player.prototype.updateQueuePositions = function () {

@@ -267,29 +267,6 @@ GameServer.prototype.start = function () {
             }
         }.bind(this));
 
-        socket.on('mouseDown', function (data) {
-            var player = this.CONTROLLER_LIST[data.id];
-
-            if (player) {
-                if (Math.abs(data.x) / 100 < 1 && Math.abs(data.y) / 100 < 1) { //if starting from player
-                    player.startNewTail();
-                    console.log("STARTING NEW TAIL");
-                }
-            }
-        }.bind(this));
-
-        socket.on('mouseMove', function (data) {
-            var player = this.CONTROLLER_LIST[data.id];
-
-            if (player) {
-                player.selectAsteroid(player.x + data.x / 100, player.y + data.y / 100);
-
-                if (!player.default && player.clicked) {
-                    player.mAttemptEnqueue(player.x + data.x / 100, player.y + data.y / 100);
-                }
-            }
-        }.bind(this));
-
         socket.on('slash', function (data) {
             var player = this.CONTROLLER_LIST[data.id];
 
@@ -302,17 +279,16 @@ GameServer.prototype.start = function () {
             }
         }.bind(this));
 
-        socket.on('mouseUp', function (data) {
+        socket.on('shootAsteroid', function (data) {
             var player = this.CONTROLLER_LIST[data.id];
 
             if (player && player.active) {
                 player.shootAsteroid(player.x + data.x, player.y + data.y);
             }
-            if (player.clicked) {
+            if (player && player.clicked) {
                 player.endNewTail();
             }
         }.bind(this));
-
 
         socket.on('keyEvent', function (data) {
             if (!player) {
@@ -341,6 +317,17 @@ GameServer.prototype.start = function () {
                     }
                     break;
             }
+
+        }.bind(this));
+
+        socket.on('createCircle', function (data) {
+            if (player.default) {
+                player.default = false;
+            }
+
+            var radius = data.radius/100;
+
+            player.createCircle(radius);
 
         }.bind(this));
 
