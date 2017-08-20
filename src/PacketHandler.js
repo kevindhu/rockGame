@@ -341,7 +341,8 @@ PacketHandler.prototype.updateControllersPackets = function (controller) {
         active: controller.active,
         slash: controller.slash,
         radius: controller.radius,
-        range: controller.range
+        range: controller.range,
+        circleRadius: controller.circleRadius * 100
     });
 };
 PacketHandler.prototype.updateAsteroidsPackets = function (asteroid) {

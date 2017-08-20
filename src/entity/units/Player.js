@@ -11,7 +11,6 @@ function Player(id, name, gameServer) {
     this.name = getName(name);
     this.type = "Player";
     this.radius = 10;
-    this.maxVel = 10;
 
     this.setMaxVelocities();
 
@@ -83,6 +82,7 @@ Player.prototype.update = function () {
 
 
 Player.prototype.createCircle = function (radius) {
+    this.circleRadius = radius;
     console.log("CREATING NEW CIRCLE with radius: " + radius);
     this.default = false;
     var delta = 2 * Math.PI / this.rocks.length;
@@ -108,7 +108,7 @@ Player.prototype.resetLevels = function () {
     this.level = 0;
     this.range = 500;
     this.radius = 10;
-    this.maxVel = 10;
+    this.maxVel = 5;
     this.maxGrabRadius = 50;
     this.power = 0; //power determines max size of things you can hold
 
@@ -182,8 +182,18 @@ Player.prototype.addRock = function (rock) {
     if (!this.containsRock(rock) && this.rocks.length <= this.rockMaxLength) {
         this.rocks.push(rock);
         rock.owner = this;
-        this.updateQueuePositions();
+
+        if (this.default) {
+            this.updateQueuePositions();
+        }
+        else {
+            this.createCircle(this.circleRadius);
+        }
+
     }
+
+
+
 };
 
 
@@ -236,8 +246,6 @@ Player.prototype.endNewTail = function () {
 };
 
 
-
-
 Player.prototype.mAttemptEnqueue = function (x, y) {
     if (!this.preXQ) {
         this.preXQ = x;
@@ -256,10 +264,6 @@ Player.prototype.mAttemptEnqueue = function (x, y) {
         this.preYQ = y;
     }
 };
-
-
-
-
 
 
 Player.prototype.updateQueuePositions = function () {
@@ -287,11 +291,9 @@ Player.prototype.translateQueuePositions = function () {
         }
 
         var v = rock.body.GetLinearVelocity();
-        v.x += 4 * x;
-        v.y += 4 * y;
-
+        //v.x += 0.5 * this.xVel; //1.25 is perfect lol
+        //v.y += 0.5 * this.yVel;
         rock.body.SetLinearVelocity(v);
-
 
     }
 };
@@ -358,8 +360,6 @@ Player.prototype.removeRock = function (rock) {
     }
     this.updateQueuePositions();
 };
-
-
 
 
 Player.prototype.updateMaxVelocities = function (amount) {

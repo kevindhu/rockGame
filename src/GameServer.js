@@ -59,11 +59,15 @@ GameServer.prototype.initTiles = function () {
 
 GameServer.prototype.initRocks = function () {
     var x, y, i, rock;
-    for (i = 0; i < 50; i++) {
-        x = Arithmetic.getRandomInt(entityConfig.BORDER_WIDTH, entityConfig.WIDTH - entityConfig.BORDER_WIDTH);
-        y = Arithmetic.getRandomInt(entityConfig.BORDER_WIDTH, entityConfig.WIDTH - entityConfig.BORDER_WIDTH);
-        rock = new Entity.Rock(x, y, this);
+    for (i = 0; i < entityConfig.ROCKS; i++) {
+        this.spawnRandomRock();
     }
+};
+
+GameServer.prototype.spawnRandomRock = function () {
+    var x = Arithmetic.getRandomInt(entityConfig.BORDER_WIDTH, entityConfig.WIDTH - entityConfig.BORDER_WIDTH);
+    var y = Arithmetic.getRandomInt(entityConfig.BORDER_WIDTH, entityConfig.WIDTH - entityConfig.BORDER_WIDTH);
+    var rock = new Entity.Rock(x, y, this);
 };
 
 
@@ -116,9 +120,9 @@ GameServer.prototype.initNewClients = function () {
 };
 
 /** UPDATE METHODS **/
-GameServer.prototype.spawnAsteroids = function () {
-    if (Object.size(this.ASTEROID_LIST) < entityConfig.SHARDS) {
-        this.createAsteroid();
+GameServer.prototype.spawnRocks = function () {
+    if (Object.size(this.ASTEROID_LIST) < entityConfig.ROCKS) {
+        this.spawnRandomRock();
     }
 };
 
@@ -131,19 +135,13 @@ GameServer.prototype.updateControllers = function () {
 };
 
 
-GameServer.prototype.updateAsteroids = function () {
-    var id, asteroid;
-    this.spawnAsteroids();
 
-    for (id in this.ASTEROID_LIST) {
-        asteroid = this.ASTEROID_LIST[id];
-        asteroid.update();
-    }
-};
 
 
 GameServer.prototype.updateRocks = function () {
     var id, rock;
+
+    //this.spawnRocks();
 
     for (id in this.ROCK_LIST) {
         rock = this.ROCK_LIST[id];
@@ -163,12 +161,9 @@ GameServer.prototype.update = function () {
     this.timeStamp = Date.now();
 
     this.updateBox2d();
-
     this.initNewClients();
-    //this.checkCollisions();
 
     this.updateControllers();
-    //this.updateAsteroids();
     this.updateRocks();
 
     this.packetHandler.sendPackets();

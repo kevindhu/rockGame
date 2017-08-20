@@ -48,18 +48,24 @@ Rock.prototype.move = function () {
         var v = this.body.GetLinearVelocity();
         this.getTheta(this.queuePosition);
 
-        if (inBounds(x, this.queuePosition.x, 0.2) &&
-            inBounds(y, this.queuePosition.y, 0.2)) {
-            //this.queuePosition = null;
-        }
-        else {
-            if (!this.owner.default) {
-                v.x = lerp(v.x, this.owner.maxVel * 1 * Math.cos(this.theta), 0.2);
-                v.y = lerp(v.y, this.owner.maxVel * 1 * Math.sin(this.theta), 0.2);
+        if (this.owner.default) {
+            if (inBounds(x, this.queuePosition.x, 0.5) &&
+                inBounds(y, this.queuePosition.y, 0.5)) {
+                //this.queuePosition = null;
             }
             else {
-                v.x = lerp(v.x, this.owner.maxVel * 2 * Math.cos(this.theta), 0.2);
-                v.y = lerp(v.y, this.owner.maxVel * 2 * Math.sin(this.theta), 0.2);
+                v.x = lerp(v.x, this.owner.maxVel * 0.8 * Math.cos(this.theta), 0.2);
+                v.y = lerp(v.y, this.owner.maxVel * 0.8 * Math.sin(this.theta), 0.2);
+            }
+        }
+        else {
+            if (inBounds(x, this.queuePosition.x, 0.1) &&
+                inBounds(y, this.queuePosition.y, 0.1)) {
+                //this.queuePosition = null;
+            }
+            else  {
+                v.x = 7 * (this.queuePosition.x - x);
+                v.y = 7 * (this.queuePosition.y - y);
             }
         }
         this.body.SetLinearVelocity(v);

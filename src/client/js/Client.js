@@ -144,28 +144,32 @@ Client.prototype.initCanvases = function () {
             if (this.playerClicked) {
                 if (this.pre.x > 0 && this.pre.y < 0) {
                     //quadrant 1
-                    if (!this.circleConstruct[0]) {
+                    if (!this.circleConstruct[0] ||
+                        vectorNormal(this.pre) > vectorNormal(this.circleConstruct[0])) {
                         this.circleConstruct[0] = this.pre;
                         this.circleStageCount ++;
                     }
                 }
                 if (this.pre.x < 0 && this.pre.y < 0) {
                     //quadrant 2
-                    if (!this.circleConstruct[1]) {
+                    if (!this.circleConstruct[1] ||
+                        vectorNormal(this.pre) > vectorNormal(this.circleConstruct[1])) {
                         this.circleConstruct[1] = this.pre;
                         this.circleStageCount ++;
                     }
                 }
                 if (this.pre.x < 0 && this.pre.y > 0) {
                     //quadrant 3
-                    if (!this.circleConstruct[2]) {
+                    if (!this.circleConstruct[2] ||
+                        vectorNormal(this.pre) > vectorNormal(this.circleConstruct[2])) {
                         this.circleConstruct[2] = this.pre;
                         this.circleStageCount ++;
                     }
                 }
                 if (this.pre.x > 0 && this.pre.y > 0) {
                     //quadrant 4
-                    if (!this.circleConstruct[3]) {
+                    if (!this.circleConstruct[3] ||
+                        vectorNormal(this.pre) > vectorNormal(this.circleConstruct[3])) {
                         this.circleConstruct[3] = this.pre;
                         this.circleStageCount ++;
                     }
@@ -182,11 +186,17 @@ Client.prototype.initCanvases = function () {
 Client.prototype.sendCircle = function (construct) {
 
     var radiiNormal = function (vector) {
-        return Math.sqrt(vector.x * vector.x + vector.y * vector.y);
+        if (!vector) {
+            return 0;
+        }
+        return (vector.x * vector.x + vector.y * vector.y);
     };
 
-    var maxRadius = Math.max(radiiNormal(construct[0]), radiiNormal(construct[1]), radiiNormal(construct[2]),
-        radiiNormal(construct[3]));
+    var maxRadius = Math.sqrt(Math.max(
+        radiiNormal(construct[0]),
+        radiiNormal(construct[1]),
+        radiiNormal(construct[2]),
+        radiiNormal(construct[3])));
 
     this.socket.emit("createCircle", {
         id: this.SELF_ID,
@@ -453,6 +463,10 @@ function lerp(a, b, ratio) {
 
 function square(a) {
     return a * a;
+}
+
+function vectorNormal(a) {
+    return a.x * a.x + a.y * a.y;
 }
 
 module.exports = Client;

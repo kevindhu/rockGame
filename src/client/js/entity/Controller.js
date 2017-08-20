@@ -38,6 +38,7 @@ Controller.prototype.update = function (controllerInfo) {
     if (this.client.active) {
         this.client.TRAIL.realPath = [];
     }
+    this.circleRadius = controllerInfo.circleRadius;
 };
 
 Controller.prototype.show = function () {
@@ -65,6 +66,15 @@ Controller.prototype.show = function () {
         }
         ctx.arc(this.x, this.y, this.range, 0, 2 * Math.PI, false);
         ctx.fill();
+        ctx.closePath();
+    }
+
+    if (this.circleRadius) {
+        ctx.strokeStyle = "blue";
+        ctx.lineWidth = 10;
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.circleRadius, 0, 2 * Math.PI, false);
+        ctx.stroke();
         ctx.closePath();
     }
 
