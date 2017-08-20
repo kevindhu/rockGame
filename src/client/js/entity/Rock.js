@@ -16,7 +16,7 @@ Rock.prototype.show = function () {
 
     ctx.fillStyle = "purple";
     ctx.beginPath();
-    ctx.arc(this.x, this.y, 10, 0, 2 * Math.PI, false);
+    ctx.arc(this.x, this.y, 20, 0, 2 * Math.PI, false);
     ctx.fill();
     ctx.stroke();
 

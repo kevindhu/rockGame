@@ -34,7 +34,7 @@ $(window).bind('mousewheel DOMMouseScroll', function (event) {
     if(event.originalEvent.wheelDelta /120 > 0 && client.mainScaleFactor < 2) {
         client.mainScaleFactor += 0.2;
     }
-    else if (client.mainScaleFactor > 0.5) {
+    else if (client.mainScaleFactor > 0.3) {
         client.mainScaleFactor -= 0.2;
     }
 });

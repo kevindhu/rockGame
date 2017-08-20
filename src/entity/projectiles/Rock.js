@@ -27,13 +27,13 @@ Rock.prototype.init = function () {
 };
 
 Rock.prototype.setB2 = function () {
-    this.body = B2Common.createBox(this.gameServer.box2d_world, this, this.x, this.y, 0.2, 0.2);
+    this.body = B2Common.createBox(this.gameServer.box2d_world, this, this.x, this.y, 0.4, 0.4);
     this.getRandomVelocity();
 };
 
 
 Rock.prototype.tick = function () {
-    this.decayVelocity();
+    //this.decayVelocity();
     this.packetHandler.updateRockPackets(this);
     this.move();
 };
@@ -54,8 +54,8 @@ Rock.prototype.move = function () {
                 //this.queuePosition = null;
             }
             else {
-                v.x = lerp(v.x, this.owner.maxVel * 0.8 * Math.cos(this.theta), 0.2);
-                v.y = lerp(v.y, this.owner.maxVel * 0.8 * Math.sin(this.theta), 0.2);
+                v.x = 1.1 * (this.queuePosition.x - x);
+                v.y = 1.1 * (this.queuePosition.y - y);
             }
         }
         else {
@@ -77,6 +77,14 @@ function inBounds(x1, x2, range) {
     return Math.abs(x1 - x2) < range;
 }
 
+
+Rock.prototype.addOwner = function (owner) {
+    this.owner = owner;
+};
+
+Rock.prototype.removeOwner = function () {
+    this.owner = null;
+};
 
 Rock.prototype.getTheta = function (target, hard) {
     var x = this.body.GetPosition().x;
@@ -102,6 +110,32 @@ Rock.prototype.decayVelocity = function () {
     //set the new velocity
     b.SetLinearVelocity(v);
 };
+
+
+Rock.prototype.addShooting = function (owner, x, y) {
+    this.queuePosition = null;
+    this.shooting = true;
+    this.shooter = owner;
+    this.tempNeutral = owner;
+    this.shootTimer = 60;
+
+    this.getTheta({
+        x: x,
+        y: y
+    }, true);
+
+    this.targetPt = {
+        x: x,
+        y: y
+    };
+
+
+    var v = this.body.GetLinearVelocity();
+    v.x = 10 * Math.cos(this.theta);
+    v.y = 10 * Math.sin(this.theta);
+    this.body.SetLinearVelocity(v);
+};
+
 
 
 function getRandom(min, max) {

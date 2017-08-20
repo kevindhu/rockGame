@@ -38,30 +38,39 @@ Client.prototype.initCanvases = function () {
 
 
     document.addEventListener("mousedown", function (event) {
-        if (this.SELF_ID) {
-            var x = ((event.x / this.mainCanvas.offsetWidth * 1000) - this.mainCanvas.width / 2) / this.scaleFactor;
-            var y = ((event.y / this.mainCanvas.offsetHeight * 500) - this.mainCanvas.height / 2) / this.scaleFactor;
+        if (!this.SELF_ID) {
+            return;
+        }
+        var x = ((event.x / this.mainCanvas.offsetWidth * 1000) - this.mainCanvas.width / 2) / this.scaleFactor;
+        var y = ((event.y / this.mainCanvas.offsetHeight * 500) - this.mainCanvas.height / 2) / this.scaleFactor;
 
 
-
-            if (Math.abs(x) + Math.abs(y) < 200) {
-                this.playerClicked = true;
-                this.circleConstruct = [];
-                this.circleStageCount = 0;
-            }
-            else {
-                this.socket.emit("startMining", {
-                    id: this.SELF_ID,
-                    x: x,
-                    y: y
-                });
-            }
+        if (Math.abs(x) + Math.abs(y) < 200) {
+            this.playerClicked = true;
+            this.circleConstruct = [];
+            this.circleStageCount = 0;
+        }
+        else {
+            this.socket.emit("startMining", {
+                id: this.SELF_ID,
+                x: x,
+                y: y
+            });
         }
     }.bind(this));
     document.addEventListener("mouseup", function (event) {
+        if (!this.SELF_ID) {
+            return;
+        }
+        var x = ((event.x / this.mainCanvas.offsetWidth * 1000) - this.mainCanvas.width / 2) / this.scaleFactor;
+        var y = ((event.y / this.mainCanvas.offsetHeight * 500) - this.mainCanvas.height / 2) / this.scaleFactor;
+
         if (this.playerClicked) {
-            if (this.circleStageCount > 3) { //made a full circle (at least 3 quadrants covered)
+            if (this.circleStageCount >= 3) { //made a full circle (at least 3 quadrants covered)
                 this.sendCircle(this.circleConstruct);
+            }
+            else if (this.circleStageCount <= 1) {
+                this.socket.emit("createDefault", {});
             }
             this.playerClicked = false;
             this.circleConstruct = [];
@@ -69,20 +78,16 @@ Client.prototype.initCanvases = function () {
 
             this.TRAIL = new Entity.Trail(this);
         }
-
+        else {
+            this.socket.emit("shootRock", {
+                id: this.SELF_ID,
+                x: x,
+                y: y
+            });
+        }
         if (!this.CHAT_CLICK) {
             this.mainUI.gameUI.chatUI.close();
         }
-
-        var x = ((event.x / this.mainCanvas.offsetWidth * 1000) - this.mainCanvas.width / 2) / this.scaleFactor;
-        var y = ((event.y / this.mainCanvas.offsetHeight * 500) - this.mainCanvas.height / 2) / this.scaleFactor;
-
-        this.socket.emit("mouseUp", {
-            id: this.SELF_ID,
-            x: x,
-            y: y
-        });
-
         this.CHAT_CLICK = false;
     }.bind(this));
 
@@ -101,8 +106,7 @@ Client.prototype.initCanvases = function () {
         }
 
 
-
-        if (1===2) {
+        if (1 === 2) {
             if (this.SLASH.length >= 2) {
                 if (square(this.SLASH[0].x - this.SLASH[1].x) +
                     square(this.SLASH[0].y - this.SLASH[1].y) > 1000) {
@@ -130,49 +134,38 @@ Client.prototype.initCanvases = function () {
         } //for slashing
 
         if (!this.pre) {
-            this.pre = {
-                x: x,
-                y: y
-            }
+            this.pre = {x: x, y: y}
         }
         else if (square(this.pre.x - x) + square(this.pre.y - y) > 80) {
-            this.pre = {
-                x: x,
-                y: y
-            };
+            this.pre = {x: x, y: y};
 
             if (this.playerClicked) {
+                var addToConstruct = function (quad) {
+                    if (!this.circleConstruct[quad]) {
+                        this.circleConstruct[quad] = this.pre;
+                        this.circleStageCount++;
+                    }
+                    else if (vectorNormal(this.pre) > vectorNormal(this.circleConstruct[quad])) {
+                        this.circleConstruct[quad] = this.pre;
+                    }
+                }.bind(this);
+
+
                 if (this.pre.x > 0 && this.pre.y < 0) {
                     //quadrant 1
-                    if (!this.circleConstruct[0] ||
-                        vectorNormal(this.pre) > vectorNormal(this.circleConstruct[0])) {
-                        this.circleConstruct[0] = this.pre;
-                        this.circleStageCount ++;
-                    }
+                    addToConstruct(0);
                 }
                 if (this.pre.x < 0 && this.pre.y < 0) {
                     //quadrant 2
-                    if (!this.circleConstruct[1] ||
-                        vectorNormal(this.pre) > vectorNormal(this.circleConstruct[1])) {
-                        this.circleConstruct[1] = this.pre;
-                        this.circleStageCount ++;
-                    }
+                    addToConstruct(1);
                 }
                 if (this.pre.x < 0 && this.pre.y > 0) {
                     //quadrant 3
-                    if (!this.circleConstruct[2] ||
-                        vectorNormal(this.pre) > vectorNormal(this.circleConstruct[2])) {
-                        this.circleConstruct[2] = this.pre;
-                        this.circleStageCount ++;
-                    }
+                    addToConstruct(2);
                 }
                 if (this.pre.x > 0 && this.pre.y > 0) {
                     //quadrant 4
-                    if (!this.circleConstruct[3] ||
-                        vectorNormal(this.pre) > vectorNormal(this.circleConstruct[3])) {
-                        this.circleConstruct[3] = this.pre;
-                        this.circleStageCount ++;
-                    }
+                    addToConstruct(3);
                 }
 
                 this.TRAIL.updateList(x, y);
@@ -180,7 +173,6 @@ Client.prototype.initCanvases = function () {
         }
     }.bind(this));
 };
-
 
 
 Client.prototype.sendCircle = function (construct) {
@@ -228,7 +220,7 @@ Client.prototype.verify = function (data) {
 };
 
 
-Client.prototype.handleLOL =  function (data) {
+Client.prototype.handleLOL = function (data) {
     var reader = new BinaryReader(data);
 
     if (reader.length() > 20) {
@@ -241,9 +233,7 @@ Client.prototype.handleLOL =  function (data) {
         //console.log(reader.readInt32()); //real y
 
 
-
     }
-
 
 
 };
@@ -448,8 +438,6 @@ Client.prototype.findSlash = function (id) {
     }
     return false;
 };
-
-
 
 
 Client.prototype.start = function () {

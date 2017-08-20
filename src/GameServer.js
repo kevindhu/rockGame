@@ -241,14 +241,11 @@ GameServer.prototype.start = function () {
             }
         }.bind(this));
 
-        socket.on('shootAsteroid', function (data) {
+        socket.on('shootRock', function (data) {
             var player = this.CONTROLLER_LIST[data.id];
 
-            if (player && player.active) {
-                player.shootAsteroid(player.x + data.x, player.y + data.y);
-            }
-            if (player && player.clicked) {
-                player.endNewTail();
+            if (player) {
+                player.shootRock(player.x + data.x/100, player.y + data.y/100);
             }
         }.bind(this));
 
@@ -283,14 +280,13 @@ GameServer.prototype.start = function () {
         }.bind(this));
 
         socket.on('createCircle', function (data) {
-            if (player.default) {
-                player.default = false;
-            }
-
             var radius = data.radius/100;
-
             player.createCircle(radius);
 
+        }.bind(this));
+
+        socket.on('createDefault', function (data) {
+            player.createDefault();
         }.bind(this));
 
 
@@ -334,10 +330,10 @@ GameServer.prototype.setupCollisionHandler = function () {
         var b = contact.GetFixtureB().GetUserData();
 
         if (a instanceof Entity.Rock && b instanceof Entity.Player) {
-            contact.SetEnabled(false);
+            //contact.SetEnabled(false);
         }
         if (a instanceof Entity.Player && b instanceof Entity.Rock) {
-            contact.SetEnabled(false);
+            //contact.SetEnabled(false);
         }
     }.bind(this);
 

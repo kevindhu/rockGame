@@ -82,6 +82,8 @@ Player.prototype.update = function () {
 
 
 Player.prototype.createCircle = function (radius) {
+    this.default = false;
+
     this.circleRadius = radius;
     console.log("CREATING NEW CIRCLE with radius: " + radius);
     this.default = false;
@@ -99,10 +101,14 @@ Player.prototype.createCircle = function (radius) {
 
     this.pX = this.x;
     this.pY = this.y;
-
-
 };
 
+
+Player.prototype.createDefault = function () {
+    this.default = true;
+    this.dPopulateRockQueue();
+    this.circleRadius = null;
+};
 
 Player.prototype.resetLevels = function () {
     this.level = 0;
@@ -179,10 +185,11 @@ Player.prototype.selectAsteroid = function (x, y) {
 
 
 Player.prototype.addRock = function (rock) {
-    if (!this.containsRock(rock) && this.rocks.length <= this.rockMaxLength) {
-        this.rocks.push(rock);
-        rock.owner = this;
+    if (!this.containsRock(rock) &&
+        this.rocks.length <= this.rockMaxLength) {
 
+        this.rocks.push(rock);
+        rock.addOwner(this);
         if (this.default) {
             this.updateQueuePositions();
         }
@@ -314,6 +321,8 @@ Player.prototype.shootRock = function (x, y) {
 
     this.removeRock(rock);
     rock.addShooting(this, x, y);
+
+    this.createCircle(this.circleRadius);
 };
 
 
