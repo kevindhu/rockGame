@@ -297,7 +297,8 @@ PacketHandler.prototype.addRockPackets = function (rock, ifInit) {
         class: "rockInfo",
         id: rock.id,
         x: realPos.x,
-        y: realPos.y
+        y: realPos.y,
+        vertices: rock.vertices
     };
     if (ifInit) {
         return info;
@@ -312,13 +313,17 @@ PacketHandler.prototype.updateRockPackets = function (rock) {
     var pos = rock.body.GetPosition();
     pos = new B2.b2Vec2(pos.x * 100, pos.y * 100);
 
+    var theta = rock.body.GetAngle();
+
+
     var qPosition = null;
     var info = {
         master: "update",
         class: "rockInfo",
         id: rock.id,
         x: pos.x,
-        y: pos.y
+        y: pos.y,
+        theta: theta,
     };
 
 

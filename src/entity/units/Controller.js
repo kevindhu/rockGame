@@ -56,7 +56,7 @@ Controller.prototype.onDelete = function () {
 
 Controller.prototype.update = function () {
     this.updatePosition();
-    this.updateChunk();
+    //this.updateChunk();
 
     this.packetHandler.updateControllersPackets(this);
 };
