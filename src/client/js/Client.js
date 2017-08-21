@@ -192,10 +192,12 @@ Client.prototype.sendCircle = function (construct) {
 
     console.log("SENDING CIRCLE WITH RADIUS" + maxRadius);
 
-    this.socket.emit("createCircle", {
-        id: this.SELF_ID,
-        radius: maxRadius
-    });
+    if (maxRadius) {
+        this.socket.emit("createCircle", {
+            id: this.SELF_ID,
+            radius: maxRadius
+        });
+    }
 };
 
 Client.prototype.initLists = function () {

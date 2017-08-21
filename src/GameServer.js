@@ -317,10 +317,14 @@ GameServer.prototype.setupCollisionHandler = function () {
         var b = contact.GetFixtureB().GetUserData();
 
         if (a instanceof Entity.Rock && b instanceof Entity.Player) {
-            b.addRock(a);
+            if (!a.shooting) {
+                b.addRock(a);
+            }
         }
         if (a instanceof Entity.Player && b instanceof Entity.Rock) {
-            a.addRock(b);
+            if (!b.shooting) {
+                a.addRock(b);
+            }
         }
     }.bind(this);
 
@@ -330,13 +334,18 @@ GameServer.prototype.setupCollisionHandler = function () {
         var b = contact.GetFixtureB().GetUserData();
 
         if (a instanceof Entity.Rock && b instanceof Entity.Player) {
-            //contact.SetEnabled(false);
+            contact.SetEnabled(false);
         }
         if (a instanceof Entity.Player && b instanceof Entity.Rock) {
-            //contact.SetEnabled(false);
+            contact.SetEnabled(false);
+        }
+        if (a.shooting || b.shooting) {
+            if (a.tempNeutral === b.owner || b.tempNeutral === a.owner) {
+                contact.SetEnabled(false);
+            }
+            //TODO: get rid of shooting
         }
     }.bind(this);
-
 
 };
 

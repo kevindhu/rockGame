@@ -27,13 +27,16 @@ Rock.prototype.init = function () {
 };
 
 Rock.prototype.setB2 = function () {
+    var SCALE = getRandom(0.2, 3);
     //this.body = B2Common.createBox(this.gameServer.box2d_world, this, this.x, this.y, 0.4, 0.4);
+    var multiplier = function(x) { return x * SCALE; };
 
     var vertices = [];
-    vertices[0] = [0,getRandom(1,2)];
-    vertices[1] = [getRandom(1,2),1];
-    vertices[2] = [1,getRandom(2,3)];
-    vertices[3] = [0,getRandom(2,3)];
+    vertices[0] = [0, 0].map(multiplier);
+    vertices[1] = [getRandom(1, 2), 1].map(multiplier);
+    vertices[2] = [1, getRandom(2, 3)].map(multiplier);
+    vertices[3] = [0.5, getRandom(2, 3)].map(multiplier);
+    vertices[4] = [0, 2].map(multiplier);
 
 
     this.vertices = vertices;
@@ -51,12 +54,11 @@ Rock.prototype.tick = function () {
 };
 
 
-
 Rock.prototype.move = function () {
     var x = this.body.GetPosition().x;
     var y = this.body.GetPosition().y;
 
-    if (this.queuePosition) {
+    if (this.queuePosition && this.owner) {
         var v = this.body.GetLinearVelocity();
         this.getTheta(this.queuePosition);
 
@@ -75,7 +77,7 @@ Rock.prototype.move = function () {
                 inBounds(y, this.queuePosition.y, 0.3)) {
                 //this.queuePosition = null;
             }
-            else  {
+            else {
                 v.x = 2 * (this.queuePosition.x - x) + this.owner.xVel;
                 v.y = 2 * (this.queuePosition.y - y) + this.owner.yVel;
             }
@@ -93,6 +95,11 @@ function inBounds(x1, x2, range) {
 
 Rock.prototype.addOwner = function (owner) {
     this.owner = owner;
+
+    var fixture = this.body.GetFixtureList();
+    var filterData = fixture.GetFilterData();
+    //filterData.maskBits = 0x0001 | 0x0002;
+    this.body.GetFixtureList().SetFilterData(filterData);
 };
 
 Rock.prototype.removeOwner = function () {
@@ -109,7 +116,7 @@ Rock.prototype.getTheta = function (target, hard) {
 
 Rock.prototype.getRandomVelocity = function () {
     var v = this.body.GetLinearVelocity();
-    v.Add(new B2.b2Vec2(getRandom(-0.4, 0.4), getRandom(-0.4,0.4)));
+    v.Add(new B2.b2Vec2(getRandom(-0.4, 0.4), getRandom(-0.4, 0.4)));
     this.body.SetLinearVelocity(v);
 };
 
@@ -149,7 +156,6 @@ Rock.prototype.addShooting = function (owner, x, y) {
     v.y = 20 * Math.sin(this.theta);
     this.body.SetLinearVelocity(v);
 };
-
 
 
 function getRandom(min, max) {

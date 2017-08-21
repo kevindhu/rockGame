@@ -82,11 +82,15 @@ Player.prototype.update = function () {
 
 
 Player.prototype.createCircle = function (radius) {
-    this.default = false;
+    if (!radius) {
+        return;
+    }
 
-    this.circleRadius = radius;
-    console.log("CREATING NEW CIRCLE with radius: " + radius);
     this.default = false;
+    this.circleRadius = radius;
+
+
+    console.log("CREATING NEW CIRCLE with radius: " + radius);
     var delta = 2 * Math.PI / this.rocks.length;
     var theta, rock;
 
@@ -240,12 +244,6 @@ Player.prototype.dUpdateRockQueue = function () { //default update
 };
 
 
-Player.prototype.startNewTail = function () {
-    this.default = false;
-    this.clicked = true;
-    this.newLength = 0;
-    this.circleStage = 0; // for circles
-};
 
 Player.prototype.endNewTail = function () {
     this.newLength = 0;

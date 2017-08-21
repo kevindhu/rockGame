@@ -22,7 +22,7 @@ function createBox(world, user, x, y, width, height) {
     };
 
     var body_def = new B2.b2BodyDef();
-    body_def.position.Set(x, y - 1);
+    body_def.position.Set(x, y);
     body_def.linearDamping = options.linearDamping;
     body_def.angularDamping = options.angularDamping;
     body_def.type = options.type;
@@ -55,7 +55,7 @@ function createRandomPolygon(world, user, vertices, x, y) {
         'restitution': 0.0,
 
         'linearDamping': 0.0,
-        'angularDamping': 1.0,
+        'angularDamping': 0.2,
 
         'gravityScale': 1.0,
         'type': B2.b2Body.b2_dynamicBody,
