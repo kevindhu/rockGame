@@ -371,6 +371,9 @@ Client.prototype.deleteEntities = function (packet) {
         case "asteroidInfo":
             deleteEntity(packet, this.ASTEROID_LIST);
             break;
+        case "rockInfo":
+            deleteEntity(packet, this.ROCK_LIST);
+            break;
         case "animationInfo":
             deleteEntity(packet, this.ANIMATION_LIST);
             break;

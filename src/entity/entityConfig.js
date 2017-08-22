@@ -10,7 +10,7 @@ var small = function () {
     WIDTH = 50;
     TILES_INPUT = 20;
     ROCKS = 50;
-    BORDER_WIDTH = 3;
+    BORDER_WIDTH = 10;
 };
 
 

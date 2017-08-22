@@ -3,13 +3,14 @@ var B2Common = require("../../modules/B2Common");
 var EntityFunctions = require('../EntityFunctions');
 var lerp = require('lerp');
 
-function Rock(x, y, gameServer) {
+function Rock(x, y, SCALE, gameServer) {
     this.gameServer = gameServer;
     this.packetHandler = gameServer.packetHandler;
 
     this.id = Math.random();
     this.x = x;
     this.y = y;
+    this.SCALE = SCALE;
     this.theta = 0;
 
     this.queuePosition = null;
@@ -21,13 +22,17 @@ function Rock(x, y, gameServer) {
 Rock.prototype.init = function () {
     this.setB2();
     this.chunk = EntityFunctions.findChunk(this.gameServer, this);
+
+    if (this.chunk !== 0) {
+        this.chunk = 0;
+    }
     this.gameServer.CHUNKS[this.chunk].ROCK_LIST[this.id] = this;
     this.gameServer.ROCK_LIST[this.id] = this;
     this.packetHandler.addRockPackets(this);
 };
 
 Rock.prototype.setB2 = function () {
-    var SCALE = getRandom(0.2, 3);
+    var SCALE = this.SCALE;
     //this.body = B2Common.createBox(this.gameServer.box2d_world, this, this.x, this.y, 0.4, 0.4);
     var multiplier = function(x) { return x * SCALE; };
 
@@ -37,7 +42,6 @@ Rock.prototype.setB2 = function () {
     vertices[2] = [1, getRandom(2, 3)].map(multiplier);
     vertices[3] = [0.5, getRandom(2, 3)].map(multiplier);
     vertices[4] = [0, 2].map(multiplier);
-
 
     this.vertices = vertices;
 
@@ -51,6 +55,10 @@ Rock.prototype.tick = function () {
     //this.decayVelocity();
     this.packetHandler.updateRockPackets(this);
     this.move();
+
+    if (this.splitting) {
+        this.split();
+    }
 };
 
 
@@ -85,6 +93,18 @@ Rock.prototype.move = function () {
         this.body.SetLinearVelocity(v);
         this.decayVelocity();
     }
+};
+
+
+Rock.prototype.onDelete = function () {
+    if (this.owner) {
+        this.owner.removeRock(this);
+        this.removeOwner();
+    }
+    this.packetHandler.deleteRockPackets(this);
+
+    delete this.gameServer.CHUNKS[this.chunk].ROCK_LIST[this.id];
+    delete this.gameServer.ROCK_LIST[this.id];
 };
 
 
@@ -156,6 +176,34 @@ Rock.prototype.addShooting = function (owner, x, y) {
     v.y = 20 * Math.sin(this.theta);
     this.body.SetLinearVelocity(v);
 };
+
+Rock.prototype.split = function () {
+    if (this.SCALE < 0.2) {
+        this.onDelete();
+        return;
+    }
+    var x = Math.floor(this.body.GetPosition().x);
+    var y = Math.floor(this.body.GetPosition().y);
+
+
+    var clone1 = new Rock(x, y, this.SCALE * 2/3, this.gameServer);
+    var clone2 = new Rock(x - 0.1, y - 0.1, this.SCALE * 2/3, this.gameServer);
+
+    var v1 = clone1.body.GetLinearVelocity();
+    //v1.x = this.body.GetLinearVelocity().x;
+    //v1.y = this.body.GetLinearVelocity().y;
+    clone1.body.SetLinearVelocity(v1);
+
+    var v2 = clone2.body.GetLinearVelocity();
+    //v2.x = -this.body.GetLinearVelocity().x;
+    //v2.y = -this.body.GetLinearVelocity().y;
+    clone2.body.SetLinearVelocity(v2);
+
+    this.onDelete();
+
+
+};
+
 
 
 function getRandom(min, max) {

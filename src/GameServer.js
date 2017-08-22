@@ -16,9 +16,7 @@ function GameServer() {
     this.INIT_SOCKET_LIST = {};
 
     this.CONTROLLER_LIST = {};
-
     this.ROCK_LIST = {};
-
     this.TILE_LIST = {};
 
 
@@ -67,7 +65,7 @@ GameServer.prototype.initRocks = function () {
 GameServer.prototype.spawnRandomRock = function () {
     var x = Arithmetic.getRandomInt(entityConfig.BORDER_WIDTH, entityConfig.WIDTH - entityConfig.BORDER_WIDTH);
     var y = Arithmetic.getRandomInt(entityConfig.BORDER_WIDTH, entityConfig.WIDTH - entityConfig.BORDER_WIDTH);
-    var rock = new Entity.Rock(x, y, this);
+    var rock = new Entity.Rock(x, y, getRandom(0.5, 3), this);
 };
 
 
@@ -330,8 +328,17 @@ GameServer.prototype.setupCollisionHandler = function () {
 
 
     B2.b2ContactListener.prototype.PreSolve = function (contact) {
+        var impulse = contact.GetManifold().m_points[0].m_normalImpulse;
         var a = contact.GetFixtureA().GetUserData();
         var b = contact.GetFixtureB().GetUserData();
+
+        if (impulse > 20) {
+            if (a instanceof Entity.Rock && b instanceof Entity.Rock) {
+                a.splitting = true;
+                b.splitting = true;
+            }
+        }
+
 
         if (a instanceof Entity.Rock && b instanceof Entity.Player) {
             contact.SetEnabled(false);
@@ -360,5 +367,9 @@ Object.size = function (obj) {
 Number.prototype.between = function (min, max) {
     return this >= min && this <= max;
 };
+
+function getRandom(min, max) {
+    return Math.random() * (max - min) + min;
+}
 
 module.exports = GameServer;

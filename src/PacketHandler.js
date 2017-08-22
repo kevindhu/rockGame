@@ -393,6 +393,19 @@ PacketHandler.prototype.deleteControllerPackets = function (controller, chunk) {
         this.CHUNK_PACKETS[controller.chunk].push(info);
     }
 };
+PacketHandler.prototype.deleteRockPackets = function (rock, chunk) {
+    var info = {
+        master: "delete",
+        class: "rockInfo",
+        id: rock.id
+    };
+    if (chunk) {
+        return info;
+    }
+    this.CHUNK_PACKETS[rock.chunk].push(info);
+};
+
+
 PacketHandler.prototype.deleteAsteroidPackets = function (asteroid, chunk) {
     var info = {
         master: "delete",

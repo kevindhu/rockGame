@@ -64,11 +64,13 @@ function createRandomPolygon(world, user, vertices, x, y) {
     };
 
     var body_def = new B2.b2BodyDef();
-    body_def.position.Set(x, y);
+    body_def.position.Set(x + 1, y + 1);
     body_def.linearDamping = options.linearDamping;
     body_def.angularDamping = options.angularDamping;
     body_def.type = options.type;
     body_def.fixedRotation = options.fixedRotation;
+    var body = world.CreateBody(body_def);
+
 
     var fix_def = new B2.b2FixtureDef();
     fix_def.density = options.density;
@@ -87,8 +89,6 @@ function createRandomPolygon(world, user, vertices, x, y) {
     fix_def.shape = polygon;
     fix_def.userData = options.userData;
     //fix_def.filter.maskBits = 0x0000; //nothing can collide with this
-
-    var body = world.CreateBody(body_def);
     body.CreateFixture(fix_def);
     return body;
 }
