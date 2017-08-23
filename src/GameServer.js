@@ -53,8 +53,6 @@ GameServer.prototype.initTiles = function () {
 };
 
 
-
-
 GameServer.prototype.initRocks = function () {
     var x, y, i, rock;
     for (i = 0; i < entityConfig.ROCKS; i++) {
@@ -131,9 +129,6 @@ GameServer.prototype.updateControllers = function () {
         controller.update();
     }
 };
-
-
-
 
 
 GameServer.prototype.updateRocks = function () {
@@ -243,7 +238,7 @@ GameServer.prototype.start = function () {
             var player = this.CONTROLLER_LIST[data.id];
 
             if (player) {
-                player.shootRock(player.x + data.x/100, player.y + data.y/100);
+                player.shootRock(player.x + data.x / 100, player.y + data.y / 100);
             }
         }.bind(this));
 
@@ -278,7 +273,7 @@ GameServer.prototype.start = function () {
         }.bind(this));
 
         socket.on('createCircle', function (data) {
-            var radius = data.radius/100;
+            var radius = data.radius / 100;
             player.createCircle(radius);
 
         }.bind(this));
@@ -307,7 +302,6 @@ GameServer.prototype.createPlayer = function (socket, info) {
 };
 
 
-
 GameServer.prototype.setupCollisionHandler = function () {
 
     B2.b2ContactListener.prototype.BeginContact = function (contact) {
@@ -328,14 +322,29 @@ GameServer.prototype.setupCollisionHandler = function () {
 
 
     B2.b2ContactListener.prototype.PreSolve = function (contact) {
-        var impulse = contact.GetManifold().m_points[0].m_normalImpulse;
         var a = contact.GetFixtureA().GetUserData();
         var b = contact.GetFixtureB().GetUserData();
 
-        if (impulse > 20) {
-            if (a instanceof Entity.Rock && b instanceof Entity.Rock) {
-                a.splitting = true;
-                b.splitting = true;
+
+        if (a.shooting || b.shooting) {
+            if (a.tempNeutral === b.owner || b.tempNeutral === a.owner) {
+                contact.SetEnabled(false);
+                return;
+            }
+            //TODO: get rid of shooting
+        }
+        if (a instanceof Entity.Rock && b instanceof Entity.Rock) {
+            var aVel = a.body.GetLinearVelocity();
+            var bVel = b.body.GetLinearVelocity();
+            var impact = normal(aVel.x - bVel.x,
+                aVel.y - bVel.y);
+
+
+            if (impact > 20) {
+                a.startSplit = true;
+                b.startSplit = true;
+                //b.splitting = true;
+
             }
         }
 
@@ -346,14 +355,23 @@ GameServer.prototype.setupCollisionHandler = function () {
         if (a instanceof Entity.Player && b instanceof Entity.Rock) {
             contact.SetEnabled(false);
         }
-        if (a.shooting || b.shooting) {
-            if (a.tempNeutral === b.owner || b.tempNeutral === a.owner) {
-                contact.SetEnabled(false);
-            }
-            //TODO: get rid of shooting
-        }
     }.bind(this);
 
+
+    B2.b2ContactListener.prototype.PostSolve = function (contact) {
+        var a = contact.GetFixtureA().GetUserData();
+        var b = contact.GetFixtureB().GetUserData();
+
+
+        if (a.startSplit) {
+            a.splitting = true;
+        }
+        if (b.startSplit) {
+            b.splitting = true;
+        }
+
+
+    }
 };
 
 Object.size = function (obj) {
@@ -370,6 +388,11 @@ Number.prototype.between = function (min, max) {
 
 function getRandom(min, max) {
     return Math.random() * (max - min) + min;
+}
+
+
+function normal(x, y) {
+    return Math.sqrt(x * x + y * y);
 }
 
 module.exports = GameServer;

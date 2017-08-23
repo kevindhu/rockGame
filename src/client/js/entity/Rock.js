@@ -35,7 +35,6 @@ Rock.prototype.show = function () {
     ctx.rotate(2 * Math.PI - this.theta);
     ctx.closePath();
     ctx.translate(-this.x, -this.y);
-
 };
 
 

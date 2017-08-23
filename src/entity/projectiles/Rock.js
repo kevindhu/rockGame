@@ -3,7 +3,7 @@ var B2Common = require("../../modules/B2Common");
 var EntityFunctions = require('../EntityFunctions');
 var lerp = require('lerp');
 
-function Rock(x, y, SCALE, gameServer) {
+function Rock(x, y, SCALE, gameServer, body, vertices) {
     this.gameServer = gameServer;
     this.packetHandler = gameServer.packetHandler;
 
@@ -15,12 +15,15 @@ function Rock(x, y, SCALE, gameServer) {
 
     this.queuePosition = null;
     this.owner = null;
-
+    this.body = body;
+    this.vertices = vertices;
     this.init();
 }
 
 Rock.prototype.init = function () {
-    this.setB2();
+    if (!this.body) {
+        this.setB2();
+    }
     this.chunk = EntityFunctions.findChunk(this.gameServer, this);
 
     if (this.chunk !== 0) {
@@ -34,19 +37,23 @@ Rock.prototype.init = function () {
 Rock.prototype.setB2 = function () {
     var SCALE = this.SCALE;
     //this.body = B2Common.createBox(this.gameServer.box2d_world, this, this.x, this.y, 0.4, 0.4);
-    var multiplier = function(x) { return x * SCALE; };
+    var multiplier = function (x) {
+        return x * SCALE;
+    };
 
-    var vertices = [];
-    vertices[0] = [0, 0].map(multiplier);
-    vertices[1] = [getRandom(1, 2), 1].map(multiplier);
-    vertices[2] = [1, getRandom(2, 3)].map(multiplier);
-    vertices[3] = [0.5, getRandom(2, 3)].map(multiplier);
-    vertices[4] = [0, 2].map(multiplier);
+    if (!this.vertices) {
+        //make default vertices
+        var vertices = [];
+        vertices[0] = [0, 0].map(multiplier);
+        vertices[1] = [1, 0].map(multiplier);
+        vertices[2] = [1, 1].map(multiplier);
+        vertices[3] = [0, 1].map(multiplier);
 
-    this.vertices = vertices;
+        this.vertices = vertices;
+    }
 
 
-    this.body = B2Common.createRandomPolygon(this.gameServer.box2d_world, this, vertices, this.x, this.y);
+    this.body = B2Common.createRandomPolygon(this.gameServer.box2d_world, this, this.vertices, this.x, this.y);
     this.getRandomVelocity();
 };
 
@@ -115,11 +122,6 @@ function inBounds(x1, x2, range) {
 
 Rock.prototype.addOwner = function (owner) {
     this.owner = owner;
-
-    var fixture = this.body.GetFixtureList();
-    var filterData = fixture.GetFilterData();
-    //filterData.maskBits = 0x0001 | 0x0002;
-    this.body.GetFixtureList().SetFilterData(filterData);
 };
 
 Rock.prototype.removeOwner = function () {
@@ -170,7 +172,6 @@ Rock.prototype.addShooting = function (owner, x, y) {
         y: y
     };
 
-
     var v = this.body.GetLinearVelocity();
     v.x = 20 * Math.cos(this.theta);
     v.y = 20 * Math.sin(this.theta);
@@ -178,33 +179,78 @@ Rock.prototype.addShooting = function (owner, x, y) {
 };
 
 Rock.prototype.split = function () {
-    if (this.SCALE < 0.2) {
+    if (this.SCALE < 0.2 || this.body.GetFixtureList().GetShape().GetVertexCount() <= 3) {
+        this.gameServer.box2d_world.DestroyBody(this.body);
         this.onDelete();
         return;
     }
+
+
+    var poly = this.body.GetFixtureList().GetShape();
+    var vertices = poly.GetVertices();
+    var count = poly.GetVertexCount();
+
+
+    var middleVertex = new B2.b2Vec2();
+    middleVertex.Set((vertices[count / 2 - 1].x + vertices[count / 2].x) / 2, (vertices[count / 2 - 1].y + vertices[count / 2].y) / 2);
+
+    var vertices1 = [];
+    var vertices2 = [];
+    var i;
+
+
+    for (i = 0; i < count / 2; i++) {
+        vertices1.push([vertices[i].x, vertices[i].y]);
+    }
+    vertices1.push([middleVertex.x, middleVertex.y]);
+
+
+    vertices2.push([middleVertex.x, middleVertex.y]);
+    for (i = count / 2; i < count; i++) {
+        vertices2.push([vertices[i].x, vertices[i].y]);
+    }
+    vertices2.push([vertices[0].x, vertices[0].y]);
+
     var x = Math.floor(this.body.GetPosition().x);
     var y = Math.floor(this.body.GetPosition().y);
 
 
-    var clone1 = new Rock(x, y, this.SCALE * 2/3, this.gameServer);
-    var clone2 = new Rock(x - 0.1, y - 0.1, this.SCALE * 2/3, this.gameServer);
+    var bodies = B2Common.createPolygonSplit(this.gameServer.box2d_world, this.body, vertices1, vertices2);
+
+
+    var clone1 = new Rock(x, y, this.SCALE * getRandom(0.2, 0.6), this.gameServer, bodies[0], vertices1);
+    var clone2 = new Rock(x, y, this.SCALE * 2 / 3, this.gameServer, bodies[1], vertices2);
+
+    clone1.body.GetFixtureList().SetUserData(clone1);
+    clone2.body.GetFixtureList().SetUserData(clone1);
+
+    var theta = Math.atan2(this.body.GetLinearVelocity().y, this.body.GetLinearVelocity().x);
+    var normalVel = normal(this.body.GetLinearVelocity().y, this.body.GetLinearVelocity().x);
+
 
     var v1 = clone1.body.GetLinearVelocity();
-    //v1.x = this.body.GetLinearVelocity().x;
-    //v1.y = this.body.GetLinearVelocity().y;
-    clone1.body.SetLinearVelocity(v1);
-
     var v2 = clone2.body.GetLinearVelocity();
-    //v2.x = -this.body.GetLinearVelocity().x;
-    //v2.y = -this.body.GetLinearVelocity().y;
+
+    clone1.body.SetAngularVelocity(this.body.GetAngularVelocity());
+    clone2.body.SetAngularVelocity(this.body.GetAngularVelocity());
+
+    v1.x = normalVel * Math.cos(theta + 0.1);
+    v1.y = normalVel * Math.sin(theta + 0.1);
+    v2.x = normalVel * Math.cos(theta - 0.1);
+    v2.y = normalVel * Math.sin(theta - 0.1);
+
+    clone1.body.SetLinearVelocity(v1);
     clone2.body.SetLinearVelocity(v2);
+
 
     this.onDelete();
 
 
 };
 
-
+function normal(x, y) {
+    return Math.sqrt(x * x + y * y);
+}
 
 function getRandom(min, max) {
     return Math.random() * (max - min) + min;
