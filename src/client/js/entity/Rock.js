@@ -2,8 +2,8 @@ function Rock(rockInfo, client) {
     this.x = rockInfo.x;
     this.y = rockInfo.y;
     this.vertices = rockInfo.vertices;
+    this.theta = rockInfo.theta;
     this.client = client;
-
 }
 
 Rock.prototype.update = function (rockInfo) {
@@ -22,6 +22,8 @@ Rock.prototype.show = function () {
     ctx.fillStyle = "purple";
     ctx.translate(this.x, this.y);
     ctx.beginPath();
+    
+
     ctx.rotate(this.theta);
     ctx.moveTo(v[0][0] * SCALE, v[0][1] * SCALE);
 

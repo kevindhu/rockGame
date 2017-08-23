@@ -305,17 +305,20 @@ GameServer.prototype.createPlayer = function (socket, info) {
 GameServer.prototype.setupCollisionHandler = function () {
 
     B2.b2ContactListener.prototype.BeginContact = function (contact) {
-        var a = contact.GetFixtureA().GetUserData();
-        var b = contact.GetFixtureB().GetUserData();
+        var a = contact.GetFixtureA();
+        var b = contact.GetFixtureB();
 
-        if (a instanceof Entity.Rock && b instanceof Entity.Player) {
-            if (!a.shooting) {
-                b.addRock(a);
+        var aEntity = a.GetUserData();
+        var bEntity = b.GetUserData();
+
+        if (aEntity instanceof Entity.Rock && bEntity instanceof Entity.Player) {
+            if (!aEntity.shooting && b.IsSensor()) {
+                bEntity.addRock(aEntity);
             }
         }
-        if (a instanceof Entity.Player && b instanceof Entity.Rock) {
-            if (!b.shooting) {
-                a.addRock(b);
+        if (aEntity instanceof Entity.Player && bEntity instanceof Entity.Rock) {
+            if (!bEntity.shooting && a.IsSensor()) {
+                aEntity.addRock(bEntity);
             }
         }
     }.bind(this);
@@ -331,7 +334,6 @@ GameServer.prototype.setupCollisionHandler = function () {
                 contact.SetEnabled(false);
                 return;
             }
-            //TODO: get rid of shooting
         }
         if (a instanceof Entity.Rock && b instanceof Entity.Rock) {
             var aVel = a.body.GetLinearVelocity();
@@ -340,7 +342,7 @@ GameServer.prototype.setupCollisionHandler = function () {
                 aVel.y - bVel.y);
 
 
-            if (impact > 20) {
+            if (impact > 10) {
                 a.startSplit = true;
                 b.startSplit = true;
                 //b.splitting = true;

@@ -3,7 +3,8 @@ var B2 = require('./B2');
 module.exports = {
     createBox: createBox,
     createRandomPolygon: createRandomPolygon,
-    createPolygonSplit: createPolygonSplit
+    createPolygonSplit: createPolygonSplit,
+    createCircleSensor: createCircleSensor
 };
 
 
@@ -110,7 +111,7 @@ function createPolygonSplit(world, body, v1, v2) {
 
         'gravityScale': 1.0,
         'type': B2.b2Body.b2_dynamicBody,
-        'fixedRotation': false,
+        'fixedRotation': false
     };
 
     var body_def = new B2.b2BodyDef();
@@ -164,4 +165,20 @@ function createPolygonSplit(world, body, v1, v2) {
 
     return [b1,b2];
 
+}
+
+
+function createCircleSensor(body, radius) {
+    var fix_def = new B2.b2FixtureDef();
+
+
+    fix_def.shape = new B2.b2CircleShape();
+    fix_def.shape.m_radius = radius;
+
+
+
+    fix_def.isSensor = true;
+    fix_def.userData = body.GetFixtureList().GetUserData();
+
+    body.CreateFixture(fix_def);
 }

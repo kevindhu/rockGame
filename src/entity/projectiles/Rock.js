@@ -11,7 +11,7 @@ function Rock(x, y, SCALE, gameServer, body, vertices) {
     this.x = x;
     this.y = y;
     this.SCALE = SCALE;
-    this.theta = 0;
+    this.theta = 2;
 
     this.queuePosition = null;
     this.owner = null;
@@ -54,6 +54,7 @@ Rock.prototype.setB2 = function () {
 
 
     this.body = B2Common.createRandomPolygon(this.gameServer.box2d_world, this, this.vertices, this.x, this.y);
+    this.body.SetAngle(this.theta);
     this.getRandomVelocity();
 };
 
@@ -194,22 +195,33 @@ Rock.prototype.split = function () {
     var middleVertex = new B2.b2Vec2();
     middleVertex.Set((vertices[count / 2 - 1].x + vertices[count / 2].x) / 2, (vertices[count / 2 - 1].y + vertices[count / 2].y) / 2);
 
+    var lastVertex = new B2.b2Vec2();
+    lastVertex.Set((vertices[count-1].x + vertices[0].x) / 2, (vertices[count - 1].y + vertices[0].y) / 2);
+
+
     var vertices1 = [];
     var vertices2 = [];
     var i;
 
 
+
+
+    vertices1.push([lastVertex.x, lastVertex.y]);
     for (i = 0; i < count / 2; i++) {
         vertices1.push([vertices[i].x, vertices[i].y]);
     }
     vertices1.push([middleVertex.x, middleVertex.y]);
 
 
+
+
     vertices2.push([middleVertex.x, middleVertex.y]);
     for (i = count / 2; i < count; i++) {
         vertices2.push([vertices[i].x, vertices[i].y]);
     }
-    vertices2.push([vertices[0].x, vertices[0].y]);
+    vertices2.push([lastVertex.x, lastVertex.y]);
+
+
 
     var x = Math.floor(this.body.GetPosition().x);
     var y = Math.floor(this.body.GetPosition().y);
@@ -218,21 +230,20 @@ Rock.prototype.split = function () {
     var bodies = B2Common.createPolygonSplit(this.gameServer.box2d_world, this.body, vertices1, vertices2);
 
 
-    var clone1 = new Rock(x, y, this.SCALE * getRandom(0.2, 0.6), this.gameServer, bodies[0], vertices1);
-    var clone2 = new Rock(x, y, this.SCALE * 2 / 3, this.gameServer, bodies[1], vertices2);
+    var clone1 = new Rock(x, y, this.SCALE /2, this.gameServer, bodies[0], vertices1);
+    var clone2 = new Rock(x, y, this.SCALE /2, this.gameServer, bodies[1], vertices2);
 
     clone1.body.GetFixtureList().SetUserData(clone1);
-    clone2.body.GetFixtureList().SetUserData(clone1);
-
-    var theta = Math.atan2(this.body.GetLinearVelocity().y, this.body.GetLinearVelocity().x);
-    var normalVel = normal(this.body.GetLinearVelocity().y, this.body.GetLinearVelocity().x);
-
-
-    var v1 = clone1.body.GetLinearVelocity();
-    var v2 = clone2.body.GetLinearVelocity();
+    clone2.body.GetFixtureList().SetUserData(clone2);
 
     clone1.body.SetAngularVelocity(this.body.GetAngularVelocity());
     clone2.body.SetAngularVelocity(this.body.GetAngularVelocity());
+
+
+    var theta = Math.atan2(this.body.GetLinearVelocity().y, this.body.GetLinearVelocity().x);
+    var normalVel = normal(this.body.GetLinearVelocity().y, this.body.GetLinearVelocity().x);
+    var v1 = clone1.body.GetLinearVelocity();
+    var v2 = clone2.body.GetLinearVelocity();
 
     v1.x = normalVel * Math.cos(theta + 0.1);
     v1.y = normalVel * Math.sin(theta + 0.1);

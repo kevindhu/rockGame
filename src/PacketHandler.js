@@ -291,6 +291,7 @@ PacketHandler.prototype.addChatPackets = function (name, message) {
 PacketHandler.prototype.addRockPackets = function (rock, ifInit) {
     var vector = rock.body.GetPosition();
     var realPos = new B2.b2Vec2(vector.x * 100, vector.y * 100);
+    var theta = rock.body.GetAngle();
 
     var info = {
         master: "add",
@@ -298,7 +299,8 @@ PacketHandler.prototype.addRockPackets = function (rock, ifInit) {
         id: rock.id,
         x: realPos.x,
         y: realPos.y,
-        vertices: rock.vertices
+        vertices: rock.vertices,
+        theta: theta
     };
     if (ifInit) {
         return info;
@@ -323,7 +325,7 @@ PacketHandler.prototype.updateRockPackets = function (rock) {
         id: rock.id,
         x: pos.x,
         y: pos.y,
-        theta: theta,
+        theta: theta
     };
 
 
