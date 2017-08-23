@@ -4,7 +4,8 @@ module.exports = {
     createBox: createBox,
     createRandomPolygon: createRandomPolygon,
     createPolygonSplit: createPolygonSplit,
-    createCircleSensor: createCircleSensor
+    createCircleSensor: createCircleSensor,
+    findCentroid: findCentroid
 };
 
 
@@ -149,8 +150,6 @@ function createPolygonSplit(world, body, v1, v2) {
     pol2.SetAsArray(b2V2, b2V2.length);
 
 
-
-
     world.DestroyBody(body);
 
     fix_def.shape = pol1;
@@ -163,7 +162,7 @@ function createPolygonSplit(world, body, v1, v2) {
     b2.SetAngle(body.GetAngle());
     b2.CreateFixture(fix_def);
 
-    return [b1,b2];
+    return [b1, b2];
 
 }
 
@@ -176,9 +175,50 @@ function createCircleSensor(body, radius) {
     fix_def.shape.m_radius = radius;
 
 
-
     fix_def.isSensor = true;
     fix_def.userData = body.GetFixtureList().GetUserData();
 
     body.CreateFixture(fix_def);
+}
+
+
+function findCentroid(vertices) {
+    var centroid = [0, 0];
+    var signedArea = 0;
+    var a = 0;
+
+    var x0 = 0; // Current vertex X
+    var y0 = 0; // Current vertex Y
+
+    var x1 = 0; // Next vertex X
+    var y1 = 0; // Next vertex Y
+
+
+    // For all vertices except last
+    for (var i = 0; i < vertices.length - 1; ++i) {
+        x0 = vertices[i][0];
+        y0 = vertices[i][1];
+        x1 = vertices[i + 1][0];
+        y1 = vertices[i + 1][1];
+        a = x0 * y1 - x1 * y0;
+        signedArea += a;
+        centroid[0] += (x0 + x1) * a;
+        centroid[1] += (y0 + y1) * a;
+    }
+
+    // Do last vertex separately to avoid performing an expensive
+    // modulus operation in each iteration.
+    x0 = vertices[i][0];
+    y0 = vertices[i][1];
+    x1 = vertices[0][0];
+    y1 = vertices[0][1];
+    a = x0 * y1 - x1 * y0;
+    signedArea += a;
+    centroid[0] += (x0 + x1) * a;
+    centroid[1] += (y0 + y1) * a;
+
+    signedArea *= 0.5;
+    centroid[0] /= (6.0 * signedArea);
+    centroid[1] /= (6.0 * signedArea);
+    return centroid;
 }

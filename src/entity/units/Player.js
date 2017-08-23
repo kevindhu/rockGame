@@ -85,12 +85,9 @@ Player.prototype.createCircle = function (radius) {
     if (!radius) {
         return;
     }
-
     this.default = false;
     this.circleRadius = radius;
 
-
-    console.log("CREATING NEW CIRCLE with radius: " + radius);
     var delta = 2 * Math.PI / this.rocks.length;
     var theta, rock;
 

@@ -13,10 +13,11 @@ function Rock(x, y, SCALE, gameServer, body, vertices) {
     this.SCALE = SCALE;
     this.theta = 2;
 
+    this.vertices = vertices;
+
     this.queuePosition = null;
     this.owner = null;
     this.body = body;
-    this.vertices = vertices;
     this.init();
 }
 
@@ -24,6 +25,8 @@ Rock.prototype.init = function () {
     if (!this.body) {
         this.setB2();
     }
+    this.setCentroid();
+
     this.chunk = EntityFunctions.findChunk(this.gameServer, this);
 
     if (this.chunk !== 0) {
@@ -58,6 +61,11 @@ Rock.prototype.setB2 = function () {
     this.getRandomVelocity();
 };
 
+Rock.prototype.setCentroid = function () {
+    this.centroid = B2Common.findCentroid(this.vertices);
+    this.centroidLength = normal(this.centroid[0], this.centroid[1]);
+};
+
 
 Rock.prototype.tick = function () {
     //this.decayVelocity();
@@ -74,28 +82,35 @@ Rock.prototype.move = function () {
     var x = this.body.GetPosition().x;
     var y = this.body.GetPosition().y;
 
+    var angle = Math.atan2(this.centroid[1], this.centroid[0]) % (2 * Math.PI) + this.body.GetAngle();
+
+    var origin = {
+        x: x + this.centroidLength * Math.cos(angle),
+        y: y + this.centroidLength * Math.sin(angle)
+    };
+
     if (this.queuePosition && this.owner) {
         var v = this.body.GetLinearVelocity();
-        this.getTheta(this.queuePosition);
+        this.getTheta(this.queuePosition, origin);
 
         if (this.owner.default) {
-            if (inBounds(x, this.queuePosition.x, 0.5) &&
-                inBounds(y, this.queuePosition.y, 0.5)) {
+            if (inBounds(origin.x, this.queuePosition.x, 0.5) &&
+                inBounds(origin.y, this.queuePosition.y, 0.5)) {
                 //this.queuePosition = null;
             }
             else {
-                v.x = 1.1 * (this.queuePosition.x - x);
-                v.y = 1.1 * (this.queuePosition.y - y);
+                v.x = 1.1 * (this.queuePosition.x - origin.x);
+                v.y = 1.1 * (this.queuePosition.y - origin.y);
             }
         }
         else {
-            if (inBounds(x, this.queuePosition.x, 0.3) &&
-                inBounds(y, this.queuePosition.y, 0.3)) {
+            if (inBounds(origin.x, this.queuePosition.x, 0.3) &&
+                inBounds(origin.y, this.queuePosition.y, 0.3)) {
                 //this.queuePosition = null;
             }
             else {
-                v.x = 2 * (this.queuePosition.x - x) + this.owner.xVel;
-                v.y = 2 * (this.queuePosition.y - y) + this.owner.yVel;
+                v.x = 2 * (this.queuePosition.x - origin.x) + this.owner.xVel;
+                v.y = 2 * (this.queuePosition.y - origin.y) + this.owner.yVel;
             }
         }
         this.body.SetLinearVelocity(v);
@@ -130,11 +145,8 @@ Rock.prototype.removeOwner = function () {
     this.queuePosition = null;
 };
 
-Rock.prototype.getTheta = function (target, hard) {
-    var x = this.body.GetPosition().x;
-    var y = this.body.GetPosition().y;
-
-    this.theta = Math.atan2(target.y - y, target.x - x) % (2 * Math.PI);
+Rock.prototype.getTheta = function (target, origin) {
+    this.theta = Math.atan2(target.y - origin.y, target.x - origin.x) % (2 * Math.PI);
 };
 
 Rock.prototype.getRandomVelocity = function () {
@@ -156,22 +168,26 @@ Rock.prototype.decayVelocity = function () {
 };
 
 
-Rock.prototype.addShooting = function (owner, x, y) {
+Rock.prototype.addShooting = function (owner, targetX, targetY) {
     this.queuePosition = null;
     this.shooting = true;
-    this.shooter = owner;
     this.tempNeutral = owner;
     this.shootTimer = 60;
 
-    this.getTheta({
-        x: x,
-        y: y
-    }, true);
 
-    this.targetPt = {
-        x: x,
-        y: y
+    var targetPt = {
+        x: targetX,
+        y: targetY
     };
+
+    var x = this.body.GetPosition().x;
+    var y = this.body.GetPosition().y;
+    var origin = {
+        x: x + this.centroid[0],
+        y: y + this.centroid[1]
+    };
+
+    this.getTheta(targetPt, origin);
 
     var v = this.body.GetLinearVelocity();
     v.x = 20 * Math.cos(this.theta);
@@ -196,14 +212,12 @@ Rock.prototype.split = function () {
     middleVertex.Set((vertices[count / 2 - 1].x + vertices[count / 2].x) / 2, (vertices[count / 2 - 1].y + vertices[count / 2].y) / 2);
 
     var lastVertex = new B2.b2Vec2();
-    lastVertex.Set((vertices[count-1].x + vertices[0].x) / 2, (vertices[count - 1].y + vertices[0].y) / 2);
+    lastVertex.Set((vertices[count - 1].x + vertices[0].x) / 2, (vertices[count - 1].y + vertices[0].y) / 2);
 
 
     var vertices1 = [];
     var vertices2 = [];
     var i;
-
-
 
 
     vertices1.push([lastVertex.x, lastVertex.y]);
@@ -213,14 +227,11 @@ Rock.prototype.split = function () {
     vertices1.push([middleVertex.x, middleVertex.y]);
 
 
-
-
     vertices2.push([middleVertex.x, middleVertex.y]);
     for (i = count / 2; i < count; i++) {
         vertices2.push([vertices[i].x, vertices[i].y]);
     }
     vertices2.push([lastVertex.x, lastVertex.y]);
-
 
 
     var x = Math.floor(this.body.GetPosition().x);
@@ -230,8 +241,8 @@ Rock.prototype.split = function () {
     var bodies = B2Common.createPolygonSplit(this.gameServer.box2d_world, this.body, vertices1, vertices2);
 
 
-    var clone1 = new Rock(x, y, this.SCALE /2, this.gameServer, bodies[0], vertices1);
-    var clone2 = new Rock(x, y, this.SCALE /2, this.gameServer, bodies[1], vertices2);
+    var clone1 = new Rock(x, y, this.SCALE / 2, this.gameServer, bodies[0], vertices1);
+    var clone2 = new Rock(x, y, this.SCALE / 2, this.gameServer, bodies[1], vertices2);
 
     clone1.body.GetFixtureList().SetUserData(clone1);
     clone2.body.GetFixtureList().SetUserData(clone2);

@@ -343,10 +343,8 @@ GameServer.prototype.setupCollisionHandler = function () {
 
 
             if (impact > 10) {
-                a.startSplit = true;
+                //a.startSplit = true;
                 b.startSplit = true;
-                //b.splitting = true;
-
             }
         }
 

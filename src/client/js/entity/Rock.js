@@ -22,7 +22,7 @@ Rock.prototype.show = function () {
     ctx.fillStyle = "purple";
     ctx.translate(this.x, this.y);
     ctx.beginPath();
-    
+
 
     ctx.rotate(this.theta);
     ctx.moveTo(v[0][0] * SCALE, v[0][1] * SCALE);
