@@ -1,6 +1,7 @@
 var B2 = require("../../modules/B2");
 var B2Common = require("../../modules/B2Common");
 var EntityFunctions = require('../EntityFunctions');
+var entityConfig = require('../entityConfig');
 var lerp = require('lerp');
 
 function Rock(x, y, SCALE, gameServer, body, vertices) {
@@ -12,6 +13,7 @@ function Rock(x, y, SCALE, gameServer, body, vertices) {
     this.y = y;
     this.SCALE = SCALE;
     this.theta = 2;
+    this.health = 200;
 
     this.vertices = vertices;
 
@@ -68,49 +70,46 @@ Rock.prototype.setCentroid = function () {
 
 
 Rock.prototype.tick = function () {
-    //this.decayVelocity();
+    if (overBoundary(this.body.GetPosition().x) || overBoundary(this.body.GetPosition().y)) {
+        this.onDelete();
+        return;
+    }
+
+
     this.packetHandler.updateRockPackets(this);
     this.move();
 
-    if (this.splitting) {
+    if (this.health <= 0) {
         this.split();
     }
 };
 
 
 Rock.prototype.move = function () {
-    var x = this.body.GetPosition().x;
-    var y = this.body.GetPosition().y;
-
-    var angle = Math.atan2(this.centroid[1], this.centroid[0]) % (2 * Math.PI) + this.body.GetAngle();
-
-    var origin = {
-        x: x + this.centroidLength * Math.cos(angle),
-        y: y + this.centroidLength * Math.sin(angle)
-    };
+    this.getOrigin();
 
     if (this.queuePosition && this.owner) {
         var v = this.body.GetLinearVelocity();
-        this.getTheta(this.queuePosition, origin);
+        this.getTheta(this.queuePosition, this.origin);
 
         if (this.owner.default) {
-            if (inBounds(origin.x, this.queuePosition.x, 0.5) &&
-                inBounds(origin.y, this.queuePosition.y, 0.5)) {
+            if (inBounds(this.origin.x, this.queuePosition.x, 0.5) &&
+                inBounds(this.origin.y, this.queuePosition.y, 0.5)) {
                 //this.queuePosition = null;
             }
             else {
-                v.x = 1.1 * (this.queuePosition.x - origin.x);
-                v.y = 1.1 * (this.queuePosition.y - origin.y);
+                v.x = 1.1 * (this.queuePosition.x - this.origin.x);
+                v.y = 1.1 * (this.queuePosition.y - this.origin.y);
             }
         }
         else {
-            if (inBounds(origin.x, this.queuePosition.x, 0.3) &&
-                inBounds(origin.y, this.queuePosition.y, 0.3)) {
+            if (inBounds(this.origin.x, this.queuePosition.x, 0.3) &&
+                inBounds(this.origin.y, this.queuePosition.y, 0.3)) {
                 //this.queuePosition = null;
             }
             else {
-                v.x = 2 * (this.queuePosition.x - origin.x) + this.owner.xVel;
-                v.y = 2 * (this.queuePosition.y - origin.y) + this.owner.yVel;
+                v.x = 2 * (this.queuePosition.x - this.origin.x) + this.owner.xVel;
+                v.y = 2 * (this.queuePosition.y - this.origin.y) + this.owner.yVel;
             }
         }
         this.body.SetLinearVelocity(v);
@@ -168,32 +167,43 @@ Rock.prototype.decayVelocity = function () {
 };
 
 
+Rock.prototype.decreaseHealth = function (amount) {
+    this.health -= amount;
+};
+
 Rock.prototype.addShooting = function (owner, targetX, targetY) {
     this.queuePosition = null;
     this.shooting = true;
     this.tempNeutral = owner;
     this.shootTimer = 60;
 
-
     var targetPt = {
         x: targetX,
         y: targetY
     };
 
-    var x = this.body.GetPosition().x;
-    var y = this.body.GetPosition().y;
-    var origin = {
-        x: x + this.centroid[0],
-        y: y + this.centroid[1]
-    };
+    this.getOrigin();
 
-    this.getTheta(targetPt, origin);
+    this.getTheta(targetPt, this.origin);
 
     var v = this.body.GetLinearVelocity();
     v.x = 20 * Math.cos(this.theta);
     v.y = 20 * Math.sin(this.theta);
     this.body.SetLinearVelocity(v);
 };
+
+Rock.prototype.getOrigin = function () {
+    var x = this.body.GetPosition().x;
+    var y = this.body.GetPosition().y;
+
+    var angle = Math.atan2(this.centroid[1], this.centroid[0]) % (2 * Math.PI) + this.body.GetAngle();
+    this.origin = {
+        x: x + this.centroidLength * Math.cos(angle),
+        y: y + this.centroidLength * Math.sin(angle)
+    };
+    return this.origin;
+};
+
 
 Rock.prototype.split = function () {
     if (this.SCALE < 0.2 || this.body.GetFixtureList().GetShape().GetVertexCount() <= 3) {
@@ -276,6 +286,10 @@ function normal(x, y) {
 
 function getRandom(min, max) {
     return Math.random() * (max - min) + min;
+}
+
+function overBoundary(coord) {
+    return coord < entityConfig.BORDER_WIDTH || coord > entityConfig.WIDTH - entityConfig.BORDER_WIDTH;
 }
 
 module.exports = Rock;

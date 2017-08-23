@@ -38,7 +38,6 @@ function Player(id, name, gameServer) {
 
 EntityFunctions.inherits(Player, Controller);
 
-
 Player.prototype.onDelete = function () {
     this.removeAllRocks();
     Player.super_.prototype.onDelete.apply(this);
@@ -52,7 +51,6 @@ Player.prototype.getTheta = function (pos1, pos2) {
     }
     return newTheta % (2 * Math.PI);
 };
-
 
 Player.prototype.update = function () {
     Player.super_.prototype.update.apply(this);
@@ -80,7 +78,6 @@ Player.prototype.update = function () {
     }
 };
 
-
 Player.prototype.createCircle = function (radius) {
     if (!radius) {
         return;
@@ -103,7 +100,6 @@ Player.prototype.createCircle = function (radius) {
     this.pX = this.x;
     this.pY = this.y;
 };
-
 
 Player.prototype.createDefault = function () {
     this.default = true;
@@ -132,6 +128,7 @@ Player.prototype.decreaseHealth = function (amount) {
     }
     this.packetHandler.updateControllersPackets(this);
 };
+
 Player.prototype.increaseHealth = function (amount) {
     if (this.health <= 10) {
         this.health += amount;

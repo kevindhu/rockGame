@@ -36,13 +36,10 @@ GameServer.prototype.initChunks = function () {
         this.CHUNKS[i] = new Chunk(i, this);
     }
 };
-
 GameServer.prototype.initB2 = function () {
     var gravity = new B2.b2Vec2(0, 0);
     this.box2d_world = new B2.b2World(gravity, false); //no sleep, need dynamic bodies over static bodies to work
 };
-
-
 GameServer.prototype.initTiles = function () {
     for (var i = 0; i < Math.sqrt(entityConfig.TILES); i++) {
         for (var j = 0; j < Math.sqrt(entityConfig.TILES); j++) {
@@ -51,22 +48,12 @@ GameServer.prototype.initTiles = function () {
         }
     }
 };
-
-
 GameServer.prototype.initRocks = function () {
-    var x, y, i, rock;
+    var i;
     for (i = 0; i < entityConfig.ROCKS; i++) {
         this.spawnRandomRock();
     }
 };
-
-GameServer.prototype.spawnRandomRock = function () {
-    var x = Arithmetic.getRandomInt(entityConfig.BORDER_WIDTH, entityConfig.WIDTH - entityConfig.BORDER_WIDTH);
-    var y = Arithmetic.getRandomInt(entityConfig.BORDER_WIDTH, entityConfig.WIDTH - entityConfig.BORDER_WIDTH);
-    var rock = new Entity.Rock(x, y, getRandom(0.5, 3), this);
-};
-
-
 GameServer.prototype.initNewClients = function () {
     for (var id in this.INIT_SOCKET_LIST) {
         var socket = this.SOCKET_LIST[id];
@@ -115,40 +102,20 @@ GameServer.prototype.initNewClients = function () {
     }
 };
 
+GameServer.prototype.spawnRandomRock = function () {
+    var x = Arithmetic.getRandomInt(entityConfig.BORDER_WIDTH, entityConfig.WIDTH - entityConfig.BORDER_WIDTH);
+    var y = Arithmetic.getRandomInt(entityConfig.BORDER_WIDTH, entityConfig.WIDTH - entityConfig.BORDER_WIDTH);
+    return new Entity.Rock(x, y, getRandom(0.5, 3), this);
+};
+
+
+
 /** UPDATE METHODS **/
 GameServer.prototype.spawnRocks = function () {
-    if (Object.size(this.ASTEROID_LIST) < entityConfig.ROCKS) {
+    if (Object.size(this.ROCK_LIST) < entityConfig.ROCKS) {
         this.spawnRandomRock();
     }
 };
-
-
-GameServer.prototype.updateControllers = function () {
-    for (var id in this.CONTROLLER_LIST) {
-        var controller = this.CONTROLLER_LIST[id];
-        controller.update();
-    }
-};
-
-
-GameServer.prototype.updateRocks = function () {
-    var id, rock;
-
-    //this.spawnRocks();
-
-    for (id in this.ROCK_LIST) {
-        rock = this.ROCK_LIST[id];
-        rock.tick();
-    }
-};
-
-GameServer.prototype.updateBox2d = function () {
-    this.box2d_world.Step(1 / 20, 4, 3);
-
-    //important to clear forces, otherwise forces will keep applying
-    this.box2d_world.ClearForces();
-};
-
 
 GameServer.prototype.update = function () {
     this.timeStamp = Date.now();
@@ -160,6 +127,28 @@ GameServer.prototype.update = function () {
     this.updateRocks();
 
     this.packetHandler.sendPackets();
+};
+GameServer.prototype.updateControllers = function () {
+    for (var id in this.CONTROLLER_LIST) {
+        var controller = this.CONTROLLER_LIST[id];
+        controller.update();
+    }
+};
+GameServer.prototype.updateRocks = function () {
+    var id, rock;
+
+    this.spawnRocks();
+
+    for (id in this.ROCK_LIST) {
+        rock = this.ROCK_LIST[id];
+        rock.tick();
+    }
+};
+GameServer.prototype.updateBox2d = function () {
+    this.box2d_world.Step(1 / 20, 4, 3);
+
+    //important to clear forces, otherwise forces will keep applying
+    this.box2d_world.ClearForces();
 };
 
 /** SERVER CREATION EVENTS **/
@@ -184,9 +173,7 @@ GameServer.prototype.start = function () {
     this.initTiles();
     this.initRocks();
 
-    /** START WEBSOCKET SERVICE **/
     var io = require('socket.io')(server, {});
-
     io.sockets.on('connection', function (socket) {
         var player;
         socket.id = Math.floor(Math.random() * 1000000);
@@ -293,7 +280,6 @@ GameServer.prototype.start = function () {
         }.bind(this));
     }.bind(this));
 
-    /** START MAIN LOOP **/
     setInterval(this.update.bind(this), 1000 / 25);
 };
 
@@ -303,7 +289,6 @@ GameServer.prototype.createPlayer = function (socket, info) {
 
 
 GameServer.prototype.setupCollisionHandler = function () {
-
     B2.b2ContactListener.prototype.BeginContact = function (contact) {
         var a = contact.GetFixtureA();
         var b = contact.GetFixtureB();
@@ -341,10 +326,9 @@ GameServer.prototype.setupCollisionHandler = function () {
             var impact = normal(aVel.x - bVel.x,
                 aVel.y - bVel.y);
 
-
-            if (impact > 10) {
-                //a.startSplit = true;
-                b.startSplit = true;
+            if (impact > 15) {
+                a.decreaseHealth(impact);
+                b.decreaseHealth(impact);
             }
         }
 
@@ -361,16 +345,12 @@ GameServer.prototype.setupCollisionHandler = function () {
     B2.b2ContactListener.prototype.PostSolve = function (contact) {
         var a = contact.GetFixtureA().GetUserData();
         var b = contact.GetFixtureB().GetUserData();
-
-
         if (a.startSplit) {
             a.splitting = true;
         }
         if (b.startSplit) {
             b.splitting = true;
         }
-
-
     }
 };
 
@@ -389,8 +369,6 @@ Number.prototype.between = function (min, max) {
 function getRandom(min, max) {
     return Math.random() * (max - min) + min;
 }
-
-
 function normal(x, y) {
     return Math.sqrt(x * x + y * y);
 }
