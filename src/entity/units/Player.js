@@ -34,6 +34,7 @@ function Player(id, name, gameServer) {
     this.resetLevels();
     this.dPopulateRockQueue();
     this.init();
+    this.createCircle(4);
 }
 
 EntityFunctions.inherits(Player, Controller);
@@ -86,6 +87,7 @@ Player.prototype.createCircle = function (radius) {
     this.circleRadius = radius;
 
     var delta = 2 * Math.PI / this.rocks.length;
+    console.log(delta);
     var theta, rock;
 
     for (var i = 0; i < this.rocks.length; i++) {
@@ -116,7 +118,7 @@ Player.prototype.resetLevels = function () {
     this.power = 0; //power determines max size of things you can hold
 
 
-    this.rockMaxLength = 20;
+    this.rockMaxLength = 10;
     this.food = 0;
     this.maxFood = 2;
     this.default = true;
@@ -312,7 +314,7 @@ Player.prototype.shootRock = function (x, y) {
     if (!rock) return;
 
     this.removeRock(rock);
-    rock.addShooting(this, x, y);
+    rock.shoot(this, x, y);
 
     this.createCircle(this.circleRadius);
 };
@@ -359,7 +361,7 @@ Player.prototype.removeRock = function (rock) {
         this.rocks.splice(index, 1);
         rock.removeOwner();
     }
-    this.updateQueuePositions();
+    //this.updateQueuePositions();
 };
 
 

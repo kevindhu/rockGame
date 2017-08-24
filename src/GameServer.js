@@ -296,12 +296,12 @@ GameServer.prototype.setupCollisionHandler = function () {
         var bEntity = b.GetUserData();
 
         if (aEntity instanceof Entity.Rock && bEntity instanceof Entity.Player) {
-            if (!aEntity.shooting && b.IsSensor() && aEntity.SCALE < 1 && aEntity.owner !== bEntity) {
+            if (!aEntity.tempNeutral && b.IsSensor() && aEntity.SCALE < 3 && aEntity.owner !== bEntity) {
                 bEntity.addRock(aEntity);
             }
         }
         if (aEntity instanceof Entity.Player && bEntity instanceof Entity.Rock) {
-            if (!bEntity.shooting && a.IsSensor() && bEntity.SCALE < 1 && bEntity.owner !== aEntity) {
+            if (!bEntity.tempNeutral && a.IsSensor() && bEntity.SCALE < 3 && bEntity.owner !== aEntity) {
                 aEntity.addRock(bEntity);
             }
         }
@@ -313,19 +313,51 @@ GameServer.prototype.setupCollisionHandler = function () {
         var b = contact.GetFixtureB().GetUserData();
 
 
-        if (a.shooting || b.shooting) {
-            if (a.tempNeutral === b.owner || b.tempNeutral === a.owner) {
-                contact.SetEnabled(false);
-                return;
-            }
-            else {
-                a.tempNeutral = null;
-                b.tempNeutral = null;
 
-                a.shooting = false;
-                b.shooting = false;
+        if (a.justChanged || b.justChanged) {
+            a.justChanged = false;
+            b.justChanged = false;
+            if (a instanceof Entity.Rock && b instanceof Entity.Player) {
+                if (!a.tempNeutral && a.SCALE < 1 && a.owner !== b) {
+                    b.addRock(a);
+                }
+            }
+            if (a instanceof Entity.Player && b instanceof Entity.Rock) {
+                if (!b.tempNeutral && b.SCALE < 1 && b.owner !== a) {
+                    a.addRock(b);
+                }
             }
         }
+
+
+
+        if (a instanceof Entity.Rock && b  instanceof Entity.Rock) {
+
+            if (a.tempNeutral) {
+                if (a.tempNeutral === b.owner || a.tempNeutral === b.tempNeutral) {
+                    contact.SetEnabled(false);
+                    return;
+                }
+                else {
+                    a.tempNeutral = null;
+                    a.justChanged = true;
+                }
+            }
+
+            if (b.tempNeutral) {
+                if (b.tempNeutral === a.owner || a.tempNeutral === b.tempNeutral) {
+                    contact.SetEnabled(false);
+                    return;
+                }
+                else {
+                    b.tempNeutral = null;
+                    b.justChanged = true;
+                }
+            }
+        }
+
+
+
         if (a instanceof Entity.Rock && b instanceof Entity.Rock) {
             if (a.owner !== b.owner) {
                 var aVel = a.body.GetLinearVelocity();

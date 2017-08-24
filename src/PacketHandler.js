@@ -315,6 +315,7 @@ PacketHandler.prototype.updateRockPackets = function (rock) {
     var pos = rock.body.GetPosition();
     pos = new B2.b2Vec2(pos.x * 100, pos.y * 100);
 
+    var owner = rock.owner ? rock.owner.id : null;
     var theta = rock.body.GetAngle();
 
 
@@ -325,7 +326,8 @@ PacketHandler.prototype.updateRockPackets = function (rock) {
         id: rock.id,
         x: pos.x,
         y: pos.y,
-        theta: theta
+        theta: theta,
+        owner: owner
     };
 
 

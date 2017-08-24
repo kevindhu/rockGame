@@ -12,8 +12,8 @@ function Rock(x, y, SCALE, gameServer, body, vertices) {
     this.x = x;
     this.y = y;
     this.SCALE = SCALE;
-    this.theta = 2;
-    this.health = 200;
+    this.theta = getRandom(0,3);
+    this.health = SCALE * 10;
 
     this.vertices = vertices;
 
@@ -123,6 +123,8 @@ Rock.prototype.onDelete = function () {
         this.owner.removeRock(this);
         this.removeOwner();
     }
+    this.gameServer.box2d_world.DestroyBody(this.body);
+
     this.packetHandler.deleteRockPackets(this);
 
     delete this.gameServer.CHUNKS[this.chunk].ROCK_LIST[this.id];
@@ -170,6 +172,17 @@ Rock.prototype.decayVelocity = function () {
 Rock.prototype.decreaseHealth = function (amount) {
     this.health -= amount;
 };
+
+
+Rock.prototype.shoot = function (owner, targetX, targetY) {
+    var x = this.body.GetPosition().x;
+    var y = this.body.GetPosition().y;
+    this.onDelete();
+    var clone = new Rock(x,y, this.SCALE, this.gameServer, null, this.vertices );
+    clone.body.SetAngle(this.body.GetAngle());
+    clone.addShooting(owner, targetX, targetY);
+};
+
 
 Rock.prototype.addShooting = function (owner, targetX, targetY) {
     this.queuePosition = null;
