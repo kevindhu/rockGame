@@ -109,7 +109,6 @@ GameServer.prototype.spawnRandomRock = function () {
 };
 
 
-
 /** UPDATE METHODS **/
 GameServer.prototype.spawnRocks = function () {
     if (Object.size(this.ROCK_LIST) < entityConfig.ROCKS) {
@@ -297,12 +296,12 @@ GameServer.prototype.setupCollisionHandler = function () {
         var bEntity = b.GetUserData();
 
         if (aEntity instanceof Entity.Rock && bEntity instanceof Entity.Player) {
-            if (!aEntity.shooting && b.IsSensor()) {
+            if (!aEntity.shooting && b.IsSensor() && aEntity.SCALE < 1 && aEntity.owner !== bEntity) {
                 bEntity.addRock(aEntity);
             }
         }
         if (aEntity instanceof Entity.Player && bEntity instanceof Entity.Rock) {
-            if (!bEntity.shooting && a.IsSensor()) {
+            if (!bEntity.shooting && a.IsSensor() && bEntity.SCALE < 1 && bEntity.owner !== aEntity) {
                 aEntity.addRock(bEntity);
             }
         }
@@ -319,16 +318,25 @@ GameServer.prototype.setupCollisionHandler = function () {
                 contact.SetEnabled(false);
                 return;
             }
+            else {
+                a.tempNeutral = null;
+                b.tempNeutral = null;
+
+                a.shooting = false;
+                b.shooting = false;
+            }
         }
         if (a instanceof Entity.Rock && b instanceof Entity.Rock) {
-            var aVel = a.body.GetLinearVelocity();
-            var bVel = b.body.GetLinearVelocity();
-            var impact = normal(aVel.x - bVel.x,
-                aVel.y - bVel.y);
+            if (a.owner !== b.owner) {
+                var aVel = a.body.GetLinearVelocity();
+                var bVel = b.body.GetLinearVelocity();
+                var impact = normal(aVel.x - bVel.x,
+                    aVel.y - bVel.y);
 
-            if (impact > 15) {
-                a.decreaseHealth(impact);
-                b.decreaseHealth(impact);
+                if (impact > 15) {
+                    a.decreaseHealth(impact);
+                    b.decreaseHealth(impact);
+                }
             }
         }
 
