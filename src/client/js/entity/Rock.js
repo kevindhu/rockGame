@@ -13,6 +13,8 @@ Rock.prototype.update = function (rockInfo) {
     this.theta = rockInfo.theta;
     this.owner = rockInfo.owner;
     this.tempNeutral = rockInfo.tempNeutral;
+    this.health = rockInfo.health;
+    this.maxHealth = rockInfo.maxHealth;
 };
 
 
@@ -43,6 +45,24 @@ Rock.prototype.show = function () {
     ctx.rotate(2 * Math.PI - this.theta);
     ctx.closePath();
     ctx.translate(-this.x, -this.y);
+
+
+
+
+    if (this.health && this.maxHealth) { //health bar
+        ctx.lineWidth = 10;
+        ctx.beginPath();
+        ctx.strokeStyle = "black";
+        ctx.rect(this.x, this.y, 100, 20);
+        ctx.stroke();
+        ctx.closePath();
+
+        ctx.beginPath();
+        ctx.fillStyle = "green";
+        ctx.rect(this.x, this.y, 100 * this.health / this.maxHealth, 20);
+        ctx.fill();
+        ctx.closePath();
+    } //display health bar
 };
 
 

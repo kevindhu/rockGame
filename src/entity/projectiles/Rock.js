@@ -13,7 +13,9 @@ function Rock(x, y, SCALE, gameServer, body, vertices) {
     this.y = y;
     this.SCALE = SCALE;
     this.theta = getRandom(0,3);
-    this.health = SCALE * 10;
+
+    this.maxHealth = SCALE * 10;
+    this.health = this.maxHealth;
 
     this.vertices = vertices;
 

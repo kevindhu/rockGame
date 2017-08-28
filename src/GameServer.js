@@ -337,7 +337,11 @@ GameServer.prototype.setupCollisionHandler = function () {
 
 
         if (a instanceof Entity.Rock && b instanceof Entity.Rock) {
-
+            if (a instanceof Entity.Rock && b instanceof Entity.Rock) {
+                if (a.owner && a.owner === b.owner) {
+                    contact.SetEnabled(false);
+                }
+            }
             if (a.tempNeutral) {
                 if (a.tempNeutral === b.owner || a.tempNeutral === b.tempNeutral) {
                     contact.SetEnabled(false);
@@ -348,7 +352,6 @@ GameServer.prototype.setupCollisionHandler = function () {
                     a.justChanged = true;
                 }
             }
-
             if (b.tempNeutral) {
                 if (b.tempNeutral === a.owner || a.tempNeutral === b.tempNeutral) {
                     contact.SetEnabled(false);
@@ -359,6 +362,7 @@ GameServer.prototype.setupCollisionHandler = function () {
                     b.justChanged = true;
                 }
             }
+            return;
         }
 
 
@@ -369,9 +373,9 @@ GameServer.prototype.setupCollisionHandler = function () {
                 var impact = normal(aVel.x - bVel.x,
                     aVel.y - bVel.y);
 
-                if (impact > 20) {
-                    a.decreaseHealth(impact / 2);
-                    b.decreaseHealth(impact / 2);
+                if (impact > 10) {
+                    a.decreaseHealth(impact / 4);
+                    b.decreaseHealth(impact / 4);
                 }
             }
         }

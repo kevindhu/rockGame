@@ -311,8 +311,6 @@ Player.prototype.shootRock = function (x, y) {
 
     this.removeRock(rock);
     rock.shoot(this, x, y);
-
-    this.createCircle(this.circleRadius);
 };
 
 
@@ -327,9 +325,7 @@ Player.prototype.findClosestRock = function (target) {
         var rock = this.rocks[i];
         var dist1 = dist(closest, target);
         var dist2 = dist(rock, target);
-
         if (dist1 > dist2) {
-            console.log("NEW CLOSEST IS " + i);
             closest = rock;
         }
     }
@@ -377,7 +373,7 @@ Player.prototype.removeRock = function (rock) {
         this.rocks.splice(index, 1);
         rock.removeOwner();
     }
-    //this.updateQueuePositions();
+    this.createCircle(this.circleRadius);
 };
 
 

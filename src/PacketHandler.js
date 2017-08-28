@@ -331,7 +331,9 @@ PacketHandler.prototype.updateRockPackets = function (rock) {
         y: pos.y,
         theta: theta,
         owner: owner,
-        tempNeutral: tempNeutral
+        tempNeutral: tempNeutral,
+        maxHealth: rock.maxHealth,
+        health: rock.health
     };
 
 
