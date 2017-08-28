@@ -199,7 +199,7 @@ GameServer.prototype.start = function () {
         }.bind(this));
 
         socket.on("pong123", function (data) {
-            console.log("PING: " + Math.floor((this.timeStamp - data)/2));
+            console.log("PING: " + Math.round((this.timeStamp - data) / 2));
         }.bind(this));
 
         socket.on('newPlayer', function (data) {
@@ -293,7 +293,6 @@ GameServer.prototype.createPlayer = function (socket, info) {
 };
 
 
-
 GameServer.prototype.setupCollisionHandler = function () {
     B2.b2ContactListener.prototype.BeginContact = function (contact) {
         var a = contact.GetFixtureA();
@@ -334,11 +333,12 @@ GameServer.prototype.setupCollisionHandler = function () {
             }
         }
         if (a instanceof Entity.Rock && b instanceof Entity.Rock) {
-            if (a instanceof Entity.Rock && b instanceof Entity.Rock) {
-                if (a.owner && a.owner === b.owner) {
-                    contact.SetEnabled(false);
-                }
+
+            if (a.owner && a.owner === b.owner) {
+                contact.SetEnabled(false);
+                return;
             }
+
             if (a.tempNeutral) {
                 if (a.tempNeutral === b.owner || a.tempNeutral === b.tempNeutral) {
                     contact.SetEnabled(false);
@@ -362,19 +362,15 @@ GameServer.prototype.setupCollisionHandler = function () {
                     b.justChanged = true;
                 }
             }
-            return;
-        }
-        if (a instanceof Entity.Rock && b instanceof Entity.Rock) {
-            if (a.owner !== b.owner) {
-                var aVel = a.body.GetLinearVelocity();
-                var bVel = b.body.GetLinearVelocity();
-                var impact = normal(aVel.x - bVel.x,
-                    aVel.y - bVel.y);
 
-                if (impact > 10) {
-                    a.decreaseHealth(impact / 4);
-                    b.decreaseHealth(impact / 4);
-                }
+            var aVel = a.body.GetLinearVelocity();
+            var bVel = b.body.GetLinearVelocity();
+            var impact = normal(aVel.x - bVel.x,
+                aVel.y - bVel.y);
+
+            if (impact > 1) {
+                a.decreaseHealth(impact / 4);
+                b.decreaseHealth(impact / 4);
             }
         }
         if (a instanceof Entity.Rock && b instanceof Entity.Player) {

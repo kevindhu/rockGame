@@ -14,7 +14,7 @@ function Rock(x, y, SCALE, gameServer, body, vertices) {
     this.SCALE = SCALE;
     this.theta = getRandom(0, 3);
 
-    this.maxHealth = SCALE * 10;
+    this.maxHealth = SCALE * 100;
     this.health = this.maxHealth;
 
     this.vertices = vertices;
@@ -50,11 +50,18 @@ Rock.prototype.setB2 = function () {
 
     if (!this.vertices) {
         //make default vertices
+        var sides = 5;
         var vertices = [];
-        vertices[0] = [0, 0].map(multiplier);
-        vertices[1] = [1, 0].map(multiplier);
-        vertices[2] = [1, 1].map(multiplier);
-        vertices[3] = [0, 1].map(multiplier);
+
+        var theta = 0;
+        var delta = 2 * Math.PI / sides;
+        for (var i = 0; i < sides; i++) {
+            theta = i * delta;
+            var x = Math.cos(theta) * this.SCALE;
+            var y = Math.sin(theta) * this.SCALE;
+
+            vertices[i] = [x, y];
+        }
 
         this.vertices = vertices;
     }
@@ -230,7 +237,8 @@ Rock.prototype.split = function () {
 
 
     var middleVertex = new B2.b2Vec2();
-    middleVertex.Set((vertices[count / 2 - 1].x + vertices[count / 2].x) / 2, (vertices[count / 2 - 1].y + vertices[count / 2].y) / 2);
+    var middle = Math.floor(count / 2);
+    middleVertex.Set((vertices[middle - 1].x + vertices[middle].x) / 2, (vertices[middle - 1].y + vertices[middle].y) / 2);
 
     var lastVertex = new B2.b2Vec2();
     lastVertex.Set((vertices[count - 1].x + vertices[0].x) / 2, (vertices[count - 1].y + vertices[0].y) / 2);
@@ -242,14 +250,14 @@ Rock.prototype.split = function () {
 
 
     vertices1.push([lastVertex.x, lastVertex.y]);
-    for (i = 0; i < count / 2; i++) {
+    for (i = 0; i < middle; i++) {
         vertices1.push([vertices[i].x, vertices[i].y]);
     }
     vertices1.push([middleVertex.x, middleVertex.y]);
 
 
     vertices2.push([middleVertex.x, middleVertex.y]);
-    for (i = count / 2; i < count; i++) {
+    for (i = middle; i < count; i++) {
         vertices2.push([vertices[i].x, vertices[i].y]);
     }
     vertices2.push([lastVertex.x, lastVertex.y]);
