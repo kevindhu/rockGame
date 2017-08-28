@@ -119,6 +119,10 @@ GameServer.prototype.spawnRocks = function () {
 GameServer.prototype.update = function () {
     this.timeStamp = Date.now();
 
+    if (this.timeStamp % 50 === 0) {
+        this.packetHandler.sendPing(this.timeStamp);
+    }
+
     this.updateBox2d();
     this.initNewClients();
 
@@ -194,6 +198,10 @@ GameServer.prototype.start = function () {
             socket.verified = true;
         }.bind(this));
 
+        socket.on("pong123", function (data) {
+            console.log("PING: " + Math.floor((this.timeStamp - data)/2));
+        }.bind(this));
+
         socket.on('newPlayer', function (data) {
             player = this.createPlayer(socket, data);
             socket.player = player;
@@ -255,17 +263,15 @@ GameServer.prototype.start = function () {
                     }
                     break;
             }
-
         }.bind(this));
 
         socket.on('createCircle', function (data) {
             var radius = data.radius / 100;
             player.createCircle(radius);
-
         }.bind(this));
 
         socket.on('createDefault', function (data) {
-            player.createDefault();
+            player.createCircle(5);
         }.bind(this));
 
 
@@ -285,6 +291,7 @@ GameServer.prototype.start = function () {
 GameServer.prototype.createPlayer = function (socket, info) {
     return new Entity.Player(socket.id, info.name, this);
 };
+
 
 
 GameServer.prototype.setupCollisionHandler = function () {
@@ -313,7 +320,6 @@ GameServer.prototype.setupCollisionHandler = function () {
         var b = contact.GetFixtureB().GetUserData();
 
 
-
         if (a.justChanged || b.justChanged) {
             a.justChanged = false;
             b.justChanged = false;
@@ -330,8 +336,7 @@ GameServer.prototype.setupCollisionHandler = function () {
         }
 
 
-
-        if (a instanceof Entity.Rock && b  instanceof Entity.Rock) {
+        if (a instanceof Entity.Rock && b instanceof Entity.Rock) {
 
             if (a.tempNeutral) {
                 if (a.tempNeutral === b.owner || a.tempNeutral === b.tempNeutral) {
@@ -357,7 +362,6 @@ GameServer.prototype.setupCollisionHandler = function () {
         }
 
 
-
         if (a instanceof Entity.Rock && b instanceof Entity.Rock) {
             if (a.owner !== b.owner) {
                 var aVel = a.body.GetLinearVelocity();
@@ -365,9 +369,9 @@ GameServer.prototype.setupCollisionHandler = function () {
                 var impact = normal(aVel.x - bVel.x,
                     aVel.y - bVel.y);
 
-                if (impact > 15) {
-                    a.decreaseHealth(impact);
-                    b.decreaseHealth(impact);
+                if (impact > 20) {
+                    a.decreaseHealth(impact / 2);
+                    b.decreaseHealth(impact / 2);
                 }
             }
         }
@@ -380,18 +384,6 @@ GameServer.prototype.setupCollisionHandler = function () {
             contact.SetEnabled(false);
         }
     }.bind(this);
-
-
-    B2.b2ContactListener.prototype.PostSolve = function (contact) {
-        var a = contact.GetFixtureA().GetUserData();
-        var b = contact.GetFixtureB().GetUserData();
-        if (a.startSplit) {
-            a.splitting = true;
-        }
-        if (b.startSplit) {
-            b.splitting = true;
-        }
-    }
 };
 
 Object.size = function (obj) {

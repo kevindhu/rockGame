@@ -61,6 +61,8 @@ Packet.prototype.build = function () {
 };
 
 
+
+
 PacketHandler.prototype.sendVerificationPackets = function (socket) {
     socket.emit('initVerification', {}); //make this more secure
 };
@@ -316,6 +318,7 @@ PacketHandler.prototype.updateRockPackets = function (rock) {
     pos = new B2.b2Vec2(pos.x * 100, pos.y * 100);
 
     var owner = rock.owner ? rock.owner.id : null;
+    var tempNeutral = rock.tempNeutral ? rock.tempNeutral.id : null;
     var theta = rock.body.GetAngle();
 
 
@@ -327,7 +330,8 @@ PacketHandler.prototype.updateRockPackets = function (rock) {
         x: pos.x,
         y: pos.y,
         theta: theta,
-        owner: owner
+        owner: owner,
+        tempNeutral: tempNeutral
     };
 
 
@@ -428,6 +432,18 @@ PacketHandler.prototype.deleteUIPackets = function (player, action) {
         id: player.id,
         action: action
     });
+};
+
+
+
+PacketHandler.prototype.sendPing = function (timestamp) {
+    var id;
+    for (var index in this.gameServer.SOCKET_LIST) {
+        var socket = this.gameServer.SOCKET_LIST[index];
+        if (socket.player) {
+            socket.emit('ping', timestamp);
+        }
+    }
 };
 
 

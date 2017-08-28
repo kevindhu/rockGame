@@ -62,7 +62,6 @@ Player.prototype.update = function () {
     }
 
     if (!this.default) {
-        //console.log(this.xVel, this.yVel);
         this.translateQueuePositions();
     }
 
@@ -87,7 +86,6 @@ Player.prototype.createCircle = function (radius) {
     this.circleRadius = radius;
 
     var delta = 2 * Math.PI / this.rocks.length;
-    console.log(delta);
     var theta, rock;
 
     for (var i = 0; i < this.rocks.length; i++) {
@@ -200,7 +198,6 @@ Player.prototype.addRock = function (rock) {
     }
 
 
-
 };
 
 
@@ -238,7 +235,6 @@ Player.prototype.dUpdateRockQueue = function () { //default update
     });
     this.updateQueuePositions();
 };
-
 
 
 Player.prototype.endNewTail = function () {
@@ -310,7 +306,7 @@ Player.prototype.resetRockQueue = function () { //idk why
 
 
 Player.prototype.shootRock = function (x, y) {
-    var rock = this.rocks[0];
+    var rock = this.findClosestRock({x: x, y: y});
     if (!rock) return;
 
     this.removeRock(rock);
@@ -319,6 +315,26 @@ Player.prototype.shootRock = function (x, y) {
     this.createCircle(this.circleRadius);
 };
 
+
+Player.prototype.findClosestRock = function (target) {
+    var closest = this.rocks[0];
+    var dist = function (rock, target) {
+        var x = rock.body.GetPosition().x;
+        var y = rock.body.GetPosition().y;
+        return (x - target.x) * (x - target.x) + (y - target.y) * (y - target.y);
+    };
+    for (var i = 1; i < this.rocks.length; i++) {
+        var rock = this.rocks[i];
+        var dist1 = dist(closest, target);
+        var dist2 = dist(rock, target);
+
+        if (dist1 > dist2) {
+            console.log("NEW CLOSEST IS " + i);
+            closest = rock;
+        }
+    }
+    return closest;
+};
 
 Player.prototype.consumeRock = function (rock) {
     this.eat(rock.feed);

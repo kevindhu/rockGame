@@ -12,6 +12,7 @@ Rock.prototype.update = function (rockInfo) {
     this.queuePosition = rockInfo.queuePosition;
     this.theta = rockInfo.theta;
     this.owner = rockInfo.owner;
+    this.tempNeutral = rockInfo.tempNeutral;
 };
 
 
@@ -36,6 +37,7 @@ Rock.prototype.show = function () {
     ctx.fill();
 
     ctx.strokeStyle = !this.owner ? "yellow" : "green";
+    ctx.strokeStyle = this.tempNeutral ? "blue" : this.tempNeutral;
 
     ctx.stroke();
     ctx.rotate(2 * Math.PI - this.theta);

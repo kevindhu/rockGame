@@ -75,13 +75,11 @@ Rock.prototype.tick = function () {
         return;
     }
 
-
-    this.packetHandler.updateRockPackets(this);
     this.move();
-
     if (this.health <= 0) {
         this.split();
     }
+    this.packetHandler.updateRockPackets(this);
 };
 
 
@@ -175,12 +173,7 @@ Rock.prototype.decreaseHealth = function (amount) {
 
 
 Rock.prototype.shoot = function (owner, targetX, targetY) {
-    var x = this.body.GetPosition().x;
-    var y = this.body.GetPosition().y;
-    this.onDelete();
-    var clone = new Rock(x,y, this.SCALE, this.gameServer, null, this.vertices );
-    clone.body.SetAngle(this.body.GetAngle());
-    clone.addShooting(owner, targetX, targetY);
+    this.addShooting(owner, targetX, targetY);
 };
 
 
@@ -225,7 +218,6 @@ Rock.prototype.split = function () {
         return;
     }
 
-
     var poly = this.body.GetFixtureList().GetShape();
     var vertices = poly.GetVertices();
     var count = poly.GetVertexCount();
@@ -256,16 +248,16 @@ Rock.prototype.split = function () {
     }
     vertices2.push([lastVertex.x, lastVertex.y]);
 
-
     var x = Math.floor(this.body.GetPosition().x);
     var y = Math.floor(this.body.GetPosition().y);
-
-
     var bodies = B2Common.createPolygonSplit(this.gameServer.box2d_world, this.body, vertices1, vertices2);
 
 
     var clone1 = new Rock(x, y, this.SCALE / 2, this.gameServer, bodies[0], vertices1);
     var clone2 = new Rock(x, y, this.SCALE / 2, this.gameServer, bodies[1], vertices2);
+
+    //clone1.owner = this.owner;
+    //clone2.owner = this.owner;
 
     clone1.body.GetFixtureList().SetUserData(clone1);
     clone2.body.GetFixtureList().SetUserData(clone2);

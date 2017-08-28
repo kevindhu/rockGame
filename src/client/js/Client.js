@@ -27,9 +27,16 @@ Client.prototype.initSocket = function () {
     this.socket.on('updateEntities', this.handlePacket.bind(this));
     this.socket.on('chatMessage', this.mainUI);
     this.socket.on('updateLOL', this.handleLOL.bind(this));
+    this.socket.on('ping', this.sendPong.bind(this));
 
 
 };
+
+Client.prototype.sendPong = function (message) {
+    this.socket.emit("pong123", message);
+};
+
+
 Client.prototype.initCanvases = function () {
     this.mainCanvas = document.getElementById("main_canvas");
     this.mainCanvas.style.border = '1px solid #000000';
@@ -190,8 +197,6 @@ Client.prototype.sendCircle = function (construct) {
         radiiNormal(construct[2]),
         radiiNormal(construct[3])));
 
-    console.log("SENDING CIRCLE WITH RADIUS" + maxRadius);
-
     if (maxRadius) {
         this.socket.emit("createCircle", {
             id: this.SELF_ID,
@@ -235,11 +240,7 @@ Client.prototype.handleLOL = function (data) {
 
         //console.log(reader.readInt32()); //real x
         //console.log(reader.readInt32()); //real y
-
-
     }
-
-
 };
 
 
