@@ -179,6 +179,7 @@ Rock.prototype.getRandomVelocity = function () {
     var v = this.body.GetLinearVelocity();
     v.Add(new B2.b2Vec2(getRandom(-0.4, 0.4), getRandom(-0.4, 0.4)));
     this.body.SetLinearVelocity(v);
+    this.body.SetAngularVelocity(1);
 };
 
 Rock.prototype.decayVelocity = function () {

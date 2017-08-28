@@ -52,9 +52,9 @@ function createBox(world, user, x, y, width, height) {
 }
 
 
-function createRandomPolygon(world, user, vertices, x, y, angle) {
+function createRandomPolygon(world, user, vertices, x, y, texture) {
     var options = {
-        'density': 1 + this.texture,
+        'density': 1 + texture,
         'friction': 0.0,
         'restitution': 0.5,
 
@@ -95,9 +95,6 @@ function createRandomPolygon(world, user, vertices, x, y, angle) {
     //fix_def.filter.maskBits = 0x0000; //nothing can collide with this
     var body = world.CreateBody(body_def);
     body.CreateFixture(fix_def);
-    if (angle) {
-        body.SetAngle(angle);
-    }
     return body;
 }
 
