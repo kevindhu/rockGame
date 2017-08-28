@@ -16,10 +16,10 @@ var small = function () {
 
 var medium = function () {
     CHUNKS = 4;
-    WIDTH = 5000;
-    TILES_INPUT = 1000;
+    WIDTH = 500;
+    TILES_INPUT = 100;
     ROCKS = 800;
-    BORDER_WIDTH = 300;
+    BORDER_WIDTH = 100;
 };
 
 

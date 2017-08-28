@@ -28,6 +28,8 @@ function GameServer() {
     this.tileLength = (entityConfig.WIDTH - 2 * entityConfig.BORDER_WIDTH) /
         Math.sqrt(entityConfig.TILES);
     this.startTime = Date.now();
+
+    this.rockCount = 0;
 }
 
 /** SERVER INIT METHODS **/
@@ -111,7 +113,7 @@ GameServer.prototype.spawnRandomRock = function () {
 
 /** UPDATE METHODS **/
 GameServer.prototype.spawnRocks = function () {
-    if (Object.size(this.ROCK_LIST) < entityConfig.ROCKS) {
+    if (this.rockCount < entityConfig.ROCKS) {
         this.spawnRandomRock();
     }
 };
@@ -199,6 +201,7 @@ GameServer.prototype.start = function () {
         }.bind(this));
 
         socket.on("pong123", function (data) {
+            console.log("OLD PING:" +  data);
             console.log("PING: " + Math.round((this.timeStamp - data) / 2));
         }.bind(this));
 
@@ -311,6 +314,21 @@ GameServer.prototype.setupCollisionHandler = function () {
                 aEntity.addRock(bEntity);
             }
         }
+
+        if (aEntity instanceof Entity.Rock && bEntity instanceof Entity.Rock) {
+            if (aEntity.owner && aEntity.owner === bEntity.owner) {
+                return;
+            }
+            var aVel = aEntity.body.GetLinearVelocity();
+            var bVel = bEntity.body.GetLinearVelocity();
+            var impact = normal(aVel.x - bVel.x,
+                aVel.y - bVel.y);
+
+            if (impact > 10) {
+                aEntity.decreaseHealth(impact / 1);
+                bEntity.decreaseHealth(impact / 1);
+            }
+        }
     }.bind(this);
 
     B2.b2ContactListener.prototype.PreSolve = function (contact) {
@@ -333,12 +351,10 @@ GameServer.prototype.setupCollisionHandler = function () {
             }
         }
         if (a instanceof Entity.Rock && b instanceof Entity.Rock) {
-
             if (a.owner && a.owner === b.owner) {
                 contact.SetEnabled(false);
                 return;
             }
-
             if (a.tempNeutral) {
                 if (a.tempNeutral === b.owner || a.tempNeutral === b.tempNeutral) {
                     contact.SetEnabled(false);
@@ -361,16 +377,6 @@ GameServer.prototype.setupCollisionHandler = function () {
                     b.tempNeutral = null;
                     b.justChanged = true;
                 }
-            }
-
-            var aVel = a.body.GetLinearVelocity();
-            var bVel = b.body.GetLinearVelocity();
-            var impact = normal(aVel.x - bVel.x,
-                aVel.y - bVel.y);
-
-            if (impact > 1) {
-                a.decreaseHealth(impact / 4);
-                b.decreaseHealth(impact / 4);
             }
         }
         if (a instanceof Entity.Rock && b instanceof Entity.Player) {

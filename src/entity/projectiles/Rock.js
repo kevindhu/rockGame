@@ -8,16 +8,20 @@ function Rock(x, y, SCALE, gameServer, body, vertices) {
     this.gameServer = gameServer;
     this.packetHandler = gameServer.packetHandler;
 
+    this.texture = Math.floor(getRandom(0,2));
+
+    this.gameServer.rockCount += 1;
     this.id = Math.random();
     this.x = x;
     this.y = y;
     this.SCALE = SCALE;
     this.theta = getRandom(0, 3);
 
-    this.maxHealth = SCALE * 100;
+    this.maxHealth = SCALE * 10 * (1 + this.texture);
     this.health = this.maxHealth;
 
     this.vertices = vertices;
+    this.sides = Math.floor(getRandom(3,5));
 
     this.queuePosition = null;
     this.owner = null;
@@ -50,7 +54,7 @@ Rock.prototype.setB2 = function () {
 
     if (!this.vertices) {
         //make default vertices
-        var sides = 5;
+        var sides = this.sides;
         var vertices = [];
 
         var theta = 0;
@@ -67,7 +71,7 @@ Rock.prototype.setB2 = function () {
     }
 
 
-    this.body = B2Common.createRandomPolygon(this.gameServer.box2d_world, this, this.vertices, this.x, this.y);
+    this.body = B2Common.createRandomPolygon(this.gameServer.box2d_world, this, this.vertices, this.x, this.y, this.texture);
     this.body.SetAngle(this.theta);
     this.getRandomVelocity();
 };
@@ -85,8 +89,17 @@ Rock.prototype.tick = function () {
     }
 
     this.move();
-    if (this.health <= 0) {
-        this.split();
+    if (this.health <= 0 && !this.splitting) {
+        this.splitting = true;
+        this.splitTimer = 1;
+    }
+    if (this.splitting) {
+        if (this.splitTimer > 0) {
+            this.splitTimer -= 1;
+        }
+        else {
+            this.split();
+        }
     }
     this.packetHandler.updateRockPackets(this);
 };
@@ -126,6 +139,7 @@ Rock.prototype.move = function () {
 
 
 Rock.prototype.onDelete = function () {
+    this.gameServer.rockCount -= 1;
     if (this.owner) {
         this.removeOwner();
     }
@@ -225,7 +239,7 @@ Rock.prototype.getOrigin = function () {
 
 
 Rock.prototype.split = function () {
-    if (this.SCALE < 0.2 || this.body.GetFixtureList().GetShape().GetVertexCount() <= 3) {
+    if (this.SCALE < 0.2) {
         this.gameServer.box2d_world.DestroyBody(this.body);
         this.onDelete();
         return;

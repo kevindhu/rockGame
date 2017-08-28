@@ -54,7 +54,7 @@ function createBox(world, user, x, y, width, height) {
 
 function createRandomPolygon(world, user, vertices, x, y, angle) {
     var options = {
-        'density': 1.0,
+        'density': 1 + this.texture,
         'friction': 0.0,
         'restitution': 0.5,
 
