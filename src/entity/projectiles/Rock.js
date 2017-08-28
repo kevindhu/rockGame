@@ -12,7 +12,7 @@ function Rock(x, y, SCALE, gameServer, body, vertices) {
     this.x = x;
     this.y = y;
     this.SCALE = SCALE;
-    this.theta = getRandom(0,3);
+    this.theta = getRandom(0, 3);
 
     this.maxHealth = SCALE * 10;
     this.health = this.maxHealth;
@@ -120,7 +120,6 @@ Rock.prototype.move = function () {
 
 Rock.prototype.onDelete = function () {
     if (this.owner) {
-        this.owner.removeRock(this);
         this.removeOwner();
     }
     this.gameServer.box2d_world.DestroyBody(this.body);
@@ -138,10 +137,15 @@ function inBounds(x1, x2, range) {
 
 
 Rock.prototype.addOwner = function (owner) {
+    this.removeOwner();
     this.owner = owner;
 };
 
 Rock.prototype.removeOwner = function () {
+    if (!this.owner) {
+        return;
+    }
+    this.owner.removeRock(this);
     this.owner = null;
     this.queuePosition = null;
 };

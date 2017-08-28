@@ -314,7 +314,6 @@ GameServer.prototype.setupCollisionHandler = function () {
         }
     }.bind(this);
 
-
     B2.b2ContactListener.prototype.PreSolve = function (contact) {
         var a = contact.GetFixtureA().GetUserData();
         var b = contact.GetFixtureB().GetUserData();
@@ -334,8 +333,6 @@ GameServer.prototype.setupCollisionHandler = function () {
                 }
             }
         }
-
-
         if (a instanceof Entity.Rock && b instanceof Entity.Rock) {
             if (a instanceof Entity.Rock && b instanceof Entity.Rock) {
                 if (a.owner && a.owner === b.owner) {
@@ -348,6 +345,9 @@ GameServer.prototype.setupCollisionHandler = function () {
                     return;
                 }
                 else {
+                    if (b.owner) {
+                        b.onDelete();
+                    }
                     a.tempNeutral = null;
                     a.justChanged = true;
                 }
@@ -364,8 +364,6 @@ GameServer.prototype.setupCollisionHandler = function () {
             }
             return;
         }
-
-
         if (a instanceof Entity.Rock && b instanceof Entity.Rock) {
             if (a.owner !== b.owner) {
                 var aVel = a.body.GetLinearVelocity();
@@ -379,8 +377,6 @@ GameServer.prototype.setupCollisionHandler = function () {
                 }
             }
         }
-
-
         if (a instanceof Entity.Rock && b instanceof Entity.Player) {
             contact.SetEnabled(false);
         }
