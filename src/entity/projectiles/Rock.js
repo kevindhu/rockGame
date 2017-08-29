@@ -59,7 +59,7 @@ Rock.prototype.setB2 = function () {
         var theta = 0;
         var delta = 2 * Math.PI / sides;
         for (var i = 0; i < sides; i++) {
-            theta = i * delta;
+            theta = i * delta + getRandom(-0.2, 0.2);
             var x = Math.cos(theta) * this.SCALE;
             var y = Math.sin(theta) * this.SCALE;
 
@@ -133,7 +133,7 @@ Rock.prototype.tick = function () {
         }
     }
 
-    if (this.startChange) { //change back to default ownership
+    if (this.startChange) {         //change back to default ownership
         this.startChange = false;
         this.changing = true;
         this.changeTimer = 8;
