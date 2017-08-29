@@ -3,13 +3,14 @@ function Rock(rockInfo, client) {
     this.y = rockInfo.y;
     this.vertices = rockInfo.vertices;
     this.theta = rockInfo.theta;
+    this.texture = rockInfo.texture;
     this.client = client;
 }
 
 Rock.prototype.update = function (rockInfo) {
     this.x = rockInfo.x;
     this.y = rockInfo.y;
-    this.queuePosition = rockInfo.queuePosition;
+    this.queuePosition = rockInfo.queuePosition; //delete
     this.theta = rockInfo.theta;
     this.owner = rockInfo.owner;
     this.tempNeutral = rockInfo.tempNeutral;
@@ -23,7 +24,18 @@ Rock.prototype.show = function () {
     var SCALE = 100;
     var v = this.vertices;
 
-    ctx.fillStyle = "purple";
+
+    switch (this.texture) {
+        case "bronze":
+            ctx.fillStyle = "brown";
+            break;
+        case "silver":
+            ctx.fillStyle = "grey";
+            break;
+        case "gold":
+            ctx.fillStyle = "yellow";
+            break;
+    }
     ctx.translate(this.x, this.y);
     ctx.beginPath();
 
@@ -47,9 +59,8 @@ Rock.prototype.show = function () {
     ctx.translate(-this.x, -this.y);
 
 
-
-
     if (this.health && this.maxHealth) { //health bar
+        console.log("HELTH");
         ctx.lineWidth = 10;
         ctx.beginPath();
         ctx.strokeStyle = "black";

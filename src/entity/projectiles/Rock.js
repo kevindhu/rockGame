@@ -1,14 +1,13 @@
 var B2 = require("../../modules/B2");
 var B2Common = require("../../modules/B2Common");
+var Arithmetic = require("../../modules/Arithmetic");
 var EntityFunctions = require('../EntityFunctions');
 var entityConfig = require('../entityConfig');
 var lerp = require('lerp');
 
-function Rock(x, y, SCALE, gameServer, body, vertices) {
+function Rock(x, y, SCALE, gameServer, body, vertices, texture) {
     this.gameServer = gameServer;
     this.packetHandler = gameServer.packetHandler;
-
-    this.texture = Math.floor(getRandom(0,2));
 
     this.gameServer.rockCount += 1;
     this.id = Math.random();
@@ -17,11 +16,11 @@ function Rock(x, y, SCALE, gameServer, body, vertices) {
     this.SCALE = SCALE;
     this.theta = getRandom(0, 3);
 
-    this.maxHealth = SCALE * 10 * (1 + this.texture);
-    this.health = this.maxHealth;
+    texture ? this.texture = texture : this.getRandomTexture();
+    this.setDefaultHealth();
 
     this.vertices = vertices;
-    this.sides = Math.floor(getRandom(3,5));
+    this.sides = Math.round(getRandom(3, 9));
 
     this.queuePosition = null;
     this.owner = null;
@@ -76,6 +75,37 @@ Rock.prototype.setB2 = function () {
     this.getRandomVelocity();
 };
 
+Rock.prototype.getRandomTexture = function () {
+    var num = Arithmetic.getRandomInt(0, 10);
+    if (num < 7) {
+        this.texture = "bronze";
+    }
+    else if (num < 9) {
+        this.texture = "silver";
+    }
+    else {
+        this.texture = "gold";
+    }
+};
+
+Rock.prototype.setDefaultHealth = function () {
+    var magnitude = 0;
+    switch (this.texture) {
+        case "bronze":
+            magnitude = 1;
+            break;
+        case "silver":
+            magnitude = 8;
+            break;
+        case "gold":
+            magnitude = 30;
+            break;
+    }
+
+    this.maxHealth = this.SCALE * 3 * (1 + magnitude);
+    this.health = this.maxHealth;
+};
+
 Rock.prototype.setCentroid = function () {
     this.centroid = B2Common.findCentroid(this.vertices);
     this.centroidLength = normal(this.centroid[0], this.centroid[1]);
@@ -89,6 +119,7 @@ Rock.prototype.tick = function () {
     }
 
     this.move();
+
     if (this.health <= 0 && !this.splitting) {
         this.splitting = true;
         this.splitTimer = 1;
@@ -101,6 +132,25 @@ Rock.prototype.tick = function () {
             this.split();
         }
     }
+
+    if (this.startChange) { //change back to default ownership
+        this.startChange = false;
+        this.changing = true;
+        this.changeTimer = 8;
+    }
+    if (this.changing)  {
+        if (this.changeTimer > 0) {
+            this.changeTimer -= 1;
+        }
+        else {
+            this.changing = false;
+            this.tempNeutral = null;
+            this.changed = true;
+        }
+    }
+
+
+
     this.packetHandler.updateRockPackets(this);
 };
 
@@ -240,7 +290,7 @@ Rock.prototype.getOrigin = function () {
 
 
 Rock.prototype.split = function () {
-    if (this.SCALE < 0.2) {
+    if (this.SCALE < 0.1) {
         this.gameServer.box2d_world.DestroyBody(this.body);
         this.onDelete();
         return;
@@ -253,7 +303,7 @@ Rock.prototype.split = function () {
 
     var middleVertex = new B2.b2Vec2();
     var middle = Math.floor(count / 2);
-    middleVertex.Set((vertices[middle - 1].x + vertices[middle].x) / 2, (vertices[middle - 1].y + vertices[middle].y) / 2);
+    middleVertex.Set((vertices[middle - 1].x + vertices[middle].x) / 2 + getRandom(-0.2, 0.2), (vertices[middle - 1].y + vertices[middle].y) / 2 + getRandom(-0.2, 0.2));
 
     var lastVertex = new B2.b2Vec2();
     lastVertex.Set((vertices[count - 1].x + vertices[0].x) / 2, (vertices[count - 1].y + vertices[0].y) / 2);
@@ -282,8 +332,8 @@ Rock.prototype.split = function () {
     var bodies = B2Common.createPolygonSplit(this.gameServer.box2d_world, this.body, vertices1, vertices2);
 
 
-    var clone1 = new Rock(x, y, this.SCALE / 2, this.gameServer, bodies[0], vertices1);
-    var clone2 = new Rock(x, y, this.SCALE / 2, this.gameServer, bodies[1], vertices2);
+    var clone1 = new Rock(x, y, this.SCALE / 4, this.gameServer, bodies[0], vertices1, this.texture);
+    var clone2 = new Rock(x, y, this.SCALE / 4, this.gameServer, bodies[1], vertices2, this.texture);
 
     //clone1.owner = this.owner;
     //clone2.owner = this.owner;

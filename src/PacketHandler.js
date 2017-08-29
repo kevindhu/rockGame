@@ -302,7 +302,8 @@ PacketHandler.prototype.addRockPackets = function (rock, ifInit) {
         x: realPos.x,
         y: realPos.y,
         vertices: rock.vertices,
-        theta: theta
+        theta: theta,
+        texture: rock.texture
     };
     if (ifInit) {
         return info;

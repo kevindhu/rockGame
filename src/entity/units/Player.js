@@ -287,10 +287,10 @@ Player.prototype.translateQueuePositions = function () {
             rock.queuePosition.y += y;
         }
 
-        //var v = rock.body.GetLinearVelocity();
-        //v.x += 0.5 * this.xVel; //1.25 is perfect lol
-        //v.y += 0.5 * this.yVel;
-        //rock.body.SetLinearVelocity(v);
+        var v = rock.body.GetLinearVelocity();
+        v.x = 1.2 * this.xVel; //1.25 is perfect lol
+        v.y = 1.2 * this.yVel;
+        rock.body.SetLinearVelocity(v);
 
     }
 };

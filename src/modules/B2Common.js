@@ -15,7 +15,7 @@ function createBox(world, user, x, y, width, height) {
         'friction': 0.1,
         'restitution': 0.0,
 
-        'linearDamping': 0.0,
+        'linearDamping': 0.2,
         'angularDamping': 0.0,
 
         'gravityScale': 1.0,
@@ -53,12 +53,24 @@ function createBox(world, user, x, y, width, height) {
 
 
 function createRandomPolygon(world, user, vertices, x, y, texture) {
+    var density = 0;
+    switch (texture) {
+        case "bronze":
+            density = 1;
+            break;
+        case "silver":
+            density = 4;
+            break;
+        case "gold":
+            density = 20;
+            break;
+    }
     var options = {
-        'density': 1 + texture,
+        'density': density,
         'friction': 0.0,
         'restitution': 0.5,
 
-        'linearDamping': 0.0,
+        'linearDamping': 0.2,
         'angularDamping': 1.0,
 
         'gravityScale': 1.0,
@@ -100,11 +112,11 @@ function createRandomPolygon(world, user, vertices, x, y, texture) {
 
 function createPolygonSplit(world, body, v1, v2) {
     var options = {
-        'density': 1.0,
+        'density': body.GetFixtureList().GetDensity(),
         'friction': 0.0,
         'restitution': 0.5,
 
-        'linearDamping': 0.0,
+        'linearDamping': 0.2,
         'angularDamping': 1.0,
 
         'gravityScale': 1.0,

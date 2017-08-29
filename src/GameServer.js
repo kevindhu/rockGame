@@ -305,12 +305,12 @@ GameServer.prototype.setupCollisionHandler = function () {
         var bEntity = b.GetUserData();
 
         if (aEntity instanceof Entity.Rock && bEntity instanceof Entity.Player) {
-            if (!aEntity.tempNeutral && b.IsSensor() && aEntity.SCALE < 3 && aEntity.owner !== bEntity) {
+            if (!aEntity.tempNeutral && b.IsSensor() && aEntity.SCALE < 2 && aEntity.owner !== bEntity) {
                 bEntity.addRock(aEntity);
             }
         }
         if (aEntity instanceof Entity.Player && bEntity instanceof Entity.Rock) {
-            if (!bEntity.tempNeutral && a.IsSensor() && bEntity.SCALE < 3 && bEntity.owner !== aEntity) {
+            if (!bEntity.tempNeutral && a.IsSensor() && bEntity.SCALE < 2 && bEntity.owner !== aEntity) {
                 aEntity.addRock(bEntity);
             }
         }
@@ -325,8 +325,8 @@ GameServer.prototype.setupCollisionHandler = function () {
                 aVel.y - bVel.y);
 
             if (impact > 10) {
-                aEntity.decreaseHealth(impact / 1);
-                bEntity.decreaseHealth(impact / 1);
+                aEntity.decreaseHealth(impact);
+                bEntity.decreaseHealth(impact);
             }
         }
     }.bind(this);
@@ -336,9 +336,9 @@ GameServer.prototype.setupCollisionHandler = function () {
         var b = contact.GetFixtureB().GetUserData();
 
 
-        if (a.justChanged || b.justChanged) {
-            a.justChanged = false;
-            b.justChanged = false;
+        if (a.changed || b.changed) {
+            a.changed =  false;
+            b.changed = false;
             if (a instanceof Entity.Rock && b instanceof Entity.Player) {
                 if (!a.tempNeutral && a.SCALE < 1 && a.owner !== b) {
                     b.addRock(a);
@@ -364,8 +364,7 @@ GameServer.prototype.setupCollisionHandler = function () {
                     if (b.owner) {
                         b.onDelete();
                     }
-                    a.tempNeutral = null;
-                    a.justChanged = true;
+                    a.startChange = true;
                 }
             }
             if (b.tempNeutral) {
@@ -374,8 +373,7 @@ GameServer.prototype.setupCollisionHandler = function () {
                     return;
                 }
                 else {
-                    b.tempNeutral = null;
-                    b.justChanged = true;
+                    b.startChange = true;
                 }
             }
         }
