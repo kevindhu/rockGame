@@ -22,9 +22,9 @@ Rock.prototype.update = function (rockInfo) {
 Rock.prototype.show = function () {
     var ctx = this.client.mainCtx;
     var SCALE = 100;
-    var v = this.vertices;
 
 
+    ctx.fillStyle = "pink"; //default color
     switch (this.texture) {
         case "bronze":
             ctx.fillStyle = "brown";
@@ -36,31 +36,42 @@ Rock.prototype.show = function () {
             ctx.fillStyle = "yellow";
             break;
     }
-    ctx.translate(this.x, this.y);
-    ctx.beginPath();
 
-
-    ctx.rotate(this.theta);
-    ctx.moveTo(v[0][0] * SCALE, v[0][1] * SCALE);
-
-    for (var i = 1; i < v.length; i++) {
-        ctx.lineTo(v[i][0] * SCALE, v[i][1] * SCALE);
-    }
-    ctx.lineTo(v[0][0] * SCALE, v[0][1] * SCALE);
-
-    ctx.fill();
 
     ctx.strokeStyle = !this.owner ? "yellow" : "green";
     ctx.strokeStyle = this.tempNeutral ? "blue" : this.tempNeutral;
 
-    ctx.stroke();
+
+    if (!this.vertices) {
+        //console.log(this.x, this.y);
+    }
+
+    ctx.translate(this.x, this.y);
+    ctx.beginPath();
+    ctx.rotate(this.theta);
+
+    if (this.vertices) {
+        var v = this.vertices;
+        ctx.moveTo(v[0][0] * SCALE, v[0][1] * SCALE);
+
+        for (var i = 1; i < v.length; i++) {
+            ctx.lineTo(v[i][0] * SCALE, v[i][1] * SCALE);
+        }
+        ctx.lineTo(v[0][0] * SCALE, v[0][1] * SCALE);
+    }
+    else {
+        ctx.fillRect(0, 0, 30, 30);
+    }
+
     ctx.rotate(2 * Math.PI - this.theta);
+    ctx.fill();
+    ctx.stroke();
+
     ctx.closePath();
     ctx.translate(-this.x, -this.y);
 
 
-    if (this.health && this.maxHealth) { //health bar
-        console.log("HELTH");
+    if (this.health && this.maxHealth && this.health > 0) { //health bar
         ctx.lineWidth = 10;
         ctx.beginPath();
         ctx.strokeStyle = "black";

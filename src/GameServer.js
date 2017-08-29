@@ -201,8 +201,8 @@ GameServer.prototype.start = function () {
         }.bind(this));
 
         socket.on("pong123", function (data) {
-            console.log("OLD PING:" +  data);
-            console.log("PING: " + Math.round((this.timeStamp - data) / 2));
+            //console.log("OLD PING:" + data);
+            //console.log("PING: " + Math.round((this.timeStamp - data) / 2));
         }.bind(this));
 
         socket.on('newPlayer', function (data) {
@@ -219,15 +219,11 @@ GameServer.prototype.start = function () {
             }
         }.bind(this));
 
-        socket.on('slash', function (data) {
+        socket.on('mine', function (data) {
             var player = this.CONTROLLER_LIST[data.id];
 
-            if (player && 1 === 2) {
-                player.addSlash({
-                    x: player.x + data.x,
-                    y: player.y + data.y,
-                    slashId: data.slashId
-                });
+            if (player) {
+                player.addMiner(player.x + data.x / 100, player.y + data.y / 100);
             }
         }.bind(this));
 
@@ -273,10 +269,6 @@ GameServer.prototype.start = function () {
             player.createCircle(radius);
         }.bind(this));
 
-        socket.on('createDefault', function (data) {
-            player.createCircle(5);
-        }.bind(this));
-
 
         socket.on('disconnect', function () {
             console.log("Client #" + socket.id + " has left the server");
@@ -303,6 +295,18 @@ GameServer.prototype.setupCollisionHandler = function () {
 
         var aEntity = a.GetUserData();
         var bEntity = b.GetUserData();
+
+        if (aEntity instanceof Entity.Miner && bEntity instanceof Entity.Rock) {
+            if (aEntity.parent !== bEntity.owner) {
+                bEntity.decreaseHealth(0.1);
+            }
+        }
+        if (aEntity instanceof Entity.Rock && bEntity instanceof Entity.Miner) {
+            if (bEntity.parent !== aEntity.owner) {
+                aEntity.decreaseHealth(0.1);
+            }
+        }
+
 
         if (aEntity instanceof Entity.Rock && bEntity instanceof Entity.Player) {
             if (!aEntity.tempNeutral && b.IsSensor() && aEntity.SCALE < 2 && aEntity.owner !== bEntity) {
@@ -337,15 +341,15 @@ GameServer.prototype.setupCollisionHandler = function () {
 
 
         if (a.changed || b.changed) {
-            a.changed =  false;
+            a.changed = false;
             b.changed = false;
             if (a instanceof Entity.Rock && b instanceof Entity.Player) {
-                if (!a.tempNeutral && a.SCALE < 1 && a.owner !== b) {
+                if (!a.tempNeutral && a.SCALE < 0.4 && a.owner !== b) {
                     b.addRock(a);
                 }
             }
             if (a instanceof Entity.Player && b instanceof Entity.Rock) {
-                if (!b.tempNeutral && b.SCALE < 1 && b.owner !== a) {
+                if (!b.tempNeutral && b.SCALE < 0.4 && b.owner !== a) {
                     a.addRock(b);
                 }
             }

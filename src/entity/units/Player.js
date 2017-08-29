@@ -2,6 +2,7 @@ const entityConfig = require('../entityConfig');
 var EntityFunctions = require('../EntityFunctions');
 var Controller = require('./Controller');
 var Queue = require('../../modules/Queue');
+var Miner = require('../sensors/Miner');
 var B2 = require('../../modules/B2');
 var B2Common = require('../../modules/B2Common');
 var lerp = require('lerp');
@@ -15,6 +16,7 @@ function Player(id, name, gameServer) {
     this.setMaxVelocities();
 
     this.rocks = [];
+    this.miners = [];
     this.rockQueue = new Queue(); //maximum length of 10
 
     this.x = entityConfig.WIDTH / 2;
@@ -23,16 +25,11 @@ function Player(id, name, gameServer) {
     this.preX = this.x;
     this.preY = this.y;
 
-    this.slash = [];
-    this.slash.theta = null;
-    this.slashTimer = 0;
-
     this.kills = 0;
 
     this.theta = 0;
 
     this.resetLevels();
-    this.dPopulateRockQueue();
     this.init();
     this.createCircle(4);
 }
@@ -57,24 +54,15 @@ Player.prototype.update = function () {
     Player.super_.prototype.update.apply(this);
 
 
-    if (this.slashTimer > 0) {
-        this.slashTimer -= 1;
-    }
+    this.updateMiners();
+    this.translateQueuePositions();
+};
 
-    if (!this.default) {
-        this.translateQueuePositions();
-    }
-
-
-    if (this.default) {
-        if (square(this.x - this.preX) + square(this.y - this.preY) > 1) {
-            this.dUpdateRockQueue();
-            this.preX = this.x;
-            this.preY = this.y;
-        }
-    }
-    else {
-        //TODO: update queue positions based on speed of player
+Player.prototype.updateMiners = function () {
+    var i, miner;
+    for (i = 0; i < this.miners.length; i++) {
+        miner = this.miners[i];
+        miner.tick();
     }
 };
 
@@ -82,7 +70,6 @@ Player.prototype.createCircle = function (radius) {
     if (!radius) {
         return;
     }
-    this.default = false;
     this.circleRadius = radius;
 
     var delta = 2 * Math.PI / this.rocks.length;
@@ -101,15 +88,10 @@ Player.prototype.createCircle = function (radius) {
     this.pY = this.y;
 };
 
-Player.prototype.createDefault = function () {
-    this.default = true;
-    this.dPopulateRockQueue();
-    this.circleRadius = null;
-};
 
 Player.prototype.resetLevels = function () {
     this.level = 0;
-    this.range = 500;
+    this.range = 1000;
     this.radius = 10;
     this.maxVel = 5;
     this.maxGrabRadius = 50;
@@ -119,7 +101,6 @@ Player.prototype.resetLevels = function () {
     this.rockMaxLength = 10;
     this.food = 0;
     this.maxFood = 2;
-    this.default = true;
 };
 
 Player.prototype.decreaseHealth = function (amount) {
@@ -142,6 +123,7 @@ Player.prototype.updateChunk = function () {
     this.chunkAdd = this.findChunkDifference(newChunks, oldChunks);
     this.chunkDelete = this.findChunkDifference(oldChunks, newChunks);
 };
+
 Player.prototype.findChunkDifference = function (chunks1, chunks2) {
     var id;
     var delta = {};
@@ -188,12 +170,8 @@ Player.prototype.addRock = function (rock) {
 
         this.rocks.push(rock);
         rock.addOwner(this);
-        if (this.default) {
-            this.updateQueuePositions();
-        }
-        else {
-            this.createCircle(this.circleRadius);
-        }
+        this.createCircle(this.circleRadius);
+
 
     }
 
@@ -208,32 +186,6 @@ Player.prototype.containsRock = function (rock) {
         }
     }
     return false;
-};
-
-
-Player.prototype.dPopulateRockQueue = function () { //default populate rock queue
-    this.rockQueue = new Queue();
-    var theta = this.theta;
-    var x, y;
-    for (var i = 0; i < this.rockMaxLength; i++) { //10 possible nodes in the queue
-        x = this.x + 0.3 * i * Math.cos(theta);
-        y = this.y + 0.3 * i * Math.sin(theta);
-        this.rockQueue.enqueue(
-            {
-                x: x,
-                y: y
-            });
-    }
-    this.updateQueuePositions();
-};
-
-Player.prototype.dUpdateRockQueue = function () { //default update
-    this.rockQueue.dequeue();
-    this.rockQueue.enqueue({
-        x: this.x,
-        y: this.y
-    });
-    this.updateQueuePositions();
 };
 
 
@@ -305,6 +257,11 @@ Player.prototype.resetRockQueue = function () { //idk why
 };
 
 
+Player.prototype.addMiner = function (x, y) {
+    var miner = new Miner(x, y, this);
+    this.miners.push(miner);
+};
+
 Player.prototype.shootRock = function (x, y) {
     var rock = this.findClosestRock({x: x, y: y});
     if (!rock) return;
@@ -374,6 +331,13 @@ Player.prototype.removeRock = function (rock) {
         rock.removeOwner();
     }
     this.createCircle(this.circleRadius);
+};
+
+Player.prototype.removeMiner = function (miner) {
+    var index = this.miners.indexOf(miner);
+    if (index !== -1) {
+        this.miners.splice(index, 1);
+    }
 };
 
 

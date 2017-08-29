@@ -5,7 +5,8 @@ module.exports = {
     createRandomPolygon: createRandomPolygon,
     createPolygonSplit: createPolygonSplit,
     createCircleSensor: createCircleSensor,
-    findCentroid: findCentroid
+    findCentroid: findCentroid,
+    createSensorDefault: createSensorDefault
 };
 
 
@@ -37,9 +38,8 @@ function createBox(world, user, x, y, width, height) {
     fix_def.friction = options.friction;
     fix_def.restitution = options.restitution;
     fix_def.shape = new B2.b2PolygonShape();
-
     fix_def.userData = options.userData;
-    //fix_def.filter.maskBits = 0x0000; //nothing can collide with this
+
 
     fix_def.shape.SetAsBox(width / 2, height / 2);
 
@@ -51,6 +51,41 @@ function createBox(world, user, x, y, width, height) {
 
 }
 
+function createSensorDefault(x,y, radius, world, user) {
+    var options = {
+        'density': 0,
+        'friction': 0.0,
+        'restitution': 0.5,
+
+        'linearDamping': 0.0,
+        'angularDamping': 0.0,
+
+        'gravityScale': 1.0,
+        'type': B2.b2Body.b2_staticBody,
+        'fixedRotation': true,
+        'userData': user
+    };
+
+    var body_def = new B2.b2BodyDef();
+    body_def.position.Set(x, y);
+    body_def.linearDamping = options.linearDamping;
+    body_def.angularDamping = options.angularDamping;
+    body_def.type = options.type;
+    body_def.fixedRotation = options.fixedRotation;
+
+
+    var body = world.CreateBody(body_def);
+
+
+    var fix_def = new B2.b2FixtureDef();
+    fix_def.shape = new B2.b2CircleShape();
+    fix_def.shape.m_radius = radius;
+    fix_def.isSensor = true;
+    fix_def.userData = options.userData;
+    body.CreateFixture(fix_def);
+
+    return body;
+}
 
 function createRandomPolygon(world, user, vertices, x, y, texture) {
     var density = 0;

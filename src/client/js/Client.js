@@ -58,11 +58,8 @@ Client.prototype.initCanvases = function () {
             this.circleStageCount = 0;
         }
         else {
-            this.socket.emit("startMining", {
-                id: this.SELF_ID,
-                x: x,
-                y: y
-            });
+            this.clickTemp = true;
+            this.clickTimer = 0;
         }
     }.bind(this));
     document.addEventListener("mouseup", function (event) {
@@ -85,12 +82,18 @@ Client.prototype.initCanvases = function () {
 
             this.TRAIL = new Entity.Trail(this);
         }
+        else if (this.mining) {
+            this.mining = false;
+        }
         else {
             this.socket.emit("shootRock", {
                 id: this.SELF_ID,
                 x: x,
                 y: y
             });
+
+            this.clickTemp = false;
+            this.clickTimer = 0;
         }
         if (!this.CHAT_CLICK) {
             this.mainUI.gameUI.chatUI.close();
@@ -112,33 +115,14 @@ Client.prototype.initCanvases = function () {
             return;
         }
 
-
-        if (1 === 2) {
-            if (this.SLASH.length >= 2) {
-                if (square(this.SLASH[0].x - this.SLASH[1].x) +
-                    square(this.SLASH[0].y - this.SLASH[1].y) > 1000) {
-
-                    this.SLASH.id = Math.random();
-                    this.SLASH_ARRAY.push(this.SLASH);
-
-                    this.socket.emit("slash", {
-                        id: this.SELF_ID,
-                        x: (this.SLASH[0].x + this.SLASH[1].x) / 2,
-                        y: (this.SLASH[0].y + this.SLASH[1].y) / 2,
-                        slashId: this.SLASH.id
-                    });
-                }
-                this.SLASH = [];
+       if (this.clickTemp) { //see if shooting or mining
+            this.clickTimer += 1;
+            if (this.clickTimer > 3) {
+                this.clickTimer = 0;
+                this.clickTemp = false;
+                this.mining = true;
             }
-            else {
-                this.SLASH.push(
-                    {
-                        x: x,
-                        y: y
-                    });
-            }
-            return;
-        } //for slashing
+        }
 
         if (!this.pre) {
             this.pre = {x: x, y: y}
@@ -176,6 +160,13 @@ Client.prototype.initCanvases = function () {
                 }
 
                 this.TRAIL.updateList(x, y);
+            }
+            else if (this.mining) {
+                this.socket.emit('mine', {
+                    id: this.SELF_ID,
+                    x: x,
+                    y: y
+                });
             }
         }
     }.bind(this));
@@ -395,6 +386,7 @@ Client.prototype.drawScene = function (data) {
         this.ANIMATION_LIST,
         this.ROCK_LIST
     ];
+
     var inBounds = function (player, x, y) {
         var range = this.mainCanvas.width / (0.7 * this.scaleFactor);
         return x < (player.x + range) && x > (player.x - range)
@@ -434,18 +426,6 @@ Client.prototype.drawScene = function (data) {
     }
 };
 
-
-Client.prototype.findSlash = function (id) {
-    var i, slash;
-    for (i = 0; i < this.SLASH_ARRAY.length; i++) {
-        slash = this.SLASH_ARRAY[i];
-        if (slash.id === id) {
-            this.SLASH_ARRAY.splice(0, i); //cut all the slashes before it
-            return slash;
-        }
-    }
-    return false;
-};
 
 
 Client.prototype.start = function () {
