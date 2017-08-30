@@ -289,49 +289,52 @@ GameServer.prototype.createPlayer = function (socket, info) {
 
 
 GameServer.prototype.setupCollisionHandler = function () {
+    var doImpact = function (a, b) {
+        var aVel = a.body.GetLinearVelocity();
+        var bVel = b.body.GetLinearVelocity();
+        var impact = normal(aVel.x - bVel.x,
+            aVel.y - bVel.y);
+
+        if (impact > 10) {
+            a.decreaseHealth(impact);
+            b.decreaseHealth(impact);
+        }
+    };
+
+
     B2.b2ContactListener.prototype.BeginContact = function (contact) {
-        var a = contact.GetFixtureA();
-        var b = contact.GetFixtureB();
+        var a = contact.GetFixtureA().GetUserData();
+        var b = contact.GetFixtureB().GetUserData();
 
-        var aEntity = a.GetUserData();
-        var bEntity = b.GetUserData();
-
-        if (aEntity instanceof Entity.Miner && bEntity instanceof Entity.Rock) {
-            if (aEntity.parent !== bEntity.owner) {
-                bEntity.decreaseHealth(0.1);
+        if (a instanceof Entity.Miner && b instanceof Entity.Rock) {
+            if (!b.owner) {
+                b.decreaseHealth(0.1);
             }
         }
-        if (aEntity instanceof Entity.Rock && bEntity instanceof Entity.Miner) {
-            if (bEntity.parent !== aEntity.owner) {
-                aEntity.decreaseHealth(0.1);
+        if (a instanceof Entity.Rock && b instanceof Entity.Miner) {
+            if (!a.owner) {
+                a.decreaseHealth(0.1);
             }
         }
 
 
-        if (aEntity instanceof Entity.Rock && bEntity instanceof Entity.Player) {
-            if (!aEntity.tempNeutral && b.IsSensor() && aEntity.SCALE < 2 && aEntity.owner !== bEntity) {
-                bEntity.addRock(aEntity);
+        if (a instanceof Entity.Rock && b instanceof Entity.PlayerSensor) {
+            if (a.SCALE < 2 && !a.owner && !a.fast) {
+                b.parent.addRock(a);
             }
         }
-        if (aEntity instanceof Entity.Player && bEntity instanceof Entity.Rock) {
-            if (!bEntity.tempNeutral && a.IsSensor() && bEntity.SCALE < 2 && bEntity.owner !== aEntity) {
-                aEntity.addRock(bEntity);
+        if (a instanceof Entity.PlayerSensor && b instanceof Entity.Rock) {
+            if (b.SCALE < 2 && !b.owner && !b.fast) {
+                a.parent.addRock(b);
             }
         }
 
-        if (aEntity instanceof Entity.Rock && bEntity instanceof Entity.Rock) {
-            if (aEntity.owner && aEntity.owner === bEntity.owner) {
+        if (a instanceof Entity.Rock && b instanceof Entity.Rock) {
+            if (a.owner && a.owner === b.owner) {
                 return;
             }
-            var aVel = aEntity.body.GetLinearVelocity();
-            var bVel = bEntity.body.GetLinearVelocity();
-            var impact = normal(aVel.x - bVel.x,
-                aVel.y - bVel.y);
 
-            if (impact > 10) {
-                aEntity.decreaseHealth(impact);
-                bEntity.decreaseHealth(impact);
-            }
+            doImpact(a, b);
         }
     }.bind(this);
 
@@ -340,52 +343,35 @@ GameServer.prototype.setupCollisionHandler = function () {
         var b = contact.GetFixtureB().GetUserData();
 
 
-        if (a.changed || b.changed) {
-            a.changed = false;
-            b.changed = false;
-            if (a instanceof Entity.Rock && b instanceof Entity.Player) {
-                if (!a.tempNeutral && a.SCALE < 0.4 && a.owner !== b) {
-                    b.addRock(a);
-                }
-            }
-            if (a instanceof Entity.Player && b instanceof Entity.Rock) {
-                if (!b.tempNeutral && b.SCALE < 0.4 && b.owner !== a) {
-                    a.addRock(b);
-                }
-            }
-        }
         if (a instanceof Entity.Rock && b instanceof Entity.Rock) {
             if (a.owner && a.owner === b.owner) {
                 contact.SetEnabled(false);
                 return;
             }
-            if (a.tempNeutral) {
-                if (a.tempNeutral === b.owner || a.tempNeutral === b.tempNeutral) {
-                    contact.SetEnabled(false);
-                    return;
-                }
-                else {
-                    if (b.owner) {
-                        b.onDelete();
-                    }
-                    a.startChange = true;
-                }
+            if (a.neutral) {
+                a.startChange = true;
             }
-            if (b.tempNeutral) {
-                if (b.tempNeutral === a.owner || a.tempNeutral === b.tempNeutral) {
-                    contact.SetEnabled(false);
-                    return;
-                }
-                else {
-                    b.startChange = true;
-                }
+            if (b.neutral) {
+                b.startChange = true;
             }
         }
+
+
         if (a instanceof Entity.Rock && b instanceof Entity.Player) {
-            contact.SetEnabled(false);
+            if (a.owner !== b) {
+                doImpact(a, b);
+            }
+            else {
+                contact.SetEnabled(false);
+            }
         }
-        if (a instanceof Entity.Player && b instanceof Entity.Rock) {
-            contact.SetEnabled(false);
+        if (a instanceof Entity.Player && b instanceof Entity.Rock && b.owner === a) {
+            if (b.owner !== a) {
+                doImpact(a, b);
+            }
+            else {
+                contact.SetEnabled(false);
+            }
         }
     }.bind(this);
 };

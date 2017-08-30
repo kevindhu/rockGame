@@ -319,11 +319,8 @@ PacketHandler.prototype.updateRockPackets = function (rock) {
     pos = new B2.b2Vec2(pos.x * 100, pos.y * 100);
 
     var owner = rock.owner ? rock.owner.id : null;
-    var tempNeutral = rock.tempNeutral ? rock.tempNeutral.id : null;
     var theta = rock.body.GetAngle();
 
-
-    var qPosition = null;
     var info = {
         master: "update",
         class: "rockInfo",
@@ -332,9 +329,10 @@ PacketHandler.prototype.updateRockPackets = function (rock) {
         y: pos.y,
         theta: theta,
         owner: owner,
-        tempNeutral: tempNeutral,
+        neutral: rock.neutral,
         maxHealth: rock.maxHealth,
-        health: rock.health
+        health: rock.health,
+        fast: rock.fast
     };
 
 
@@ -355,12 +353,12 @@ PacketHandler.prototype.updateControllersPackets = function (controller) {
         level: controller.level,
         selected: controller.selected,
         active: controller.active,
-        slash: controller.slash,
         radius: controller.radius,
         range: controller.range,
-        circleRadius: controller.circleRadius * 100
+        circleRadius: controller.circleRadius * 100,
     });
 };
+
 PacketHandler.prototype.updateAsteroidsPackets = function (asteroid) {
     var owner;
     if (asteroid.owner) {

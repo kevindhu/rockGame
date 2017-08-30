@@ -3,5 +3,6 @@ module.exports = {
     Tile: require('./terrain/Tile'),
     Asteroid: require('./projectiles/Asteroid'),
     Rock: require('./projectiles/Rock'),
-    Miner: require('./sensors/Miner')
+    Miner: require('./sensors/Miner'),
+    PlayerSensor: require('./sensors/PlayerSensor')
 };

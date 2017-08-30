@@ -117,13 +117,14 @@ Rock.prototype.tick = function () {
         this.onDelete();
         return;
     }
-
     this.move();
+    this.checkSpeed();
+
 
     if (this.health <= 0 && !this.splitting) {
         this.splitting = true;
         this.splitTimer = 1;
-    }
+    } //check split
     if (this.splitting) {
         if (this.splitTimer > 0) {
             this.splitTimer -= 1;
@@ -136,22 +137,39 @@ Rock.prototype.tick = function () {
     if (this.startChange) {         //change back to default ownership
         this.startChange = false;
         this.changing = true;
-        this.changeTimer = 8;
-    }
-    if (this.changing)  {
+        this.changeTimer = 20;
+    } //change neutrality
+    if (this.changing) {
         if (this.changeTimer > 0) {
             this.changeTimer -= 1;
         }
         else {
             this.changing = false;
-            this.tempNeutral = null;
-            this.changed = true;
+            this.removeNeutral();
+            this.removeOwner();
+        }
+    }
+
+
+    if (this.neutral) {
+        this.neutralTimer -= 1;
+        if (this.neutralTimer <= 0) {
+            this.removeNeutral();
         }
     }
 
 
 
+
     this.packetHandler.updateRockPackets(this);
+};
+
+
+Rock.prototype.checkSpeed = function () {
+    var v = this.body.GetLinearVelocity();
+    var normalVel = normal(v.x, v.y);
+
+    this.fast = normalVel > 10;
 };
 
 
@@ -257,8 +275,7 @@ Rock.prototype.shoot = function (owner, targetX, targetY) {
 
 Rock.prototype.addShooting = function (owner, targetX, targetY) {
     this.queuePosition = null;
-    this.shooting = true;
-    this.tempNeutral = owner;
+    this.setNeutral(100);
     this.shootTimer = 60;
 
     var targetPt = {
@@ -332,8 +349,8 @@ Rock.prototype.split = function () {
     var bodies = B2Common.createPolygonSplit(this.gameServer.box2d_world, this.body, vertices1, vertices2);
 
 
-    var clone1 = new Rock(x, y, this.SCALE / 4, this.gameServer, bodies[0], vertices1, this.texture);
-    var clone2 = new Rock(x, y, this.SCALE / 4, this.gameServer, bodies[1], vertices2, this.texture);
+    var clone1 = new Rock(x, y, this.SCALE / 2, this.gameServer, bodies[0], vertices1, this.texture);
+    var clone2 = new Rock(x, y, this.SCALE / 2, this.gameServer, bodies[1], vertices2, this.texture);
 
     //clone1.owner = this.owner;
     //clone2.owner = this.owner;
@@ -359,9 +376,24 @@ Rock.prototype.split = function () {
     clone2.body.SetLinearVelocity(v2);
 
 
+    clone1.setNeutral(10);
+    clone2.setNeutral(10);
+
+
     this.onDelete();
 
 
+};
+
+
+Rock.prototype.setNeutral = function (time) { //not grabbable
+    this.neutral = true;
+    this.neutralTimer = time;
+};
+
+Rock.prototype.removeNeutral = function () {
+    this.neutral = false;
+    this.neutralTimer = 0;
 };
 
 function normal(x, y) {

@@ -3,6 +3,7 @@ var B2Common = require("../../modules/B2Common");
 const entityConfig = require('../entityConfig');
 var EntityFunctions = require('../EntityFunctions');
 const Arithmetic = require('../../modules/Arithmetic');
+const PlayerSensor = require('../sensors/PlayerSensor');
 
 var lerp = require('lerp');
 
@@ -43,9 +44,7 @@ Controller.prototype.setMaxVelocities = function () {
 
 Controller.prototype.initB2 = function () {
     this.body = B2Common.createBox(this.gameServer.box2d_world, this, this.x, this.y, 1, 1);
-    B2Common.createCircleSensor(this.body, 6);
-
-
+    this.sensor = new PlayerSensor(this);
 };
 
 Controller.prototype.onDelete = function () {

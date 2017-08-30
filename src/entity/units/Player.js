@@ -94,9 +94,6 @@ Player.prototype.resetLevels = function () {
     this.range = 1000;
     this.radius = 10;
     this.maxVel = 5;
-    this.maxGrabRadius = 50;
-    this.power = 0; //power determines max size of things you can hold
-
 
     this.rockMaxLength = 10;
     this.food = 0;
@@ -104,6 +101,7 @@ Player.prototype.resetLevels = function () {
 };
 
 Player.prototype.decreaseHealth = function (amount) {
+    this.health -= amount;
     if (this.health <= 0) {
         this.reset();
     }
@@ -294,6 +292,7 @@ Player.prototype.consumeRock = function (rock) {
     this.removeRock(rock);
     rock.onDelete();
 };
+
 Player.prototype.eat = function (amount) {
     if (amount > 0) {
         this.food++;
@@ -328,7 +327,6 @@ Player.prototype.removeRock = function (rock) {
     var index = this.rocks.indexOf(rock);
     if (index !== -1) {
         this.rocks.splice(index, 1);
-        rock.removeOwner();
     }
     this.createCircle(this.circleRadius);
 };
@@ -350,7 +348,9 @@ Player.prototype.updateMaxVelocities = function (amount) {
 Player.prototype.removeAllRocks = function () {
     var i;
     for (i = this.rocks.length - 1; i >= 0; i--) {
-        this.removeRock(this.rocks[i]);
+        var rock = this.rocks[i];
+        this.removeRock(rock);
+        rock.removeOwner();
     }
 };
 
@@ -366,9 +366,6 @@ Player.prototype.reset = function () { //should delete this eventually, or only 
 
     this.xVel = 0;
     this.yVel = 0;
-
-    this.stationary = false;
-    this.updateQuadItem();
 };
 
 

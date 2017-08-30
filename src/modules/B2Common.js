@@ -211,16 +211,13 @@ function createPolygonSplit(world, body, v1, v2) {
 }
 
 
-function createCircleSensor(body, radius) {
+function createCircleSensor(body, user, radius) {
     var fix_def = new B2.b2FixtureDef();
-
 
     fix_def.shape = new B2.b2CircleShape();
     fix_def.shape.m_radius = radius;
-
-
     fix_def.isSensor = true;
-    fix_def.userData = body.GetFixtureList().GetUserData();
+    fix_def.userData = user;
 
     body.CreateFixture(fix_def);
 }
