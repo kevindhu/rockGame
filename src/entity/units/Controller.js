@@ -55,10 +55,7 @@ Controller.prototype.onDelete = function () {
 
 
 Controller.prototype.update = function () {
-    this.updatePosition();
     //this.updateChunk();
-
-    this.packetHandler.updateControllersPackets(this);
 };
 
 
@@ -100,43 +97,6 @@ Controller.prototype.decreaseHealth = function (amount) {
     if (this.health <= 0) {
         this.onDeath();
     }
-};
-
-Controller.prototype.updatePosition = function () {
-    if (this.pressingDown) {
-        this.yVel = lerp(this.yVel, this.maxYVel, 0.3);
-    }
-    if (this.pressingUp) {
-        this.yVel = lerp(this.yVel, -this.maxYVel, 0.3);
-    }
-    if (this.pressingLeft) {
-        this.xVel = lerp(this.xVel, -this.maxXVel, 0.2);
-    }
-    if (this.pressingRight) {
-        this.xVel = lerp(this.xVel, this.maxXVel, 0.2);
-    }
-    if (!this.pressingRight && !this.pressingLeft) { //decay x Vel
-        this.xVel = lerp(this.xVel, 0, 0.2);
-    }
-    if (!this.pressingUp && !this.pressingDown) { //decay y Vel
-        this.yVel = lerp(this.yVel, 0, 0.2);
-    }
-    if (onBoundary(this.x + this.xVel)) {
-        this.xVel = 0;
-    }
-    if (onBoundary(this.y + this.yVel)) {
-        this.yVel = 0;
-    }
-
-    var vel = this.body.GetLinearVelocity();
-    vel.x = this.xVel;
-    vel.y = this.yVel;
-
-    this.body.SetLinearVelocity(vel);
-
-
-    this.x = this.body.GetPosition().x;
-    this.y = this.body.GetPosition().y;
 };
 
 

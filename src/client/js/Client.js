@@ -130,44 +130,17 @@ Client.prototype.initCanvases = function () {
         else if (square(this.pre.x - x) + square(this.pre.y - y) > 80) {
             this.pre = {x: x, y: y};
 
-            if (this.playerClicked) {
-                var addToConstruct = function (quad) {
-                    if (!this.circleConstruct[quad]) {
-                        this.circleConstruct[quad] = this.pre;
-                        this.circleStageCount++;
-                    }
-                    else if (vectorNormal(this.pre) > vectorNormal(this.circleConstruct[quad])) {
-                        this.circleConstruct[quad] = this.pre;
-                    }
-                }.bind(this);
-
-
-                if (this.pre.x > 0 && this.pre.y < 0) {
-                    //quadrant 1
-                    addToConstruct(0);
-                }
-                if (this.pre.x < 0 && this.pre.y < 0) {
-                    //quadrant 2
-                    addToConstruct(1);
-                }
-                if (this.pre.x < 0 && this.pre.y > 0) {
-                    //quadrant 3
-                    addToConstruct(2);
-                }
-                if (this.pre.x > 0 && this.pre.y > 0) {
-                    //quadrant 4
-                    addToConstruct(3);
-                }
-
-                this.TRAIL.updateList(x, y);
+            if (Math.abs(x) < 50 && Math.abs(y) < 50) {
+                console.log("WETE");
+                x = 0;
+                y = 0;
             }
-            else if (this.mining) {
-                this.socket.emit('mine', {
-                    id: this.SELF_ID,
-                    x: x,
-                    y: y
-                });
-            }
+            console.log(x,y);
+            this.socket.emit('move', {
+                id: this.SELF_ID,
+                x: x,
+                y: y
+            });
         }
     }.bind(this));
 };

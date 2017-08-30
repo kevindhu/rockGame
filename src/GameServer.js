@@ -219,11 +219,14 @@ GameServer.prototype.start = function () {
             }
         }.bind(this));
 
-        socket.on('mine', function (data) {
+        socket.on('move', function (data) {
             var player = this.CONTROLLER_LIST[data.id];
 
             if (player) {
-                player.addMiner(player.x + data.x / 100, player.y + data.y / 100);
+                if (data.x === 0) {
+                    console.log("SFSFF");
+                }
+                player.setMove(data.x / 100, data.y / 100);
             }
         }.bind(this));
 
@@ -231,7 +234,10 @@ GameServer.prototype.start = function () {
             var player = this.CONTROLLER_LIST[data.id];
 
             if (player) {
-                player.shootRock(player.x + data.x / 100, player.y + data.y / 100);
+                player.shootSelf(player.x + data.x / 100, player.y + data.y / 100);
+
+
+                //player.shootRock(player.x + data.x / 100, player.y + data.y / 100);
             }
         }.bind(this));
 
@@ -366,6 +372,8 @@ GameServer.prototype.setupCollisionHandler = function () {
         tryMineRock(a, b);
         tryMineRock(b, a);
 
+        doImpact(a,b);
+
         tryRRImpact(a, b, contact);
 
     }.bind(this);
@@ -377,8 +385,8 @@ GameServer.prototype.setupCollisionHandler = function () {
 
         tryRRCollision(a, b, contact);
 
-        tryRPImpact(a, b, contact);
-        tryRPImpact(b, a, contact);
+        //tryRPImpact(a, b, contact);
+        //tryRPImpact(b, a, contact);
 
         tryAddRock(a, b);
         tryAddRock(b, a);

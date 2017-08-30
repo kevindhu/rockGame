@@ -12,11 +12,11 @@ module.exports = {
 
 function createBox(world, user, x, y, width, height) {
     var options = {
-        'density': 1.0,
+        'density': 5.0,
         'friction': 0.1,
         'restitution': 0.0,
 
-        'linearDamping': 0.2,
+        'linearDamping': 1,
         'angularDamping': 0.0,
 
         'gravityScale': 1.0,

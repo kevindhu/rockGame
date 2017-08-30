@@ -25,6 +25,11 @@ function Player(id, name, gameServer) {
     this.preX = this.x;
     this.preY = this.y;
 
+    this.mover = {
+        x: 0,
+        y: 0
+    };
+
     this.kills = 0;
 
     this.theta = 0;
@@ -51,11 +56,27 @@ Player.prototype.getTheta = function (pos1, pos2) {
 };
 
 Player.prototype.update = function () {
-    Player.super_.prototype.update.apply(this);
+    if (this.dead) {
+        this.body = B2Common.createBox(this.gameServer.box2d_world, this, this.x, this.y, 1, 1);
+        this.dead = false;
+    }
+    if (this.realMover) {
+        this.mover.x = lerp(this.mover.x, this.realMover.x, 0.1);
+        this.mover.y = lerp(this.mover.y, this.realMover.y, 0.1);
+    }
+    this.move(this.mover.x, this.mover.y);
 
+    this.x = this.body.GetPosition().x;
+    this.y = this.body.GetPosition().y;
 
-    this.updateMiners();
-    this.translateQueuePositions();
+    this.packetHandler.updateControllersPackets(this);
+};
+
+Player.prototype.setMove = function (x, y) {
+    this.realMover = {
+        x: x,
+        y: y
+    }
 };
 
 Player.prototype.updateMiners = function () {
@@ -103,9 +124,8 @@ Player.prototype.resetLevels = function () {
 Player.prototype.decreaseHealth = function (amount) {
     this.health -= amount;
     if (this.health <= 0) {
-        this.reset();
+        this.onDeath();
     }
-    this.packetHandler.updateControllersPackets(this);
 };
 
 Player.prototype.increaseHealth = function (amount) {
@@ -269,6 +289,30 @@ Player.prototype.shootRock = function (x, y) {
 };
 
 
+Player.prototype.getTheta = function (target, origin) {
+    this.theta = Math.atan2(target.y - origin.y, target.x - origin.x) % (2 * Math.PI);
+};
+
+Player.prototype.shootSelf = function (x, y) {
+    var target = {
+        x: x,
+        y: y
+    };
+
+    var origin = {
+        x: this.x,
+        y: this.y
+    };
+
+    this.getTheta(target, origin);
+
+    var v = this.body.GetLinearVelocity();
+    v.x = 20 * Math.cos(this.theta);
+    v.y = 20 * Math.sin(this.theta);
+    this.body.SetLinearVelocity(v);
+};
+
+
 Player.prototype.findClosestRock = function (target) {
     var closest = this.rocks[0];
     var dist = function (rock, target) {
@@ -319,10 +363,27 @@ Player.prototype.levelUp = function () {
     this.rockMaxLength += 2;
     this.food = 0;
     this.maxFood++;
-
-    console.log("LEVEL UP: " + this.radius);
 };
 
+
+Player.prototype.move = function (x, y) {
+    function normal(x, y) {
+        return Math.sqrt(x * x + y * y);
+    }
+
+
+    var normalVel = normal(x, y);
+    if (normalVel < 1) {
+        normalVel = 1;
+    }
+
+    var pos = this.body.GetPosition();
+    pos.x += x / normalVel / 10;
+    pos.y += y / normalVel / 10;
+
+    this.body.SetPosition(pos);
+
+};
 
 Player.prototype.removeRock = function (rock) {
     var index = this.rocks.indexOf(rock);
@@ -365,8 +426,8 @@ Player.prototype.reset = function () { //should delete this eventually, or only 
     this.x = entityConfig.WIDTH / 2;
     this.y = entityConfig.WIDTH / 2;
 
-    this.xVel = 0;
-    this.yVel = 0;
+    this.gameServer.box2d_world.DestroyBody(this.body);
+    this.dead = true;
 };
 
 
