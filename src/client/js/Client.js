@@ -131,11 +131,9 @@ Client.prototype.initCanvases = function () {
             this.pre = {x: x, y: y};
 
             if (Math.abs(x) < 50 && Math.abs(y) < 50) {
-                console.log("WETE");
                 x = 0;
                 y = 0;
             }
-            console.log(x,y);
             this.socket.emit('move', {
                 id: this.SELF_ID,
                 x: x,
@@ -197,7 +195,7 @@ Client.prototype.handleLOL = function (data) {
     var reader = new BinaryReader(data);
 
     if (reader.length() > 20) {
-        console.log(reader.readInt8());
+        //console.log(reader.readInt8());
 
         //console.log(reader.readInt32()); //asteroid id
         //console.log(reader.readInt32()); //owner id

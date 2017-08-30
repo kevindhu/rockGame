@@ -1,7 +1,8 @@
 const entityConfig = require('../entityConfig');
 var EntityFunctions = require('../EntityFunctions');
 var Queue = require('../../modules/Queue');
-var Miner = require('../sensors/Miner');
+const PlayerSensor = require('../sensors/PlayerSensor');
+
 var B2 = require('../../modules/B2');
 var B2Common = require('../../modules/B2Common');
 var lerp = require('lerp');
@@ -25,6 +26,8 @@ function Player(id, name, gameServer) {
         y: 0
     };
 
+    this.rocks = [];
+
     this.resetLevels();
     this.init();
 }
@@ -40,6 +43,7 @@ Player.prototype.init = function () {
 
 Player.prototype.initB2 = function () {
     this.body = B2Common.createBox(this.gameServer.box2d_world, this, this.x, this.y, 2, 2);
+    this.sensor = new PlayerSensor(this);
 };
 
 Player.prototype.onDelete = function () {
@@ -111,11 +115,11 @@ Player.prototype.setMove = function (x, y) {
     this.realMover = {
         x: x,
         y: y
-    }
+    };
 };
 
 Player.prototype.resetLevels = function () {
-    this.maxHealth = 20;
+    this.maxHealth = 100;
     this.health = this.maxHealth;
 
     this.level = 0;
@@ -136,7 +140,7 @@ Player.prototype.decreaseHealth = function (amount) {
 };
 
 Player.prototype.increaseHealth = function (amount) {
-    if (this.health <= 10) {
+    if (this.health <= this.maxHealth) {
         this.health += amount;
     }
 };
@@ -209,10 +213,30 @@ Player.prototype.shootSelf = function (x, y) {
 };
 
 
-Player.prototype.addRock = function () {
+Player.prototype.addRock = function (rock) {
+    if (!this.containsRock(rock) &&
+        this.rocks.length <= this.rockMaxLength) {
 
+        this.rocks.push(rock);
+        rock.addOwner(this);
+    }
 };
 
+Player.prototype.containsRock = function (rock) {
+    for (var i = 0; i < this.rocks.length; i++) {
+        if (this.rocks[i] === rock) {
+            return true;
+        }
+    }
+    return false;
+};
+
+Player.prototype.removeRock = function (rock) {
+    var index = this.rocks.indexOf(rock);
+    if (index !== -1) {
+        this.rocks.splice(index, 1);
+    }
+};
 
 
 Player.prototype.stallVelocity = function () {
@@ -235,11 +259,12 @@ Player.prototype.boostVelocity = function () {
 
 Player.prototype.addRock = function (rock) {
     this.rocks.push(rock);
+    rock.addOwner(this);
 };
 
 Player.prototype.consumeRock = function (rock) {
-    this.eat(rock.feed);
-    rock.onDelete();
+    this.eat(10);
+    rock.dead = true;
 };
 
 Player.prototype.eat = function (amount) {
@@ -282,8 +307,8 @@ Player.prototype.move = function (x, y) {
     }
 
     var pos = this.body.GetPosition();
-    pos.x += x / normalVel / 10;
-    pos.y += y / normalVel / 10;
+    pos.x += x / normalVel / 4;
+    pos.y += y / normalVel / 4;
 
     this.body.SetPosition(pos);
 
@@ -292,7 +317,6 @@ Player.prototype.move = function (x, y) {
 
 Player.prototype.updateMaxVelocities = function (amount) {
     this.maxVel += amount;
-    this.setMaxVelocities();
 };
 
 

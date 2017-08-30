@@ -21,11 +21,11 @@ function Rock(x, y, SCALE, gameServer, body, vertices, texture) {
     this.setNeutral(100);
 
     this.vertices = vertices;
-    this.sides = Math.round(getRandom(3, 9));
+    this.sides = Math.round(getRandom(4, 8));
 
-    this.queuePosition = null;
     this.owner = null;
     this.body = body;
+    this.feed = this.SCALE;
     this.init();
 }
 
@@ -114,7 +114,7 @@ Rock.prototype.setCentroid = function () {
 
 
 Rock.prototype.tick = function () {
-    if (overBoundary(this.body.GetPosition().x) || overBoundary(this.body.GetPosition().y)) {
+    if (this.dead || overBoundary(this.body.GetPosition().x) || overBoundary(this.body.GetPosition().y)) {
         this.onDelete();
         return;
     }
@@ -158,8 +158,6 @@ Rock.prototype.tick = function () {
     }
 
 
-
-
     this.packetHandler.updateRockPackets(this);
 };
 
@@ -182,32 +180,22 @@ Rock.prototype.checkSpeed = function () {
 Rock.prototype.move = function () {
     this.getOrigin();
 
-    if (this.queuePosition && this.owner) {
+    if (this.owner) {
+        var playerPosition = this.owner.body.GetPosition();
         var v = this.body.GetLinearVelocity();
-        this.getTheta(this.queuePosition, this.origin);
+        this.getTheta(playerPosition, this.origin);
 
-        if (this.owner.default) {
-            if (inBounds(this.origin.x, this.queuePosition.x, 0.5) &&
-                inBounds(this.origin.y, this.queuePosition.y, 0.5)) {
-                //this.queuePosition = null;
-            }
-            else {
-                v.x = 1.1 * (this.queuePosition.x - this.origin.x);
-                v.y = 1.1 * (this.queuePosition.y - this.origin.y);
-            }
+
+        if (inBounds(this.origin.x, playerPosition.x, 0.3) &&
+            inBounds(this.origin.y, playerPosition.y, 0.3)) {
+                //do nothing
         }
         else {
-            if (inBounds(this.origin.x, this.queuePosition.x, 0.3) &&
-                inBounds(this.origin.y, this.queuePosition.y, 0.3)) {
-                //this.queuePosition = null;
-            }
-            else {
-                v.x = 2 * (this.queuePosition.x - this.origin.x) + this.owner.xVel;
-                v.y = 2 * (this.queuePosition.y - this.origin.y) + this.owner.yVel;
-            }
+            v.x = 2 * (playerPosition.x - this.origin.x);
+            v.y = 2 * (playerPosition.y - this.origin.y);
         }
+        
         this.body.SetLinearVelocity(v);
-        this.decayVelocity();
     }
 };
 
@@ -244,7 +232,7 @@ Rock.prototype.removeOwner = function () {
     }
     this.owner.removeRock(this);
     this.owner = null;
-    this.queuePosition = null;
+    playerPosition = null;
 };
 
 Rock.prototype.getTheta = function (target, origin) {
@@ -282,7 +270,7 @@ Rock.prototype.shoot = function (owner, targetX, targetY) {
 
 
 Rock.prototype.addShooting = function (owner, targetX, targetY) {
-    this.queuePosition = null;
+    playerPosition = null;
     this.setNeutral(100);
     this.shootTimer = 60;
 
@@ -360,10 +348,6 @@ Rock.prototype.split = function () {
     var clone1 = new Rock(x, y, this.SCALE / 2, this.gameServer, bodies[0], vertices1, this.texture);
     var clone2 = new Rock(x, y, this.SCALE / 2, this.gameServer, bodies[1], vertices2, this.texture);
 
-
-    //clone1.owner = this.owner;
-    //clone2.owner = this.owner;
-
     clone1.body.GetFixtureList().SetUserData(clone1);
     clone2.body.GetFixtureList().SetUserData(clone2);
 
@@ -381,8 +365,8 @@ Rock.prototype.split = function () {
     v2.x = normalVel * Math.cos(theta - 0.1);
     v2.y = normalVel * Math.sin(theta - 0.1);
 
-    //clone1.body.SetLinearVelocity(v1);
-    //clone2.body.SetLinearVelocity(v2);
+    clone1.body.SetLinearVelocity(v1);
+    clone2.body.SetLinearVelocity(v2);
 
     this.onDelete();
 
