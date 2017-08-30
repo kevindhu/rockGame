@@ -24,6 +24,8 @@ Player.prototype.update = function (playerInfo) {
     this.theta = playerInfo.theta;
     this.level = playerInfo.level;
     this.shooting = playerInfo.shooting;
+    this.radius = playerInfo.radius;
+    this.vulnerable = playerInfo.vulnerable;
 };
 
 Player.prototype.show = function () {
@@ -46,13 +48,16 @@ Player.prototype.show = function () {
     if (this.shooting) {
         ctx.fillStyle = "green";
     }
+    if (this.vulnerable) {
+        ctx.fillStyle = "red";
+    }
     else {
         ctx.fillStyle = "rgba(123,0,0," + fillAlpha + ")";
     }
     ctx.lineWidth = 10;
 
 
-    var radius = this.radius * 5;
+    var radius = this.radius;
 
     ctx.beginPath();
     ctx.moveTo(this.x + radius, this.y);

@@ -12,7 +12,6 @@ function Player(id, name, gameServer) {
     this.packetHandler = gameServer.packetHandler;
     this.id = id;
 
-    this.radius = 20;
     this.theta = 0;
 
     this.name = getName(name);
@@ -42,7 +41,7 @@ Player.prototype.init = function () {
 };
 
 Player.prototype.initB2 = function () {
-    this.body = B2Common.createBox(this.gameServer.box2d_world, this, this.x, this.y, 2, 2);
+    this.body = B2Common.createDisk(this.gameServer.box2d_world, this, this.x, this.y, this.radius/100);
     this.sensor = new PlayerSensor(this);
 };
 
@@ -77,10 +76,13 @@ Player.prototype.getTheta = function (pos1, pos2) {
 
 Player.prototype.update = function () {
     if (this.dead) {
-        this.body = B2Common.createBox(this.gameServer.box2d_world, this, this.x, this.y, 1, 1);
         this.dead = false;
+        this.resetBody();
     }
-
+    if (this.resettingBody) {
+        this.resettingBody = false;
+        this.resetBody();
+    }
 
     if (this.boosting) {
         this.boostTimer -= 1;
@@ -93,6 +95,12 @@ Player.prototype.update = function () {
         this.shootTimer -= 1;
         if (this.shootTimer <= 0) {
             this.shooting = false;
+        }
+    }
+    if (this.vulnerable) {
+        this.vulnerableTimer -= 1;
+        if (this.vulnerableTimer <= 0) {
+            this.vulnerable = false;
         }
     }
 
@@ -124,8 +132,8 @@ Player.prototype.resetLevels = function () {
 
     this.level = 0;
     this.range = 1000;
-    this.radius = 20;
-    this.maxVel = 5;
+    this.radius = 100;
+    this.velBuffer = 4;
 
     this.rockMaxLength = 10;
     this.food = 0;
@@ -133,6 +141,9 @@ Player.prototype.resetLevels = function () {
 };
 
 Player.prototype.decreaseHealth = function (amount) {
+    if (this.vulnerable) {
+        amount *= 3;
+    }
     this.health -= amount;
     if (this.health <= 0) {
         this.onDeath();
@@ -248,6 +259,8 @@ Player.prototype.stallVelocity = function () {
 };
 
 Player.prototype.boostVelocity = function () {
+    this.vulnerable = true;
+    this.vulnerableTimer = 20;
     var v = this.body.GetLinearVelocity();
     v.x *= 5;
     v.y *= 5;
@@ -286,9 +299,10 @@ Player.prototype.levelUp = function () {
     //level up animation
 
     this.level++;
-    this.range += 100;
     this.radius += 10;
-    this.updateMaxVelocities(-0.5);
+    this.maxHealth += 20;
+
+    this.updateVelBuffer(1);
 
 
     this.grabRadius += 1; //the range of rocks that will come to you for eating
@@ -297,8 +311,18 @@ Player.prototype.levelUp = function () {
 
     this.food = 0;
     this.maxFood++;
+
+    this.resettingBody = true;
+
+
+    console.log("LEVEL UP: " + this.level);
 };
 
+
+Player.prototype.resetBody = function () {
+    this.gameServer.box2d_world.DestroyBody(this.body);
+    this.initB2();
+};
 
 Player.prototype.move = function (x, y) {
     var normalVel = normal(x, y);
@@ -307,16 +331,16 @@ Player.prototype.move = function (x, y) {
     }
 
     var pos = this.body.GetPosition();
-    pos.x += x / normalVel / 4;
-    pos.y += y / normalVel / 4;
+    pos.x += x / normalVel / this.velBuffer;
+    pos.y += y / normalVel / this.velBuffer;
 
     this.body.SetPosition(pos);
 
 };
 
 
-Player.prototype.updateMaxVelocities = function (amount) {
-    this.maxVel += amount;
+Player.prototype.updateVelBuffer = function (amount) {
+    this.velBuffer += amount;
 };
 
 
@@ -330,7 +354,6 @@ Player.prototype.reset = function () { //should delete this eventually, or only 
     this.x = entityConfig.WIDTH / 2;
     this.y = entityConfig.WIDTH / 2;
 
-    this.gameServer.box2d_world.DestroyBody(this.body);
     this.dead = true;
 };
 

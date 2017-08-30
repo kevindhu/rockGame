@@ -2,6 +2,7 @@ var B2 = require('./B2');
 
 module.exports = {
     createBox: createBox,
+    createDisk: createDisk,
     createRandomPolygon: createRandomPolygon,
     createPolygonSplit: createPolygonSplit,
     createCircleSensor: createCircleSensor,
@@ -51,7 +52,50 @@ function createBox(world, user, x, y, width, height) {
 
 }
 
-function createSensorDefault(x,y, radius, world, user) {
+
+function createDisk(world, user, x, y, radius) {
+    var options = {
+        'density': 5.0,
+        'friction': 0.1,
+        'restitution': 0.0,
+
+        'linearDamping': 1,
+        'angularDamping': 0.0,
+
+        'gravityScale': 1.0,
+        'type': B2.b2Body.b2_dynamicBody,
+        'fixedRotation': false,
+        'userData': user
+    };
+
+    var body_def = new B2.b2BodyDef();
+    body_def.position.Set(x, y);
+    body_def.linearDamping = options.linearDamping;
+    body_def.angularDamping = options.angularDamping;
+    body_def.type = options.type;
+    body_def.fixedRotation = options.fixedRotation;
+
+
+    var fix_def = new B2.b2FixtureDef();
+    fix_def.density = options.density;
+    fix_def.friction = options.friction;
+    fix_def.restitution = options.restitution;
+
+    fix_def.shape = new B2.b2CircleShape();
+    fix_def.shape.m_radius = radius;
+
+    fix_def.userData = options.userData;
+
+    var b = world.CreateBody(body_def);
+    b.CreateFixture(fix_def);
+
+
+    return b;
+
+
+}
+
+function createSensorDefault(x, y, radius, world, user) {
     var options = {
         'density': 0,
         'friction': 0.0,

@@ -107,7 +107,7 @@ GameServer.prototype.initNewClients = function () {
 GameServer.prototype.spawnRandomRock = function () {
     var x = Arithmetic.getRandomInt(entityConfig.BORDER_WIDTH, entityConfig.WIDTH - entityConfig.BORDER_WIDTH);
     var y = Arithmetic.getRandomInt(entityConfig.BORDER_WIDTH, entityConfig.WIDTH - entityConfig.BORDER_WIDTH);
-    return new Entity.Rock(x, y, getRandom(0.5, 3), this);
+    return new Entity.Rock(x, y, getRandom(0.5, 10), this);
 };
 
 
@@ -294,7 +294,7 @@ GameServer.prototype.createPlayer = function (socket, info) {
 GameServer.prototype.setupCollisionHandler = function () {
     var tryAddRock = function (a, b) {
         if (a instanceof Entity.Rock && b instanceof Entity.PlayerSensor) {
-            if (a.SCALE < 2 && !a.owner && !a.fast) {
+            if (a.SCALE < 1 && !a.owner && !a.fast) {
                 b.parent.addRock(a);
             }
         }
@@ -342,7 +342,7 @@ GameServer.prototype.setupCollisionHandler = function () {
             doImpact(a, b);
 
             if (!this.ROCK_LIST[a.id]) {
-                console.log("WTF " + a.id);
+                console.log("ROCK GHOST SPOOKY: " + a.id);
                 a.init();
             }
         }

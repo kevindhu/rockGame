@@ -352,7 +352,9 @@ PacketHandler.prototype.updatePlayersPackets = function (player) {
         maxHealth: player.maxHealth,
         theta: player.theta,
         level: player.level,
-        shooting: player.shooting
+        shooting: player.shooting,
+        radius: player.radius,
+        vulnerable: player.vulnerable
     });
 };
 
