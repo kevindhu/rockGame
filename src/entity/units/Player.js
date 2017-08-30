@@ -301,6 +301,7 @@ Player.prototype.eat = function (amount) {
         this.levelUp();
     }
 };
+
 Player.prototype.levelUp = function () {
     //increase health
     //decrease speed

@@ -144,9 +144,7 @@ Rock.prototype.tick = function () {
             this.changeTimer -= 1;
         }
         else {
-            this.changing = false;
             this.removeNeutral();
-            this.removeOwner();
         }
     }
 
@@ -169,7 +167,14 @@ Rock.prototype.checkSpeed = function () {
     var v = this.body.GetLinearVelocity();
     var normalVel = normal(v.x, v.y);
 
-    this.fast = normalVel > 10;
+
+    if (this.fast && normalVel < 10) {
+        this.fast = false;
+        this.justDefault = true;
+    }
+    else if (!this.fast && normalVel > 10) {
+        this.fast = true;
+    }
 };
 
 
@@ -226,7 +231,9 @@ function inBounds(x1, x2, range) {
 
 
 Rock.prototype.addOwner = function (owner) {
-    this.removeOwner();
+    if (this.owner) {
+        this.removeOwner();
+    }
     this.owner = owner;
 };
 
@@ -392,8 +399,13 @@ Rock.prototype.setNeutral = function (time) { //not grabbable
 };
 
 Rock.prototype.removeNeutral = function () {
+    this.removeOwner();
+    this.startChange = false;
+    this.changing = false;
+
     this.neutral = false;
     this.neutralTimer = 0;
+    this.justDefault = true;
 };
 
 function normal(x, y) {

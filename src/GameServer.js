@@ -301,62 +301,46 @@ GameServer.prototype.setupCollisionHandler = function () {
         }
     };
 
-
-    B2.b2ContactListener.prototype.BeginContact = function (contact) {
-        var a = contact.GetFixtureA().GetUserData();
-        var b = contact.GetFixtureB().GetUserData();
-
-        if (a instanceof Entity.Miner && b instanceof Entity.Rock) {
-            if (!b.owner) {
-                b.decreaseHealth(0.1);
-            }
-        }
-        if (a instanceof Entity.Rock && b instanceof Entity.Miner) {
-            if (!a.owner) {
-                a.decreaseHealth(0.1);
-            }
-        }
-
-
+    var tryAddRock = function (a, b) {
         if (a instanceof Entity.Rock && b instanceof Entity.PlayerSensor) {
             if (a.SCALE < 2 && !a.owner && !a.fast) {
                 b.parent.addRock(a);
             }
         }
-        if (a instanceof Entity.PlayerSensor && b instanceof Entity.Rock) {
-            if (b.SCALE < 2 && !b.owner && !b.fast) {
-                a.parent.addRock(b);
+    };
+
+    var tryMineRock = function (a, b) {
+        if (a instanceof Entity.Rock && b instanceof Entity.Miner) {
+            if (!a.owner) {
+                a.decreaseHealth(0.1);
             }
         }
+    };
 
-        if (a instanceof Entity.Rock && b instanceof Entity.Rock) {
-            if (a.owner && a.owner === b.owner) {
-                return;
-            }
-
-            doImpact(a, b);
-        }
-    }.bind(this);
-
-    B2.b2ContactListener.prototype.PreSolve = function (contact) {
-        var a = contact.GetFixtureA().GetUserData();
-        var b = contact.GetFixtureB().GetUserData();
-
-
+    var tryRRImpact = function (a, b, contact) { //rock - rock
         if (a instanceof Entity.Rock && b instanceof Entity.Rock) {
             if (a.owner && a.owner === b.owner) {
                 contact.SetEnabled(false);
                 return;
             }
-            if (a.neutral) {
-                a.startChange = true;
-            }
-            if (b.neutral) {
-                b.startChange = true;
+            doImpact(a, b);
+        }
+        if (a.neutral) {
+            a.startChange = true;
+        }
+        if (b.neutral) {
+            b.startChange = true;
+        }
+    };
+    var tryRRCollision = function (a, b, contact) {
+        if (a instanceof Entity.Rock && b instanceof Entity.Rock) {
+            if (a.owner && a.owner === b.owner) {
+                contact.SetEnabled(false);
             }
         }
+    };
 
-
+    var tryRPImpact = function (a, b, contact) { //rock - player
         if (a instanceof Entity.Rock && b instanceof Entity.Player) {
             if (a.owner !== b) {
                 doImpact(a, b);
@@ -365,14 +349,38 @@ GameServer.prototype.setupCollisionHandler = function () {
                 contact.SetEnabled(false);
             }
         }
-        if (a instanceof Entity.Player && b instanceof Entity.Rock && b.owner === a) {
-            if (b.owner !== a) {
-                doImpact(a, b);
-            }
-            else {
-                contact.SetEnabled(false);
-            }
-        }
+    };
+
+
+    B2.b2ContactListener.prototype.BeginContact = function (contact) {
+        var a = contact.GetFixtureA().GetUserData();
+        var b = contact.GetFixtureB().GetUserData();
+
+
+        tryAddRock(a, b);
+        tryAddRock(b, a);
+
+        tryMineRock(a, b);
+        tryMineRock(b, a);
+
+        tryRRImpact(a, b, contact);
+
+    }.bind(this);
+
+    B2.b2ContactListener.prototype.PreSolve = function (contact) {
+        var a = contact.GetFixtureA().GetUserData();
+        var b = contact.GetFixtureB().GetUserData();
+
+
+        tryRRCollision(a, b, contact);
+
+        tryRPImpact(a, b, contact);
+        tryRPImpact(b, a, contact);
+
+        tryAddRock(a, b);
+        tryAddRock(b, a);
+
+
     }.bind(this);
 };
 
