@@ -44,7 +44,7 @@ Controller.prototype.setMaxVelocities = function () {
 
 Controller.prototype.initB2 = function () {
     this.body = B2Common.createBox(this.gameServer.box2d_world, this, this.x, this.y, 1, 1);
-    this.sensor = new PlayerSensor(this);
+    //this.sensor = new PlayerSensor(this);
 };
 
 Controller.prototype.onDelete = function () {

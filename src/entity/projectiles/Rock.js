@@ -18,7 +18,7 @@ function Rock(x, y, SCALE, gameServer, body, vertices, texture) {
 
     texture ? this.texture = texture : this.getRandomTexture();
     this.setDefaultHealth();
-    this.setNeutral(10);
+    this.setNeutral(100);
 
     this.vertices = vertices;
     this.sides = Math.round(getRandom(3, 9));
@@ -381,8 +381,8 @@ Rock.prototype.split = function () {
     v2.x = normalVel * Math.cos(theta - 0.1);
     v2.y = normalVel * Math.sin(theta - 0.1);
 
-    clone1.body.SetLinearVelocity(v1);
-    clone2.body.SetLinearVelocity(v2);
+    //clone1.body.SetLinearVelocity(v1);
+    //clone2.body.SetLinearVelocity(v2);
 
     this.onDelete();
 

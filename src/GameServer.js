@@ -265,8 +265,8 @@ GameServer.prototype.start = function () {
         }.bind(this));
 
         socket.on('createCircle', function (data) {
-            var radius = data.radius / 100;
-            player.createCircle(radius);
+            //var radius = data.radius / 100;
+            //player.createCircle(radius);
         }.bind(this));
 
 

@@ -31,7 +31,7 @@ function Player(id, name, gameServer) {
 
     this.resetLevels();
     this.init();
-    this.createCircle(4);
+    //this.createCircle(4);
 }
 
 EntityFunctions.inherits(Player, Controller);
@@ -329,7 +329,7 @@ Player.prototype.removeRock = function (rock) {
     if (index !== -1) {
         this.rocks.splice(index, 1);
     }
-    this.createCircle(this.circleRadius);
+    //this.createCircle(this.circleRadius);
 };
 
 Player.prototype.removeMiner = function (miner) {
