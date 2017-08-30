@@ -245,8 +245,8 @@ Client.prototype.addEntities = function (packet) {
         case "tileInfo":
             addEntity(packet, this.TILE_LIST, Entity.Tile);
             break;
-        case "controllerInfo":
-            addEntity(packet, this.CONTROLLER_LIST, Entity.Controller);
+        case "playerInfo":
+            addEntity(packet, this.CONTROLLER_LIST, Entity.Player);
             break;
         case "asteroidInfo":
             addEntity(packet, this.ASTEROID_LIST, Entity.Asteroid);
@@ -287,7 +287,7 @@ Client.prototype.updateEntities = function (packet) {
     }
 
     switch (packet.class) {
-        case "controllerInfo":
+        case "playerInfo":
             updateEntity(packet, this.CONTROLLER_LIST);
             break;
         case "tileInfo":
@@ -330,7 +330,7 @@ Client.prototype.deleteEntities = function (packet) {
         case "tileInfo":
             deleteEntity(packet, this.TILE_LIST);
             break;
-        case "controllerInfo":
+        case "playerInfo":
             deleteEntity(packet, this.CONTROLLER_LIST);
             break;
         case "asteroidInfo":

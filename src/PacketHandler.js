@@ -20,17 +20,17 @@ function PacketHandler(gameServer) {
 function Packet() {
     this.addAsteroids = new BinaryWriter();
     this.addAsteroids.length = 0;
-    this.addControllers = new BinaryWriter();
+    this.addPlayers = new BinaryWriter();
     this.addAsteroids.length = 0;
 
     this.updateAsteroids = new BinaryWriter();
     this.addAsteroids.length = 0;
-    this.updateControllers = new BinaryWriter();
+    this.updatePlayers = new BinaryWriter();
     this.addAsteroids.length = 0;
 
     this.deleteAsteroids = new BinaryWriter();
     this.addAsteroids.length = 0;
-    this.deleteControllers = new BinaryWriter();
+    this.deletePlayers = new BinaryWriter();
     this.addAsteroids.length = 0;
 }
 
@@ -41,20 +41,20 @@ Packet.prototype.build = function () {
     writer.writeUInt8(this.addAsteroids.length);
     writer.writeBytes(this.addAsteroids.toBuffer());
 
-    writer.writeUInt8(this.addControllers.length);
-    writer.writeBytes(this.addControllers.toBuffer());
+    writer.writeUInt8(this.addPlayers.length);
+    writer.writeBytes(this.addPlayers.toBuffer());
 
     writer.writeUInt8(0x3);
     writer.writeBytes(this.deleteAsteroids.toBuffer());
 
     writer.writeUInt8(0x4);
-    writer.writeBytes(this.deleteControllers.toBuffer());
+    writer.writeBytes(this.deletePlayers.toBuffer());
 
     writer.writeUInt8(0x5);
     writer.writeBytes(this.updateAsteroids.toBuffer());
 
     writer.writeUInt8(0x6);
-    writer.writeBytes(this.updateControllers.toBuffer());
+    writer.writeBytes(this.updatePlayers.toBuffer());
 
     writer.writeUInt16(0 >> 0); //terminate record
     return writer.toBuffer();
@@ -84,7 +84,7 @@ PacketHandler.prototype.sendChunkInitPackets = function (socket, chunk) {
 
 
 PacketHandler.prototype.createChunkPacket = function (chunk, id) {
-    var CONTROLLER_LIST = this.gameServer.CHUNKS[chunk].CONTROLLER_LIST;
+    var PLAYER_LIST = this.gameServer.CHUNKS[chunk].PLAYER_LIST;
     var ASTEROID_LIST = this.gameServer.CHUNKS[chunk].ASTEROID_LIST;
     var initPacket = [];
     var populate = function (list, call) {
@@ -94,7 +94,7 @@ PacketHandler.prototype.createChunkPacket = function (chunk, id) {
         }
     };
 
-    populate(CONTROLLER_LIST, this.addControllerPackets);
+    populate(PLAYER_LIST, this.addPlayerPackets);
     populate(ASTEROID_LIST, this.addAsteroidPackets);
     populate(this.gameServer.CHUNKS[chunk].TILE_LIST, this.addTilePackets);
     populate(this.gameServer.CHUNKS[chunk].ROCK_LIST, this.addRockPackets);
@@ -111,7 +111,7 @@ PacketHandler.prototype.createChunkPacket = function (chunk, id) {
 
 
 PacketHandler.prototype._createChunkPacket = function (chunk) {
-    var CONTROLLER_LIST = this.gameServer.CHUNKS[chunk].CONTROLLER_LIST;
+    var PLAYER_LIST = this.gameServer.CHUNKS[chunk].PLAYER_LIST;
     var ASTEROID_LIST = this.gameServer.CHUNKS[chunk].ASTEROID_LIST;
 
     var populateBit = function (list, writer, call) {
@@ -123,7 +123,7 @@ PacketHandler.prototype._createChunkPacket = function (chunk) {
 
     var packet = new Packet();
 
-    //populateBit(CONTROLLER_LIST, this._addControllerPackets, packet.addControllers);
+    //populateBit(PLAYER_LIST, this._addPlayerPackets, packet.addPlayers);
     populateBit(ASTEROID_LIST, packet.addAsteroids, this._addAsteroidPackets);
 
     var buffer = packet.build();
@@ -142,20 +142,20 @@ PacketHandler.prototype.deleteChunkPacket = function (chunk) {
         }
     };
 
-    populate(this.gameServer.CHUNKS[chunk].CONTROLLER_LIST, this.deleteControllerPackets);
+    populate(this.gameServer.CHUNKS[chunk].PLAYER_LIST, this.deletePlayerPackets);
     //populate(this.gameServer.CHUNKS[chunk].TILE_LIST, this.deleteTilePackets); //make this thing work
     populate(this.gameServer.CHUNKS[chunk].ASTEROID_LIST, this.deleteAsteroidPackets);
     return deletePacket;
 };
 
 
-PacketHandler.prototype._addControllerPackets = function (controller, ifInit) {
-    var info = controller.handler.addInfo();
+PacketHandler.prototype._addPlayerPackets = function (player, ifInit) {
+    var info = player.handler.addInfo();
     if (ifInit) {
         return info;
     }
     else {
-        this._CHUNK_PACKETS[controller.chunk].addControllers.writeBytes(info);
+        this._CHUNK_PACKETS[player.chunk].addPlayers.writeBytes(info);
     }
 };
 PacketHandler.prototype._addAsteroidPackets = function (asteroid, writer) {
@@ -165,37 +165,37 @@ PacketHandler.prototype._addAsteroidPackets = function (asteroid, writer) {
     writer.writeBytes(info);
     writer.length++;
 };
-PacketHandler.prototype._updateControllersPackets = function (controller) {
+PacketHandler.prototype._updatePlayersPackets = function (player) {
     var temp = {
         master: "update",
-        class: "controllerInfo",
-        id: controller.id,
-        x: controller.x * 100,
-        y: controller.y * 100,
-        health: controller.health,
-        maxHealth: controller.maxHealth,
-        theta: controller.theta,
-        level: controller.level,
-        selected: controller.selected,
-        active: controller.active,
-        slash: controller.slash,
-        radius: controller.radius,
-        range: controller.range
+        class: "playerInfo",
+        id: player.id,
+        x: player.x * 100,
+        y: player.y * 100,
+        health: player.health,
+        maxHealth: player.maxHealth,
+        theta: player.theta,
+        level: player.level,
+        selected: player.selected,
+        active: player.active,
+        slash: player.slash,
+        radius: player.radius,
+        range: player.range
     };
 
-    var info = controller.handler.updateInfo();
-    this._CHUNK_PACKETS[controller.chunk].updateControllers.writeBytes(info);
+    var info = player.handler.updateInfo();
+    this._CHUNK_PACKETS[player.chunk].updatePlayers.writeBytes(info);
 };
 PacketHandler.prototype._updateAsteroidsPackets = function (asteroid) {
     var info = asteroid.handler.updateInfo();
     this._CHUNK_PACKETS[asteroid.chunk].updateAsteroids.writeBytes(info);
 };
-PacketHandler.prototype._deleteControllerPackets = function (controller, chunk) {
-    var info = controller.handler.deleteInfo();
+PacketHandler.prototype._deletePlayerPackets = function (player, chunk) {
+    var info = player.handler.deleteInfo();
     if (chunk) {
         return info;
     } else {
-        this._CHUNK_PACKETS[controller.chunk].deleteControllers.writeBytes(info);
+        this._CHUNK_PACKETS[player.chunk].deletePlayers.writeBytes(info);
     }
 };
 
@@ -223,27 +223,27 @@ PacketHandler.prototype.addTilePackets = function (tile, ifInit) {
     };
 };
 
-PacketHandler.prototype.addControllerPackets = function (controller, ifInit) {
+PacketHandler.prototype.addPlayerPackets = function (player, ifInit) {
     var info = {
         master: "add",
-        class: "controllerInfo",
-        id: controller.id,
-        name: controller.name,
-        x: controller.x * 100,
-        y: controller.y * 100,
-        health: controller.health,
-        maxHealth: controller.maxHealth,
-        theta: controller.theta,
-        level: controller.level,
-        radius: controller.radius,
-        active: controller.active,
-        range: controller.range
+        class: "playerInfo",
+        id: player.id,
+        name: player.name,
+        x: player.x * 100,
+        y: player.y * 100,
+        health: player.health,
+        maxHealth: player.maxHealth,
+        theta: player.theta,
+        level: player.level,
+        radius: player.radius,
+        active: player.active,
+        range: player.range
     };
     if (ifInit) {
         return info;
     }
     else {
-        this.CHUNK_PACKETS[controller.chunk].push(info);
+        this.CHUNK_PACKETS[player.chunk].push(info);
     }
 };
 PacketHandler.prototype.addAsteroidPackets = function (asteroid, ifInit) {
@@ -268,13 +268,13 @@ PacketHandler.prototype.addAsteroidPackets = function (asteroid, ifInit) {
         this.CHUNK_PACKETS[asteroid.chunk].push(info);
     }
 };
-PacketHandler.prototype.addSlashAnimationPackets = function (controller, x, y, id) {
-    this.CHUNK_PACKETS[controller.chunk].push(
+PacketHandler.prototype.addSlashAnimationPackets = function (player, x, y, id) {
+    this.CHUNK_PACKETS[player.chunk].push(
         {
             master: "add",
             class: "animationInfo",
             type: "slash",
-            id: controller.id,
+            id: player.id,
             x: x,
             y: y,
             slashId: id
@@ -341,68 +341,35 @@ PacketHandler.prototype.updateRockPackets = function (rock) {
 
 };
 
-PacketHandler.prototype.updateControllersPackets = function (controller) {
-    this.CHUNK_PACKETS[controller.chunk].push({
+PacketHandler.prototype.updatePlayersPackets = function (player) {
+    this.CHUNK_PACKETS[player.chunk].push({
         master: "update",
-        class: "controllerInfo",
-        id: controller.id,
-        x: controller.x * 100,
-        y: controller.y * 100,
-        health: controller.health,
-        maxHealth: controller.maxHealth,
-        theta: controller.theta,
-        level: controller.level,
-        selected: controller.selected,
-        active: controller.active,
-        radius: controller.radius,
-        range: controller.range,
-        circleRadius: controller.circleRadius * 100,
+        class: "playerInfo",
+        id: player.id,
+        x: player.x * 100,
+        y: player.y * 100,
+        health: player.health,
+        maxHealth: player.maxHealth,
+        theta: player.theta,
+        level: player.level
     });
 };
 
-PacketHandler.prototype.updateAsteroidsPackets = function (asteroid) {
-    var owner;
-    if (asteroid.owner) {
-        owner = asteroid.owner.id;
-    }
-    else {
-        owner = null;
-    }
 
-
-    this.CHUNK_PACKETS[asteroid.chunk].push({
-        master: "update",
-        class: "asteroidInfo",
-        id: asteroid.id,
-        x: asteroid.x,
-        y: asteroid.y,
-        owner: owner,
-        radius: asteroid.radius,
-        currPath: asteroid.currPath,
-        queuePosition: asteroid.queuePosition,
-        targetPt: asteroid.targetPt,
-        health: asteroid.health,
-        maxHealth: asteroid.maxHealth,
-        theta: asteroid.theta,
-        displayTheta: asteroid.displayTheta,
-        shooting: asteroid.shooting,
-        glowing: asteroid.glowing,
-        fast: asteroid.fast
-    });
-};
-
-PacketHandler.prototype.deleteControllerPackets = function (controller, chunk) {
+PacketHandler.prototype.deletePlayerPackets = function (player, chunk) {
     var info = {
         master: "delete",
-        class: "controllerInfo",
-        id: controller.id
+        class: "playerInfo",
+        id: player.id
     };
     if (chunk) {
         return info;
     } else {
-        this.CHUNK_PACKETS[controller.chunk].push(info);
+        this.CHUNK_PACKETS[player.chunk].push(info);
     }
 };
+
+
 PacketHandler.prototype.deleteRockPackets = function (rock, chunk) {
     var info = {
         master: "delete",

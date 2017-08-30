@@ -15,7 +15,7 @@ function GameServer() {
     this.SOCKET_LIST = {};
     this.INIT_SOCKET_LIST = {};
 
-    this.CONTROLLER_LIST = {};
+    this.PLAYER_LIST = {};
     this.ROCK_LIST = {};
     this.TILE_LIST = {};
 
@@ -128,14 +128,14 @@ GameServer.prototype.update = function () {
     this.updateBox2d();
     this.initNewClients();
 
-    this.updateControllers();
+    this.updatePlayers();
     this.updateRocks();
 
     this.packetHandler.sendPackets();
 };
-GameServer.prototype.updateControllers = function () {
-    for (var id in this.CONTROLLER_LIST) {
-        var controller = this.CONTROLLER_LIST[id];
+GameServer.prototype.updatePlayers = function () {
+    for (var id in this.PLAYER_LIST) {
+        var controller = this.PLAYER_LIST[id];
         controller.update();
     }
 };
@@ -212,7 +212,7 @@ GameServer.prototype.start = function () {
         }.bind(this));
 
         socket.on('chatMessage', function (data) {
-            var player = this.CONTROLLER_LIST[data.id];
+            var player = this.PLAYER_LIST[data.id];
 
             if (player) {
                 this.packetHandler.addChatPackets(player.name, data.message);
@@ -220,7 +220,7 @@ GameServer.prototype.start = function () {
         }.bind(this));
 
         socket.on('move', function (data) {
-            var player = this.CONTROLLER_LIST[data.id];
+            var player = this.PLAYER_LIST[data.id];
 
             if (player) {
                 if (data.x === 0) {
@@ -231,7 +231,7 @@ GameServer.prototype.start = function () {
         }.bind(this));
 
         socket.on('shootRock', function (data) {
-            var player = this.CONTROLLER_LIST[data.id];
+            var player = this.PLAYER_LIST[data.id];
 
             if (player) {
                 player.shootSelf(player.x + data.x / 100, player.y + data.y / 100);
@@ -307,22 +307,6 @@ GameServer.prototype.setupCollisionHandler = function () {
         }
     };
 
-    var tryAddRock = function (a, b) {
-        if (a instanceof Entity.Rock && b instanceof Entity.PlayerSensor) {
-            if (a.SCALE < 2 && !a.owner && !a.fast) {
-                b.parent.addRock(a);
-            }
-        }
-    };
-
-    var tryMineRock = function (a, b) {
-        if (a instanceof Entity.Rock && b instanceof Entity.Miner) {
-            if (!a.owner) {
-                a.decreaseHealth(0.1);
-            }
-        }
-    };
-
     var tryRRImpact = function (a, b, contact) { //rock - rock
         if (a instanceof Entity.Rock && b instanceof Entity.Rock) {
             if (a.owner && a.owner === b.owner) {
@@ -338,25 +322,10 @@ GameServer.prototype.setupCollisionHandler = function () {
             b.startChange = true;
         }
     };
-    var tryRRCollision = function (a, b, contact) {
-        if (a instanceof Entity.Rock && b instanceof Entity.Rock) {
-            if (a.owner && a.owner === b.owner) {
-                contact.SetEnabled(false);
-            }
-        }
-    };
 
-    var tryRPImpact = function (a, b, contact) { //rock - player
+    var tryRPImpact = function (a, b) { //rock - player
         if (a instanceof Entity.Rock && b instanceof Entity.Player) {
-            contact.SetEnabled(false);
-            return;
-
-            if (a.owner !== b) {
-                doImpact(a, b);
-            }
-            else {
-                contact.SetEnabled(false);
-            }
+            doImpact(a, b);
         }
     };
 
@@ -365,47 +334,22 @@ GameServer.prototype.setupCollisionHandler = function () {
         var a = contact.GetFixtureA().GetUserData();
         var b = contact.GetFixtureB().GetUserData();
 
-
-        tryAddRock(a, b);
-        tryAddRock(b, a);
-
-        tryMineRock(a, b);
-        tryMineRock(b, a);
-
-        doImpact(a,b);
-
         tryRRImpact(a, b, contact);
-
+        tryRPImpact(a,b);
+        tryRPImpact(b,a);
+        //tryPPImpact(b,a);
     }.bind(this);
 
     B2.b2ContactListener.prototype.PreSolve = function (contact) {
         var a = contact.GetFixtureA().GetUserData();
         var b = contact.GetFixtureB().GetUserData();
-
-
-        tryRRCollision(a, b, contact);
-
-        //tryRPImpact(a, b, contact);
-        //tryRPImpact(b, a, contact);
-
-        tryAddRock(a, b);
-        tryAddRock(b, a);
-
-
     }.bind(this);
 };
 
-Object.size = function (obj) {
-    var size = 0, key;
-    for (key in obj) {
-        if (obj.hasOwnProperty(key)) size++;
-    }
-    return size;
-};
 
-Number.prototype.between = function (min, max) {
-    return this >= min && this <= max;
-};
+
+
+module.exports = GameServer;
 
 function getRandom(min, max) {
     return Math.random() * (max - min) + min;
@@ -413,5 +357,13 @@ function getRandom(min, max) {
 function normal(x, y) {
     return Math.sqrt(x * x + y * y);
 }
-
-module.exports = GameServer;
+Object.size = function (obj) {
+    var size = 0, key;
+    for (key in obj) {
+        if (obj.hasOwnProperty(key)) size++;
+    }
+    return size;
+};
+Number.prototype.between = function (min, max) {
+    return this >= min && this <= max;
+};

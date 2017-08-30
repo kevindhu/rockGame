@@ -1,6 +1,5 @@
 const entityConfig = require('../entityConfig');
 var EntityFunctions = require('../EntityFunctions');
-var Controller = require('./Controller');
 var Queue = require('../../modules/Queue');
 var Miner = require('../sensors/Miner');
 var B2 = require('../../modules/B2');
@@ -8,43 +7,64 @@ var B2Common = require('../../modules/B2Common');
 var lerp = require('lerp');
 
 function Player(id, name, gameServer) {
-    Player.super_.call(this, id, gameServer);
+    this.gameServer = gameServer;
+    this.packetHandler = gameServer.packetHandler;
+    this.id = id;
+    
+    this.radius = 20;
     this.name = getName(name);
     this.type = "Player";
-    this.radius = 10;
-
-    this.setMaxVelocities();
-
-    this.rocks = [];
-    this.miners = [];
-    this.rockQueue = new Queue(); //maximum length of 10
 
     this.x = entityConfig.WIDTH / 2;
     this.y = entityConfig.WIDTH / 2;
-
-    this.preX = this.x;
-    this.preY = this.y;
 
     this.mover = {
         x: 0,
         y: 0
     };
 
-    this.kills = 0;
-
     this.theta = 0;
+    this.shooting = false;
 
     this.resetLevels();
     this.init();
-    //this.createCircle(4);
 }
 
-EntityFunctions.inherits(Player, Controller);
+
+
+Player.prototype.init = function () {
+    this.initB2();
+    this.gameServer.PLAYER_LIST[this.id] = this;
+    this.chunk = EntityFunctions.findChunk(this.gameServer, this);
+    this.gameServer.CHUNKS[this.chunk].PLAYER_LIST[this.id] = this;
+    this.gameServer.packetHandler.addPlayerPackets(this);
+};
+
+
+
+Player.prototype.initB2 = function () {
+    this.body = B2Common.createBox(this.gameServer.box2d_world, this, this.x, this.y, 1, 1);
+};
 
 Player.prototype.onDelete = function () {
-    this.removeAllRocks();
-    Player.super_.prototype.onDelete.apply(this);
+    delete this.gameServer.PLAYER_LIST[this.id];
+    delete this.gameServer.CHUNKS[this.chunk].PLAYER_LIST[this.id];
+    this.packetHandler.deletePlayerPackets(this);
 };
+
+
+Player.prototype.updateChunk = function () {
+    var newChunk = EntityFunctions.findChunk(this.gameServer, this);
+    if (newChunk !== this.chunk) {
+        delete this.gameServer.CHUNKS[this.chunk].PLAYER_LIST[this.id];
+        this.chunk = newChunk;
+        this.gameServer.CHUNKS[this.chunk].PLAYER_LIST[this.id] = this;
+    }
+};
+
+
+module.exports = Player;
+
 
 Player.prototype.getTheta = function (pos1, pos2) {
     var newTheta = Math.atan((pos2.y - pos1.y) / (pos2.x - pos1.x));
@@ -69,7 +89,7 @@ Player.prototype.update = function () {
     this.x = this.body.GetPosition().x;
     this.y = this.body.GetPosition().y;
 
-    this.packetHandler.updateControllersPackets(this);
+    this.packetHandler.updatePlayersPackets(this);
 };
 
 Player.prototype.setMove = function (x, y) {
@@ -79,38 +99,12 @@ Player.prototype.setMove = function (x, y) {
     }
 };
 
-Player.prototype.updateMiners = function () {
-    var i, miner;
-    for (i = 0; i < this.miners.length; i++) {
-        miner = this.miners[i];
-        miner.tick();
-    }
-};
-
-Player.prototype.createCircle = function (radius) {
-    if (!radius) {
-        return;
-    }
-    this.circleRadius = radius;
-
-    var delta = 2 * Math.PI / this.rocks.length;
-    var theta, rock;
-
-    for (var i = 0; i < this.rocks.length; i++) {
-        theta = delta * i;
-        rock = this.rocks[i];
-        rock.queuePosition = {
-            x: this.x + radius * Math.cos(theta),
-            y: this.y + radius * Math.sin(theta)
-        };
-    }
-
-    this.pX = this.x;
-    this.pY = this.y;
-};
 
 
 Player.prototype.resetLevels = function () {
+    this.maxHealth = 100;
+    this.health = this.maxHealth;
+
     this.level = 0;
     this.range = 1000;
     this.radius = 10;
@@ -141,7 +135,6 @@ Player.prototype.updateChunk = function () {
     this.chunkAdd = this.findChunkDifference(newChunks, oldChunks);
     this.chunkDelete = this.findChunkDifference(oldChunks, newChunks);
 };
-
 Player.prototype.findChunkDifference = function (chunks1, chunks2) {
     var id;
     var delta = {};
@@ -177,117 +170,6 @@ Player.prototype.findNeighboringChunks = function () {
 };
 
 
-Player.prototype.selectAsteroid = function (x, y) {
-    return new Selector(x, y, this);
-};
-
-
-Player.prototype.addRock = function (rock) {
-    if (!this.containsRock(rock) &&
-        this.rocks.length <= this.rockMaxLength) {
-
-        this.rocks.push(rock);
-        rock.addOwner(this);
-        this.createCircle(this.circleRadius);
-
-
-    }
-
-
-};
-
-
-Player.prototype.containsRock = function (rock) {
-    for (var i = 0; i < this.rocks.length; i++) {
-        if (this.rocks[i] === rock) {
-            return true;
-        }
-    }
-    return false;
-};
-
-
-Player.prototype.endNewTail = function () {
-    this.newLength = 0;
-    this.clicked = false;
-};
-
-
-Player.prototype.mAttemptEnqueue = function (x, y) {
-    if (!this.preXQ) {
-        this.preXQ = x;
-        this.preYQ = y;
-    }
-    else if (normal(x - this.preXQ, y - this.preYQ) > 0.5) {
-        if (this.newLength < this.rockMaxLength) {
-            this.newLength++;
-        }
-        else {
-            this.endNewTail();
-            return;
-        }
-        this.mAddToRockQueueConstruct(x, y);
-        this.preXQ = x;
-        this.preYQ = y;
-    }
-};
-
-
-Player.prototype.updateQueuePositions = function () {
-    var rock;
-    for (var i = 0; i < this.rocks.length; i++) {
-        rock = this.rocks[i];
-        rock.queuePosition = this.rockQueue.peek(this.rockMaxLength - 1 - i);
-    }
-};
-
-Player.prototype.translateQueuePositions = function () {
-    var rock;
-    var x = this.x - this.pX;
-    var y = this.y - this.pY;
-
-    this.pX = this.x;
-    this.pY = this.y;
-
-    for (var i = 0; i < this.rocks.length; i++) {
-        rock = this.rocks[i];
-
-        if (rock.queuePosition) {
-            rock.queuePosition.x += x;
-            rock.queuePosition.y += y;
-        }
-
-        var v = rock.body.GetLinearVelocity();
-        v.x = 1.2 * this.xVel; //1.25 is perfect lol
-        v.y = 1.2 * this.yVel;
-        rock.body.SetLinearVelocity(v);
-
-    }
-};
-
-
-Player.prototype.resetRockQueue = function () { //idk why
-    var rock;
-    for (var i = 0; i < this.rocks.length; i++) {
-        rock = this.rocks[i];
-        rock.resetPathQueue();
-    }
-};
-
-
-Player.prototype.addMiner = function (x, y) {
-    var miner = new Miner(x, y, this);
-    this.miners.push(miner);
-};
-
-Player.prototype.shootRock = function (x, y) {
-    var rock = this.findClosestRock({x: x, y: y});
-    if (!rock) return;
-
-    this.removeRock(rock);
-    rock.shoot(this, x, y);
-};
-
 
 Player.prototype.getTheta = function (target, origin) {
     this.theta = Math.atan2(target.y - origin.y, target.x - origin.x) % (2 * Math.PI);
@@ -310,30 +192,14 @@ Player.prototype.shootSelf = function (x, y) {
     v.x = 20 * Math.cos(this.theta);
     v.y = 20 * Math.sin(this.theta);
     this.body.SetLinearVelocity(v);
+
+    this.shooting = true;
 };
 
 
-Player.prototype.findClosestRock = function (target) {
-    var closest = this.rocks[0];
-    var dist = function (rock, target) {
-        var x = rock.body.GetPosition().x;
-        var y = rock.body.GetPosition().y;
-        return (x - target.x) * (x - target.x) + (y - target.y) * (y - target.y);
-    };
-    for (var i = 1; i < this.rocks.length; i++) {
-        var rock = this.rocks[i];
-        var dist1 = dist(closest, target);
-        var dist2 = dist(rock, target);
-        if (dist1 > dist2) {
-            closest = rock;
-        }
-    }
-    return closest;
-};
 
 Player.prototype.consumeRock = function (rock) {
     this.eat(rock.feed);
-    this.removeRock(rock);
     rock.onDelete();
 };
 
@@ -367,11 +233,6 @@ Player.prototype.levelUp = function () {
 
 
 Player.prototype.move = function (x, y) {
-    function normal(x, y) {
-        return Math.sqrt(x * x + y * y);
-    }
-
-
     var normalVel = normal(x, y);
     if (normalVel < 1) {
         normalVel = 1;
@@ -385,36 +246,12 @@ Player.prototype.move = function (x, y) {
 
 };
 
-Player.prototype.removeRock = function (rock) {
-    var index = this.rocks.indexOf(rock);
-    if (index !== -1) {
-        this.rocks.splice(index, 1);
-    }
-    //this.createCircle(this.circleRadius);
-};
-
-Player.prototype.removeMiner = function (miner) {
-    var index = this.miners.indexOf(miner);
-    if (index !== -1) {
-        this.miners.splice(index, 1);
-    }
-};
-
 
 Player.prototype.updateMaxVelocities = function (amount) {
     this.maxVel += amount;
     this.setMaxVelocities();
 };
 
-
-Player.prototype.removeAllRocks = function () {
-    var i;
-    for (i = this.rocks.length - 1; i >= 0; i--) {
-        var rock = this.rocks[i];
-        this.removeRock(rock);
-        rock.removeOwner();
-    }
-};
 
 Player.prototype.onDeath = function () {
     this.reset();
@@ -431,20 +268,7 @@ Player.prototype.reset = function () { //should delete this eventually, or only 
 };
 
 
-function Selector(x, y, parent) {
-    this.id = Math.random();
-    this.x = x;
-    this.y = y;
-    this.chunk = parent.chunk;
-    this.parent = parent;
-    this.body = B2Common.createBox(this.parent.gameServer.box2d_world, this.parent, x, y, 0.2, 0.2);
-    //this.parent.packetHandler.addRockPackets(this);
-}
 
-
-function square(x) {
-    return x * x;
-}
 
 function getName(name) {
     if (name === "") {
@@ -455,6 +279,17 @@ function getName(name) {
 
 function normal(x, y) {
     return Math.sqrt(x * x + y * y);
+}
+
+
+function onBoundary(coord) {
+    return coord <= entityConfig.BORDER_WIDTH ||
+        coord >= entityConfig.WIDTH - entityConfig.BORDER_WIDTH;
+}
+
+function overBoundary(coord) {
+    return coord < entityConfig.BORDER_WIDTH - 1 ||
+        coord > entityConfig.WIDTH - entityConfig.BORDER_WIDTH + 1;
 }
 
 module.exports = Player;
