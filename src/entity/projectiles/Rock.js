@@ -18,6 +18,7 @@ function Rock(x, y, SCALE, gameServer, body, vertices, texture) {
 
     texture ? this.texture = texture : this.getRandomTexture();
     this.setDefaultHealth();
+    this.setNeutral(10);
 
     this.vertices = vertices;
     this.sides = Math.round(getRandom(3, 9));
@@ -359,6 +360,7 @@ Rock.prototype.split = function () {
     var clone1 = new Rock(x, y, this.SCALE / 2, this.gameServer, bodies[0], vertices1, this.texture);
     var clone2 = new Rock(x, y, this.SCALE / 2, this.gameServer, bodies[1], vertices2, this.texture);
 
+
     //clone1.owner = this.owner;
     //clone2.owner = this.owner;
 
@@ -381,11 +383,6 @@ Rock.prototype.split = function () {
 
     clone1.body.SetLinearVelocity(v1);
     clone2.body.SetLinearVelocity(v2);
-
-
-    clone1.setNeutral(10);
-    clone2.setNeutral(10);
-
 
     this.onDelete();
 

@@ -342,6 +342,9 @@ GameServer.prototype.setupCollisionHandler = function () {
 
     var tryRPImpact = function (a, b, contact) { //rock - player
         if (a instanceof Entity.Rock && b instanceof Entity.Player) {
+            contact.SetEnabled(false);
+            return;
+
             if (a.owner !== b) {
                 doImpact(a, b);
             }

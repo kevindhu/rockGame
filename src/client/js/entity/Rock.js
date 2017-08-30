@@ -4,6 +4,7 @@ function Rock(rockInfo, client) {
     this.vertices = rockInfo.vertices;
     this.theta = rockInfo.theta;
     this.texture = rockInfo.texture;
+    this.neutral = rockInfo.neutral;
     this.client = client;
 }
 
