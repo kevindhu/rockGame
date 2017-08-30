@@ -10,26 +10,24 @@ function Player(id, name, gameServer) {
     this.gameServer = gameServer;
     this.packetHandler = gameServer.packetHandler;
     this.id = id;
-    
+
     this.radius = 20;
+    this.theta = 0;
+
     this.name = getName(name);
     this.type = "Player";
 
     this.x = entityConfig.WIDTH / 2;
     this.y = entityConfig.WIDTH / 2;
-
+    this.shooting = false;
     this.mover = {
         x: 0,
         y: 0
     };
 
-    this.theta = 0;
-    this.shooting = false;
-
     this.resetLevels();
     this.init();
 }
-
 
 
 Player.prototype.init = function () {
@@ -40,10 +38,8 @@ Player.prototype.init = function () {
     this.gameServer.packetHandler.addPlayerPackets(this);
 };
 
-
-
 Player.prototype.initB2 = function () {
-    this.body = B2Common.createBox(this.gameServer.box2d_world, this, this.x, this.y, 1, 1);
+    this.body = B2Common.createBox(this.gameServer.box2d_world, this, this.x, this.y, 2, 2);
 };
 
 Player.prototype.onDelete = function () {
@@ -80,6 +76,25 @@ Player.prototype.update = function () {
         this.body = B2Common.createBox(this.gameServer.box2d_world, this, this.x, this.y, 1, 1);
         this.dead = false;
     }
+
+
+    if (this.boosting) {
+        this.boostTimer -= 1;
+        if (this.boostTimer <= 0) {
+            this.boosting = false;
+            this.boostVelocity();
+        }
+    }
+    if (this.shooting) {
+        this.shootTimer -= 1;
+        if (this.shootTimer <= 0) {
+            this.shooting = false;
+        }
+    }
+
+    this.increaseHealth(0.1);
+
+
     if (this.realMover) {
         this.mover.x = lerp(this.mover.x, this.realMover.x, 0.1);
         this.mover.y = lerp(this.mover.y, this.realMover.y, 0.1);
@@ -99,15 +114,13 @@ Player.prototype.setMove = function (x, y) {
     }
 };
 
-
-
 Player.prototype.resetLevels = function () {
-    this.maxHealth = 100;
+    this.maxHealth = 20;
     this.health = this.maxHealth;
 
     this.level = 0;
     this.range = 1000;
-    this.radius = 10;
+    this.radius = 20;
     this.maxVel = 5;
 
     this.rockMaxLength = 10;
@@ -130,7 +143,6 @@ Player.prototype.increaseHealth = function (amount) {
 
 Player.prototype.updateChunk = function () {
     var oldChunks = this.findNeighboringChunks();
-    Player.super_.prototype.updateChunk.apply(this);
     var newChunks = this.findNeighboringChunks();
     this.chunkAdd = this.findChunkDifference(newChunks, oldChunks);
     this.chunkDelete = this.findChunkDifference(oldChunks, newChunks);
@@ -170,7 +182,6 @@ Player.prototype.findNeighboringChunks = function () {
 };
 
 
-
 Player.prototype.getTheta = function (target, origin) {
     this.theta = Math.atan2(target.y - origin.y, target.x - origin.x) % (2 * Math.PI);
 };
@@ -189,14 +200,42 @@ Player.prototype.shootSelf = function (x, y) {
     this.getTheta(target, origin);
 
     var v = this.body.GetLinearVelocity();
-    v.x = 20 * Math.cos(this.theta);
-    v.y = 20 * Math.sin(this.theta);
+    v.x = 30 * Math.cos(this.theta);
+    v.y = 30 * Math.sin(this.theta);
     this.body.SetLinearVelocity(v);
 
     this.shooting = true;
+    this.shootTimer = 15;
 };
 
 
+Player.prototype.addRock = function () {
+
+};
+
+
+
+Player.prototype.stallVelocity = function () {
+    var v = this.body.GetLinearVelocity();
+    v.x = 0;
+    v.y = 0;
+
+    this.body.SetLinearVelocity(v);
+};
+
+Player.prototype.boostVelocity = function () {
+    var v = this.body.GetLinearVelocity();
+    v.x *= 5;
+    v.y *= 5;
+
+    this.body.SetLinearVelocity(v);
+};
+
+
+
+Player.prototype.addRock = function (rock) {
+    this.rocks.push(rock);
+};
 
 Player.prototype.consumeRock = function (rock) {
     this.eat(rock.feed);
@@ -206,6 +245,7 @@ Player.prototype.consumeRock = function (rock) {
 Player.prototype.eat = function (amount) {
     if (amount > 0) {
         this.food++;
+        this.increaseHealth(amount);
     }
     if (this.food > this.maxFood) {
         this.levelUp();
@@ -223,10 +263,13 @@ Player.prototype.levelUp = function () {
     this.level++;
     this.range += 100;
     this.radius += 10;
-    this.maxGrabRadius += 100;
     this.updateMaxVelocities(-0.5);
+
+
+    this.grabRadius += 1; //the range of rocks that will come to you for eating
     this.power += 10; //power determines max size of things you can hold
-    this.rockMaxLength += 2;
+
+
     this.food = 0;
     this.maxFood++;
 };
@@ -266,8 +309,6 @@ Player.prototype.reset = function () { //should delete this eventually, or only 
     this.gameServer.box2d_world.DestroyBody(this.body);
     this.dead = true;
 };
-
-
 
 
 function getName(name) {

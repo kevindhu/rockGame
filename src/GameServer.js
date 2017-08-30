@@ -330,6 +330,17 @@ GameServer.prototype.setupCollisionHandler = function () {
     };
 
 
+    var tryPPImpact = function (a,b) {
+        if (a instanceof Entity.Player && b instanceof Entity.Player) {
+            if (a.shooting) {
+                b.boosting = true;
+                b.boostTimer = 2;
+
+                a.shooting = false;
+            }
+        }
+    };
+
     B2.b2ContactListener.prototype.BeginContact = function (contact) {
         var a = contact.GetFixtureA().GetUserData();
         var b = contact.GetFixtureB().GetUserData();
@@ -337,7 +348,9 @@ GameServer.prototype.setupCollisionHandler = function () {
         tryRRImpact(a, b, contact);
         tryRPImpact(a,b);
         tryRPImpact(b,a);
-        //tryPPImpact(b,a);
+
+        tryPPImpact(a,b);
+        tryPPImpact(b,a);
     }.bind(this);
 
     B2.b2ContactListener.prototype.PreSolve = function (contact) {

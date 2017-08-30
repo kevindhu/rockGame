@@ -351,7 +351,8 @@ PacketHandler.prototype.updatePlayersPackets = function (player) {
         health: player.health,
         maxHealth: player.maxHealth,
         theta: player.theta,
-        level: player.level
+        level: player.level,
+        shooting: player.shooting
     });
 };
 
