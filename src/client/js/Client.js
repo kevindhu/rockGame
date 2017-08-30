@@ -168,11 +168,13 @@ Client.prototype.sendCircle = function (construct) {
 };
 
 Client.prototype.initLists = function () {
-    this.CONTROLLER_LIST = {};
+    this.PLAYER_LIST = {};
     this.TILE_LIST = {};
     this.ROCK_LIST = {};
     this.ASTEROID_LIST = {};
     this.ANIMATION_LIST = {};
+
+    this.PLAYER_ARRAY = [];
 };
 Client.prototype.initViewers = function () {
     this.keys = [];
@@ -226,6 +228,7 @@ Client.prototype.handlePacket = function (data) {
 
 
 Client.prototype.addEntities = function (packet) {
+
     var addEntity = function (packet, list, entity, array) {
         if (!packet) {
             return;
@@ -244,10 +247,7 @@ Client.prototype.addEntities = function (packet) {
             addEntity(packet, this.TILE_LIST, Entity.Tile);
             break;
         case "playerInfo":
-            addEntity(packet, this.CONTROLLER_LIST, Entity.Player);
-            break;
-        case "asteroidInfo":
-            addEntity(packet, this.ASTEROID_LIST, Entity.Asteroid);
+            addEntity(packet, this.PLAYER_LIST, Entity.Player, this.PLAYER_ARRAY);
             break;
         case "animationInfo":
             if (packet.id === this.SELF_ID) {
@@ -263,7 +263,6 @@ Client.prototype.addEntities = function (packet) {
             if (!this.SELF_ID) {
                 this.SELF_ID = packet.selfId;
                 this.mainUI.gameUI.open();
-                this.TRAIL = new Entity.Trail(this);
             }
             break;
         case "chatInfo":
@@ -286,20 +285,10 @@ Client.prototype.updateEntities = function (packet) {
 
     switch (packet.class) {
         case "playerInfo":
-            updateEntity(packet, this.CONTROLLER_LIST);
+            updateEntity(packet, this.PLAYER_LIST);
             break;
         case "tileInfo":
             updateEntity(packet, this.TILE_LIST);
-            break;
-        case "asteroidInfo":
-            updateEntity(packet, this.ASTEROID_LIST);
-            break;
-        case "homeInfo":
-            updateEntity(packet, this.HOME_LIST);
-            break;
-        case "factionInfo":
-            updateEntity(packet, this.FACTION_LIST);
-            this.mainUI.updateLeaderBoard();
             break;
         case "rockInfo":
             updateEntity(packet, this.ROCK_LIST);
@@ -329,7 +318,7 @@ Client.prototype.deleteEntities = function (packet) {
             deleteEntity(packet, this.TILE_LIST);
             break;
         case "playerInfo":
-            deleteEntity(packet, this.CONTROLLER_LIST);
+            deleteEntity(packet, this.PLAYER_LIST, this.PLAYER_ARRAY);
             break;
         case "asteroidInfo":
             deleteEntity(packet, this.ASTEROID_LIST);
@@ -349,10 +338,13 @@ Client.prototype.deleteEntities = function (packet) {
 };
 
 Client.prototype.drawScene = function (data) {
+
+    this.mainUI.updateLeaderBoard();
+
     var id;
     var entityList = [
         this.TILE_LIST,
-        this.CONTROLLER_LIST,
+        this.PLAYER_LIST,
         this.ASTEROID_LIST,
         this.ANIMATION_LIST,
         this.ROCK_LIST

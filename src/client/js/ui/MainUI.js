@@ -31,23 +31,23 @@ MainUI.prototype.close = function (action) {
 
 MainUI.prototype.updateLeaderBoard = function () {
     var leaderboard = document.getElementById("leaderboard");
-    var PLAYER_ARRAY = this.client.PLAYEr_ARRAY;
+    var PLAYER_ARRAY = this.client.PLAYER_ARRAY;
 
 
     var playerSort = function (a, b) {
-        var factionA = this.client.CONTROLLER_LIST[a];
-        var factionB = this.client.CONTROLLER_LIST[b];
-        return factionA.score - factionB.score;
+        var playerA = this.client.CONTROLLER_LIST[a];
+        var playerB = this.client.CONTROLLER_LIST[b];
+        return playerA.radius - playerB.radius;
     }.bind(this);
 
     PLAYER_ARRAY.sort(playerSort);
+
+
     leaderboard.innerHTML = "";
-
     for (var i = PLAYER_ARRAY.length - 1; i >= 0; i--) {
-        var player = this.client.CONTROLLER_LIST[PLAYER_ARRAY[i]];
-
+        var player = this.client.PLAYER_LIST[PLAYER_ARRAY[i]];
         var entry = document.createElement('li');
-        entry.appendChild(document.createTextNode(player.name + " - " + player.score));
+        entry.appendChild(document.createTextNode(player.name + " - " + player.radius));
         leaderboard.appendChild(entry);
     }
 };
