@@ -342,9 +342,6 @@ PacketHandler.prototype.updateRockPackets = function (rock) {
 };
 
 PacketHandler.prototype.updatePlayersPackets = function (player) {
-    var theta = player.body.GetAngle();
-
-
     this.CHUNK_PACKETS[player.chunk].push({
         master: "update",
         class: "playerInfo",
@@ -353,7 +350,6 @@ PacketHandler.prototype.updatePlayersPackets = function (player) {
         y: player.y * 100,
         health: player.health,
         maxHealth: player.maxHealth,
-        theta: theta,
         level: player.level,
         shooting: player.shooting,
         radius: player.radius,

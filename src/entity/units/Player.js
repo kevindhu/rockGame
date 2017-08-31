@@ -54,7 +54,11 @@ Player.prototype.initB2 = function () {
     }
     this.vertices = vertices;
 
-    this.body = B2Common.createRandomPolygon(this.gameServer.box2d_world, this, this.vertices, this.x, this.y, "bronze");
+    //this.body = B2Common.createRandomPolygon(this.gameServer.box2d_world, this, this.vertices, this.x, this.y, "bronze");
+    this.body = B2Common.createDisk(this.gameServer.box2d_world, this, this.x, this.y, this.radius/100);
+
+
+
     this.sensor = new PlayerSensor(this);
 };
 
@@ -213,16 +217,6 @@ Player.prototype.findNeighboringChunks = function () {
 
 Player.prototype.getTheta = function (target, origin) {
     this.theta = Math.atan2(target.y - origin.y, target.x - origin.x) % (2 * Math.PI);
-    var theta = this.body.GetAngle();
-
-    if (Math.abs(this.theta - theta) > 2) {
-        theta = this.theta + getRandom(-0.1, 0.1);
-    }
-    else {
-        theta = lerp(theta, this.theta, 0.9);
-    }
-
-    //this.body.SetAngle(theta);
 };
 
 
@@ -240,6 +234,7 @@ Player.prototype.shootSelf = function (x, y) {
         x: this.x,
         y: this.y
     };
+
 
     this.getTheta(target, origin);
 

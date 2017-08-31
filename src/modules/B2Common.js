@@ -55,7 +55,7 @@ function createBox(world, user, x, y, width, height) {
 
 function createDisk(world, user, x, y, radius) {
     var options = {
-        'density': 5.0,
+        'density': 10.0,
         'friction': 0.1,
         'restitution': 0.0,
 
