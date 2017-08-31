@@ -8,6 +8,7 @@ function Player(playerInfo, client) {
     this.theta = playerInfo.theta;
     this.level = playerInfo.level; //need to implement again
     this.radius = playerInfo.radius;
+    this.vertices = playerInfo.vertices;
     this.client = client;
 
     if (!this.SELF_PLAYER && this.id === this.client.SELF_ID) {
@@ -46,9 +47,10 @@ Player.prototype.show = function () {
 
     ctx.strokeStyle = "rgba(252, 102, 37," + strokeAlpha + ")";
     if (this.shooting) {
+        console.log("GREEN");
         ctx.fillStyle = "green";
     }
-    if (this.vulnerable) {
+    else if (this.vulnerable) {
         ctx.fillStyle = "red";
     }
     else {
@@ -57,21 +59,57 @@ Player.prototype.show = function () {
     ctx.lineWidth = 10;
 
 
-    var radius = this.radius;
+
+
 
     ctx.beginPath();
-    ctx.moveTo(this.x + radius, this.y);
 
-    var theta, x, y;
-    for (i = Math.PI / 4; i <= 2 * Math.PI - Math.PI / 4; i += Math.PI / 4) {
-        theta = i;
-        x = radius * Math.cos(theta);
-        y = radius * Math.sin(theta);
-        ctx.lineTo(this.x + x, this.y + y);
+    ctx.translate(this.x, this.y);
+    ctx.rotate(this.theta);
+
+    if (this.vertices) {
+        var v = this.vertices;
+        ctx.moveTo(v[0][0] * this.radius, v[0][1] * this.radius);
+        for (i = 1; i < v.length; i++) {
+            ctx.lineTo(v[i][0] * this.radius, v[i][1] * this.radius);
+        }
+        ctx.lineTo(v[0][0] * this.radius, v[0][1] * this.radius);
+        ctx.fill();
+        ctx.stroke();
     }
-    ctx.lineTo(this.x + radius, this.y + 3);
-    ctx.stroke();
     ctx.fill();
+    ctx.stroke();
+
+    ctx.rotate(2 * Math.PI - this.theta);
+    ctx.translate(-this.x, -this.y);
+
+
+    ctx.closePath();
+
+
+    if (1===3) {
+        var radius = this.radius;
+        ctx.beginPath();
+        ctx.moveTo(this.x + radius, this.y);
+        var theta, x, y;
+        for (i = Math.PI / 4; i <= 2 * Math.PI - Math.PI / 4; i += Math.PI / 4) {
+            theta = i;
+            x = radius * Math.cos(theta);
+            y = radius * Math.sin(theta);
+            ctx.lineTo(this.x + x, this.y + y);
+        }
+        ctx.lineTo(this.x + radius, this.y + 3);
+        ctx.stroke();
+        ctx.fill();
+    }
+
+
+
+
+
+
+
+
 
 
     ctx.fillStyle = "#ff9d60";

@@ -11,7 +11,6 @@ function Rock(rockInfo, client) {
 Rock.prototype.update = function (rockInfo) {
     this.x = rockInfo.x;
     this.y = rockInfo.y;
-    this.queuePosition = rockInfo.queuePosition; //delete
     this.theta = rockInfo.theta;
     this.owner = rockInfo.owner;
     this.neutral = rockInfo.neutral;
@@ -45,12 +44,10 @@ Rock.prototype.show = function () {
     ctx.strokeStyle = this.neutral ? "pink" : ctx.strokeStyle;
 
 
-    if (!this.vertices) {
-        //console.log(this.x, this.y);
-    }
+
+    ctx.beginPath();
 
     ctx.translate(this.x, this.y);
-    ctx.beginPath();
     ctx.rotate(this.theta);
 
     if (this.vertices) {
@@ -66,12 +63,13 @@ Rock.prototype.show = function () {
         ctx.fillRect(0, 0, 30, 30);
     }
 
-    ctx.rotate(2 * Math.PI - this.theta);
     ctx.fill();
     ctx.stroke();
 
-    ctx.closePath();
+    ctx.rotate(2 * Math.PI - this.theta);
     ctx.translate(-this.x, -this.y);
+
+    ctx.closePath();
 
 
     if (this.health && this.maxHealth && this.health > 0) { //health bar

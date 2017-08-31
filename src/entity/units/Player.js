@@ -41,7 +41,20 @@ Player.prototype.init = function () {
 };
 
 Player.prototype.initB2 = function () {
-    this.body = B2Common.createDisk(this.gameServer.box2d_world, this, this.x, this.y, this.radius / 100);
+    var sides = 4;
+    var vertices = [];
+
+    var theta = 0;
+    var delta = 2 * Math.PI / sides;
+    for (var i = 0; i < sides; i++) {
+        theta = i * delta;
+        var x = Math.cos(theta) * this.radius/100;
+        var y = Math.sin(theta) * this.radius/100;
+        vertices[i] = [x, y];
+    }
+    this.vertices = vertices;
+
+    this.body = B2Common.createRandomPolygon(this.gameServer.box2d_world, this, this.vertices, this.x, this.y, "bronze");
     this.sensor = new PlayerSensor(this);
 };
 
@@ -65,14 +78,6 @@ Player.prototype.updateChunk = function () {
 module.exports = Player;
 
 
-Player.prototype.getTheta = function (pos1, pos2) {
-    var newTheta = Math.atan((pos2.y - pos1.y) / (pos2.x - pos1.x));
-
-    if (pos2.y - pos1.y > 0 && pos2.x - pos1.x > 0 || pos2.y - pos1.y < 0 && pos2.x - pos1.x > 0) {
-        newTheta += Math.PI;
-    }
-    return newTheta % (2 * Math.PI);
-};
 
 Player.prototype.tick = function () {
     if (this.dead || overBoundary(this.body.GetPosition().x) || overBoundary(this.body.GetPosition().y)) {
@@ -115,8 +120,8 @@ Player.prototype.tick = function () {
 
 
     if (this.realMover) {
-        this.mover.x = lerp(this.mover.x, this.realMover.x, 0.1);
-        this.mover.y = lerp(this.mover.y, this.realMover.y, 0.1);
+        this.mover.x = lerp(this.mover.x, this.realMover.x, 0.08);
+        this.mover.y = lerp(this.mover.y, this.realMover.y, 0.08);
     }
     this.move(this.mover.x, this.mover.y);
 
@@ -140,7 +145,7 @@ Player.prototype.resetLevels = function () {
     this.level = 0;
     this.range = 1000;
     this.radius = 100;
-    this.velBuffer = 4;
+    this.velBuffer = 2;
 
     this.rockMaxLength = 10;
     this.food = 0;
@@ -204,8 +209,20 @@ Player.prototype.findNeighboringChunks = function () {
 };
 
 
+
+
 Player.prototype.getTheta = function (target, origin) {
     this.theta = Math.atan2(target.y - origin.y, target.x - origin.x) % (2 * Math.PI);
+    var theta = this.body.GetAngle();
+
+    if (Math.abs(this.theta - theta) > 2) {
+        theta = this.theta + getRandom(-0.1, 0.1);
+    }
+    else {
+        theta = lerp(theta, this.theta, 0.9);
+    }
+
+    //this.body.SetAngle(theta);
 };
 
 
@@ -336,6 +353,18 @@ Player.prototype.resetBody = function () {
 };
 
 Player.prototype.move = function (x, y) {
+    var target = {
+        x: this.x + x,
+        y: this.y + y
+    };
+    var origin = {
+        x: this.x,
+        y: this.y
+    };
+
+    this.getTheta(target, origin);
+
+
     var normalVel = normal(x, y);
     if (normalVel < 1) {
         normalVel = 1;
@@ -389,6 +418,10 @@ function onBoundary(coord) {
 function overBoundary(coord) {
     return coord < entityConfig.BORDER_WIDTH - 1 ||
         coord > entityConfig.WIDTH - entityConfig.BORDER_WIDTH + 1;
+}
+
+function getRandom(min, max) {
+    return Math.random() * (max - min) + min;
 }
 
 module.exports = Player;

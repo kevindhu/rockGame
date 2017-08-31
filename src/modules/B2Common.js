@@ -64,7 +64,7 @@ function createDisk(world, user, x, y, radius) {
 
         'gravityScale': 1.0,
         'type': B2.b2Body.b2_dynamicBody,
-        'fixedRotation': false,
+        'fixedRotation': true,
         'userData': user
     };
 
