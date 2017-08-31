@@ -2,6 +2,9 @@ const entityConfig = require('../entityConfig');
 var EntityFunctions = require('../EntityFunctions');
 var Queue = require('../../modules/Queue');
 const PlayerSensor = require('../sensors/PlayerSensor');
+const Rock = require('../projectiles/Rock');
+
+
 
 var B2 = require('../../modules/B2');
 var B2Common = require('../../modules/B2Common');
@@ -41,7 +44,7 @@ Player.prototype.init = function () {
 };
 
 Player.prototype.initB2 = function () {
-    var sides = 4;
+    var sides = 3;
     var vertices = [];
 
     var theta = 0;
@@ -84,6 +87,9 @@ module.exports = Player;
 
 
 Player.prototype.tick = function () {
+    if (this.reloadTimer > 0) {
+        this.reloadTimer -= 1;
+    }
     if (this.dead || overBoundary(this.body.GetPosition().x) || overBoundary(this.body.GetPosition().y)) {
         this.dead = false;
         this.reset();
@@ -111,6 +117,7 @@ Player.prototype.tick = function () {
         this.shootTimer -= 1;
         if (this.shootTimer <= 0) {
             this.shooting = false;
+            this.stallVelocity();
         }
     }
     if (this.vulnerable) {
@@ -124,8 +131,8 @@ Player.prototype.tick = function () {
 
 
     if (this.realMover) {
-        this.mover.x = lerp(this.mover.x, this.realMover.x, 0.08);
-        this.mover.y = lerp(this.mover.y, this.realMover.y, 0.08);
+        this.mover.x = lerp(this.mover.x, this.realMover.x, 0.15);
+        this.mover.y = lerp(this.mover.y, this.realMover.y, 0.15);
     }
     this.move(this.mover.x, this.mover.y);
 
@@ -143,13 +150,13 @@ Player.prototype.setMove = function (x, y) {
 };
 
 Player.prototype.resetLevels = function () {
-    this.maxHealth = 100;
+    this.maxHealth = 10;
     this.health = this.maxHealth;
 
     this.level = 0;
     this.range = 1000;
     this.radius = 100;
-    this.velBuffer = 2;
+    this.velBuffer = 3;
 
     this.rockMaxLength = 10;
     this.food = 0;
@@ -225,6 +232,11 @@ Player.prototype.shootSelfDefault = function () {
 };
 
 Player.prototype.shootSelf = function (x, y) {
+    if (this.reloadTimer > 0) {
+        return;
+    }
+    this.reloadTimer = 50;
+
     var target = {
         x: x,
         y: y
@@ -244,7 +256,7 @@ Player.prototype.shootSelf = function (x, y) {
     this.body.SetLinearVelocity(v);
 
     this.shooting = true;
-    this.shootTimer = 15;
+    this.shootTimer = 10;
 };
 
 
@@ -383,13 +395,85 @@ Player.prototype.onDeath = function () {
     this.dead = true;
 };
 
-Player.prototype.reset = function () { //should delete this eventually, or only use during debugging
+Player.prototype.reset = function () {
+
+
+
+    this.split();
+
+
+
     this.resetLevels();
 
     this.x = entityConfig.WIDTH / 2;
     this.y = entityConfig.WIDTH / 2;
 
     this.resetBody();
+};
+
+
+Player.prototype.split = function () {
+    var poly = this.body.GetFixtureList().GetShape();
+    var vertices = this.vertices;
+    var count = vertices.length;
+
+
+    var middleVertex = new B2.b2Vec2();
+    var middle = Math.floor(count / 2);
+    middleVertex.Set((vertices[middle - 1][0] + vertices[middle][0]) / 2 + getRandom(-0.2, 0.2), (vertices[middle - 1][1] + vertices[middle][1]) / 2 + getRandom(-0.2, 0.2));
+
+    var lastVertex = new B2.b2Vec2();
+    lastVertex.Set((vertices[count - 1][0] + vertices[0][0]) / 2, (vertices[count - 1][1] + vertices[0][1]) / 2);
+
+
+    var vertices1 = [];
+    var vertices2 = [];
+    var i;
+
+
+    vertices1.push([lastVertex.x, lastVertex.y]);
+    for (i = 0; i < middle; i++) {
+        vertices1.push([vertices[i][0], vertices[i][1]]);
+    }
+    vertices1.push([middleVertex.x, middleVertex.y]);
+
+
+    vertices2.push([middleVertex.x, middleVertex.y]);
+    for (i = middle; i < count; i++) {
+        vertices2.push([vertices[i][0], vertices[i][1]]);
+    }
+    vertices2.push([lastVertex.x, lastVertex.y]);
+
+    var x = Math.floor(this.body.GetPosition().x);
+    var y = Math.floor(this.body.GetPosition().y);
+    var bodies = B2Common.createPolygonSplit(this.gameServer.box2d_world, this.body, vertices1, vertices2);
+
+
+    var clone1 = new Rock(x, y, this.SCALE / 2, this.gameServer, bodies[0], vertices1, "emerald");
+    var clone2 = new Rock(x, y, this.SCALE / 2, this.gameServer, bodies[1], vertices2, "emerald")   ;
+
+    clone1.body.GetFixtureList().SetUserData(clone1);
+    clone2.body.GetFixtureList().SetUserData(clone2);
+
+    clone1.body.SetAngularVelocity(this.body.GetAngularVelocity());
+    clone2.body.SetAngularVelocity(this.body.GetAngularVelocity());
+
+
+    var theta = Math.atan2(this.body.GetLinearVelocity().y, this.body.GetLinearVelocity().x);
+    var normalVel = normal(this.body.GetLinearVelocity().y, this.body.GetLinearVelocity().x);
+    var v1 = clone1.body.GetLinearVelocity();
+    var v2 = clone2.body.GetLinearVelocity();
+
+    v1.x = normalVel * Math.cos(theta + 0.1);
+    v1.y = normalVel * Math.sin(theta + 0.1);
+    v2.x = normalVel * Math.cos(theta - 0.1);
+    v2.y = normalVel * Math.sin(theta - 0.1);
+
+    clone1.body.SetLinearVelocity(v1);
+    clone2.body.SetLinearVelocity(v2);
+
+
+
 };
 
 

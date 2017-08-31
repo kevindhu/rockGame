@@ -36,6 +36,9 @@ Rock.prototype.show = function () {
         case "gold":
             ctx.fillStyle = "yellow";
             break;
+        case "emerald":
+            ctx.fillStyle = "green";
+            break;
     }
 
 

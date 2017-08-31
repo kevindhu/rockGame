@@ -350,6 +350,7 @@ PacketHandler.prototype.updatePlayersPackets = function (player) {
         y: player.y * 100,
         health: player.health,
         maxHealth: player.maxHealth,
+        theta: player.theta,
         level: player.level,
         shooting: player.shooting,
         radius: player.radius,

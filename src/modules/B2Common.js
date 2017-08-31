@@ -143,6 +143,9 @@ function createRandomPolygon(world, user, vertices, x, y, texture) {
         case "gold":
             density = 20;
             break;
+        case "emerald":
+            density = 40;
+            break;
     }
     var options = {
         'density': density,

@@ -101,6 +101,9 @@ Rock.prototype.setDefaultHealth = function () {
         case "gold":
             magnitude = 30;
             break;
+        case "emerald":
+            magnitude = 50;
+            break;
     }
 
     this.maxHealth = this.SCALE * 3 * (1 + magnitude);
