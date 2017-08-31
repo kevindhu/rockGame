@@ -28,6 +28,9 @@ Client.prototype.initSocket = function () {
     this.socket.on('chatMessage', this.mainUI);
     this.socket.on('updateLOL', this.handleLOL.bind(this));
     this.socket.on('ping', this.sendPong.bind(this));
+    this.socket.on('finalPing', function (message) {
+        console.log("PING: " + message);
+    });
 
 
 };

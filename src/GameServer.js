@@ -201,8 +201,8 @@ GameServer.prototype.start = function () {
         }.bind(this));
 
         socket.on("pong123", function (data) {
-            //console.log("OLD PING:" + data);
-            console.log("PING: " + Math.round((this.timeStamp - data) / 2));
+            var ping = Math.round((this.timeStamp - data) / 2);
+            socket.emit("finalPing", ping);
         }.bind(this));
 
         socket.on('newPlayer', function (data) {
@@ -289,6 +289,9 @@ GameServer.prototype.start = function () {
             delete this.INIT_SOCKET_LIST[socket.id];
         }.bind(this));
     }.bind(this));
+
+
+
 
     setInterval(this.update.bind(this), 1000 / 25);
 };
