@@ -35,8 +35,8 @@ MainUI.prototype.updateLeaderBoard = function () {
 
 
     var playerSort = function (a, b) {
-        var playerA = this.client.CONTROLLER_LIST[a];
-        var playerB = this.client.CONTROLLER_LIST[b];
+        var playerA = this.client.PLAYER_LIST[a];
+        var playerB = this.client.PLAYER_LIST[b];
         return playerA.radius - playerB.radius;
     }.bind(this);
 

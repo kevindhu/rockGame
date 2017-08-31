@@ -135,8 +135,8 @@ GameServer.prototype.update = function () {
 };
 GameServer.prototype.updatePlayers = function () {
     for (var id in this.PLAYER_LIST) {
-        var controller = this.PLAYER_LIST[id];
-        controller.update();
+        var player = this.PLAYER_LIST[id];
+        player.tick();
     }
 };
 GameServer.prototype.updateRocks = function () {
@@ -202,7 +202,7 @@ GameServer.prototype.start = function () {
 
         socket.on("pong123", function (data) {
             //console.log("OLD PING:" + data);
-            //console.log("PING: " + Math.round((this.timeStamp - data) / 2));
+            console.log("PING: " + Math.round((this.timeStamp - data) / 2));
         }.bind(this));
 
         socket.on('newPlayer', function (data) {
@@ -227,16 +227,23 @@ GameServer.prototype.start = function () {
             }
         }.bind(this));
 
-        socket.on('shootRock', function (data) {
+        socket.on('shootSelf', function (data) {
             var player = this.PLAYER_LIST[data.id];
 
             if (player) {
-                player.shootSelf(player.x + data.x / 100, player.y + data.y / 100);
+                if (data.x && data.y) {
+                    player.shootSelf(player.x + data.x / 100, player.y + data.y / 100);
+                }
+                else {
+                    player.shootSelfDefault();
+                }
 
 
                 //player.shootRock(player.x + data.x / 100, player.y + data.y / 100);
             }
         }.bind(this));
+
+
 
         socket.on('keyEvent', function (data) {
             if (!player) {
@@ -315,7 +322,7 @@ GameServer.prototype.setupCollisionHandler = function () {
         var impact = normal(aVel.x - bVel.x,
             aVel.y - bVel.y);
 
-        if (impact > 10) {
+        if (impact > 4) {
             a.decreaseHealth(impact);
             b.decreaseHealth(impact);
         }
@@ -354,6 +361,9 @@ GameServer.prototype.setupCollisionHandler = function () {
             if (a.shooting) {
                 b.boosting = true;
                 b.boostTimer = 2;
+
+                a.stalling = true;
+                a.stallTimer = 5;
 
                 a.shooting = false;
             }

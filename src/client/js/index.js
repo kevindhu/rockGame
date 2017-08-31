@@ -5,13 +5,17 @@ var client = new Client();
 client.start();
 
 
+
 document.onkeydown = function (event) {
-    if (client.CHAT_OPEN) {
-        return;
-    }
     client.keys[event.keyCode] = true;
-    client.socket.emit('keyEvent', {id: event.keyCode, state: true});
-};
+
+    if (event.keyCode === 32) {
+        console.log("SPACE");
+        client.socket.emit("shootSelf", {
+            id: client.SELF_ID
+        });
+    }
+}.bind(this);
 
 document.onkeyup = function (event) {
     if (event.keyCode === 84) {
@@ -32,10 +36,10 @@ $(window).bind('mousewheel DOMMouseScroll', function (event) {
     }
 
     if(event.originalEvent.wheelDelta /120 > 0 && client.mainScaleFactor < 2) {
-        client.mainScaleFactor += 0.2;
+        client.mainScaleFactor += 0.05;
     }
-    else if (client.mainScaleFactor > 0.3) {
-        client.mainScaleFactor -= 0.2;
+    else if (client.mainScaleFactor > 0.25) {
+        client.mainScaleFactor -= 0.05;
     }
 });
 

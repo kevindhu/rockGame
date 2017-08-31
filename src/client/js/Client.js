@@ -69,37 +69,18 @@ Client.prototype.initCanvases = function () {
         var x = ((event.x / this.mainCanvas.offsetWidth * 1000) - this.mainCanvas.width / 2) / this.scaleFactor;
         var y = ((event.y / this.mainCanvas.offsetHeight * 500) - this.mainCanvas.height / 2) / this.scaleFactor;
 
-        if (this.playerClicked) {
-            if (this.circleStageCount >= 3) { //made a full circle (at least 3 quadrants covered)
-                this.sendCircle(this.circleConstruct);
-            }
-            else if (this.circleStageCount <= 1) {
-                this.socket.emit("createDefault", {});
-            }
-            this.playerClicked = false;
-            this.circleConstruct = [];
-            this.circleStageCount = 0;
+        this.socket.emit("shootSelf", {
+            id: this.SELF_ID,
+            x: x,
+            y: y
+        });
 
-            this.TRAIL = new Entity.Trail(this);
-        }
-        else if (this.mining) {
-            this.mining = false;
-        }
-        else {
-            this.socket.emit("shootRock", {
-                id: this.SELF_ID,
-                x: x,
-                y: y
-            });
+        this.clickTemp = false;
+        this.clickTimer = 0;
 
-            this.clickTemp = false;
-            this.clickTimer = 0;
-        }
-        if (!this.CHAT_CLICK) {
-            this.mainUI.gameUI.chatUI.close();
-        }
-        this.CHAT_CLICK = false;
     }.bind(this));
+
+
 
     document.addEventListener("mousemove", function (event) {
         if (!this.SELF_PLAYER) {
@@ -115,7 +96,7 @@ Client.prototype.initCanvases = function () {
             return;
         }
 
-       if (this.clickTemp) { //see if shooting or mining
+        if (this.clickTemp) { //see if shooting or mining
             this.clickTimer += 1;
             if (this.clickTimer > 3) {
                 this.clickTimer = 0;
@@ -193,6 +174,7 @@ Client.prototype.verify = function (data) {
 };
 
 
+
 Client.prototype.handleLOL = function (data) {
     var reader = new BinaryReader(data);
 
@@ -228,7 +210,6 @@ Client.prototype.handlePacket = function (data) {
 
 
 Client.prototype.addEntities = function (packet) {
-
     var addEntity = function (packet, list, entity, array) {
         if (!packet) {
             return;
@@ -338,7 +319,6 @@ Client.prototype.deleteEntities = function (packet) {
 };
 
 Client.prototype.drawScene = function (data) {
-
     this.mainUI.updateLeaderBoard();
 
     var id;
@@ -372,7 +352,7 @@ Client.prototype.drawScene = function (data) {
     this.mainCtx.clearRect(0, 0, 11000, 11000);
 
     this.mainCtx.fillStyle = "#1d1f21";
-    this.mainCtx.fillRect(0, 0, 10000, 10000);
+    this.mainCtx.fillRect(0, 0, 20000, 20000);
 
 
     for (var i = 0; i < entityList.length; i++) {
@@ -388,7 +368,6 @@ Client.prototype.drawScene = function (data) {
         this.TRAIL.show();
     }
 };
-
 
 
 Client.prototype.start = function () {

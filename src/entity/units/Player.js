@@ -41,7 +41,7 @@ Player.prototype.init = function () {
 };
 
 Player.prototype.initB2 = function () {
-    this.body = B2Common.createDisk(this.gameServer.box2d_world, this, this.x, this.y, this.radius/100);
+    this.body = B2Common.createDisk(this.gameServer.box2d_world, this, this.x, this.y, this.radius / 100);
     this.sensor = new PlayerSensor(this);
 };
 
@@ -74,10 +74,10 @@ Player.prototype.getTheta = function (pos1, pos2) {
     return newTheta % (2 * Math.PI);
 };
 
-Player.prototype.update = function () {
-    if (this.dead) {
+Player.prototype.tick = function () {
+    if (this.dead || overBoundary(this.body.GetPosition().x) || overBoundary(this.body.GetPosition().y)) {
         this.dead = false;
-        this.resetBody();
+        this.reset();
     }
     if (this.resettingBody) {
         this.resettingBody = false;
@@ -89,6 +89,13 @@ Player.prototype.update = function () {
         if (this.boostTimer <= 0) {
             this.boosting = false;
             this.boostVelocity();
+        }
+    }
+    if (this.stalling) {
+        this.stallTimer -= 1;
+        if (this.stallTimer <= 0) {
+            this.stalling = false;
+            this.stallVelocity();
         }
     }
     if (this.shooting) {
@@ -142,7 +149,7 @@ Player.prototype.resetLevels = function () {
 
 Player.prototype.decreaseHealth = function (amount) {
     if (this.vulnerable) {
-        amount *= 3;
+        amount *= 10;
     }
     this.health -= amount;
     if (this.health <= 0) {
@@ -201,6 +208,11 @@ Player.prototype.getTheta = function (target, origin) {
     this.theta = Math.atan2(target.y - origin.y, target.x - origin.x) % (2 * Math.PI);
 };
 
+
+Player.prototype.shootSelfDefault = function () {
+    this.shootSelf(this.x + this.realMover.x, this.y + this.realMover.y);
+};
+
 Player.prototype.shootSelf = function (x, y) {
     var target = {
         x: x,
@@ -252,8 +264,8 @@ Player.prototype.removeRock = function (rock) {
 
 Player.prototype.stallVelocity = function () {
     var v = this.body.GetLinearVelocity();
-    v.x = 0;
-    v.y = 0;
+    v.x /= 5;
+    v.y /= 5;
 
     this.body.SetLinearVelocity(v);
 };
@@ -262,12 +274,11 @@ Player.prototype.boostVelocity = function () {
     this.vulnerable = true;
     this.vulnerableTimer = 20;
     var v = this.body.GetLinearVelocity();
-    v.x *= 5;
-    v.y *= 5;
+    v.x *= 7;
+    v.y *= 7;
 
     this.body.SetLinearVelocity(v);
 };
-
 
 
 Player.prototype.addRock = function (rock) {
@@ -345,7 +356,7 @@ Player.prototype.updateVelBuffer = function (amount) {
 
 
 Player.prototype.onDeath = function () {
-    this.reset();
+    this.dead = true;
 };
 
 Player.prototype.reset = function () { //should delete this eventually, or only use during debugging
@@ -354,7 +365,7 @@ Player.prototype.reset = function () { //should delete this eventually, or only 
     this.x = entityConfig.WIDTH / 2;
     this.y = entityConfig.WIDTH / 2;
 
-    this.dead = true;
+    this.resetBody();
 };
 
 
