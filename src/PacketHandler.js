@@ -416,6 +416,11 @@ PacketHandler.prototype.sendPing = function (timestamp) {
         if (socket.player) {
             socket.emit('ping', timestamp);
         }
+        socket.closeTimer -= 1;
+        if (socket.closeTimer <= 0) {
+            console.log("SHIT CLIENT LEFT BUT SOCKET STILL UP??");
+            socket.disconnect();
+        }
     }
 };
 

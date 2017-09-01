@@ -195,6 +195,7 @@ GameServer.prototype.start = function () {
 
         socket.on("verify", function (data) {
             if (!socket.verified) {
+                socket.closeTimer = 4;
                 console.log("Verified Client #" + socket.id);
             }
             socket.verified = true;
@@ -202,6 +203,7 @@ GameServer.prototype.start = function () {
 
         socket.on("pong123", function (data) {
             var ping = Math.round((this.timeStamp - data) / 2);
+            socket.closeTimer = 4;
             socket.emit("finalPing", ping);
         }.bind(this));
 
@@ -229,7 +231,6 @@ GameServer.prototype.start = function () {
 
         socket.on('shootSelf', function (data) {
             var player = this.PLAYER_LIST[data.id];
-
             if (player) {
                 if (data.x && data.y) {
                     player.shootSelf(player.x + data.x / 100, player.y + data.y / 100);
@@ -237,9 +238,6 @@ GameServer.prototype.start = function () {
                 else {
                     player.shootSelfDefault();
                 }
-
-
-                //player.shootRock(player.x + data.x / 100, player.y + data.y / 100);
             }
         }.bind(this));
 
@@ -289,10 +287,6 @@ GameServer.prototype.start = function () {
             delete this.INIT_SOCKET_LIST[socket.id];
         }.bind(this));
     }.bind(this));
-
-
-
-
     setInterval(this.update.bind(this), 1000 / 25);
 };
 

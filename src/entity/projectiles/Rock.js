@@ -113,7 +113,7 @@ Rock.prototype.setDefaultHealth = function () {
     var magnitude = 0;
     switch (this.texture) {
         case "bronze":
-            magnitude = 1;
+            magnitude = 10;
             break;
         case "silver":
             magnitude = 40;

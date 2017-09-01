@@ -415,10 +415,8 @@ Player.prototype.reset = function () {
 
 
 Player.prototype.split = function () {
-    var poly = this.body.GetFixtureList().GetShape();
     var vertices = this.vertices;
     var count = vertices.length;
-
 
     var middleVertex = new B2.b2Vec2();
     var middle = Math.floor(count / 2);
@@ -474,8 +472,6 @@ Player.prototype.split = function () {
 
     clone1.body.SetLinearVelocity(v1);
     clone2.body.SetLinearVelocity(v2);
-
-
 };
 
 
