@@ -354,7 +354,8 @@ PacketHandler.prototype.updatePlayersPackets = function (player) {
         level: player.level,
         shooting: player.shooting,
         radius: player.radius,
-        vulnerable: player.vulnerable
+        vulnerable: player.vulnerable,
+        vertices: player.vertices
     });
 };
 

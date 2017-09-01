@@ -5,7 +5,6 @@ const PlayerSensor = require('../sensors/PlayerSensor');
 const Rock = require('../projectiles/Rock');
 
 
-
 var B2 = require('../../modules/B2');
 var B2Common = require('../../modules/B2Common');
 var lerp = require('lerp');
@@ -28,6 +27,8 @@ function Player(id, name, gameServer) {
         y: 0
     };
 
+
+    this.power = 1;
     this.rocks = [];
 
     this.resetLevels();
@@ -44,26 +45,28 @@ Player.prototype.init = function () {
 };
 
 Player.prototype.initB2 = function () {
-    var sides = 3;
-    var vertices = [];
-
-    var theta = 0;
-    var delta = 2 * Math.PI / sides;
-    for (var i = 0; i < sides; i++) {
-        theta = i * delta;
-        var x = Math.cos(theta) * this.radius/100;
-        var y = Math.sin(theta) * this.radius/100;
-        vertices[i] = [x, y];
-    }
-    this.vertices = vertices;
-
+    this.setVertices();
     //this.body = B2Common.createRandomPolygon(this.gameServer.box2d_world, this, this.vertices, this.x, this.y, "bronze");
-    this.body = B2Common.createDisk(this.gameServer.box2d_world, this, this.x, this.y, this.radius/100);
-
+    this.body = B2Common.createDisk(this.gameServer.box2d_world, this, this.x, this.y, this.radius / 50);
 
 
     this.sensor = new PlayerSensor(this);
 };
+
+Player.prototype.setVertices = function () {
+    var sides = 3;
+    var vertices = [];
+    var theta = 0;
+    var delta = 2 * Math.PI / sides;
+    for (var i = 0; i < sides; i++) {
+        theta = i * delta;
+        var x = Math.cos(theta) * this.radius / 100;
+        var y = Math.sin(theta) * this.radius / 100;
+        vertices[i] = [x, y];
+    }
+    this.vertices = vertices;
+};
+
 
 Player.prototype.onDelete = function () {
     delete this.gameServer.PLAYER_LIST[this.id];
@@ -83,7 +86,6 @@ Player.prototype.updateChunk = function () {
 
 
 module.exports = Player;
-
 
 
 Player.prototype.tick = function () {
@@ -150,7 +152,7 @@ Player.prototype.setMove = function (x, y) {
 };
 
 Player.prototype.resetLevels = function () {
-    this.maxHealth = 10;
+    this.maxHealth = 60;
     this.health = this.maxHealth;
 
     this.level = 0;
@@ -163,11 +165,17 @@ Player.prototype.resetLevels = function () {
     this.maxFood = 2;
 };
 
-Player.prototype.decreaseHealth = function (amount) {
+Player.prototype.decreaseHealth = function (entity, amount) {
     if (this.vulnerable) {
-        amount *= 10;
+        amount *= 5;
     }
-    this.health -= amount;
+    amount *= entity.power;
+    if (entity.fast) {
+        amount *= 2;
+    }
+
+
+    this.health -= amount / 4;
     if (this.health <= 0) {
         this.onDeath();
     }
@@ -218,8 +226,6 @@ Player.prototype.findNeighboringChunks = function () {
     }
     return chunks;
 };
-
-
 
 
 Player.prototype.getTheta = function (target, origin) {
@@ -337,11 +343,11 @@ Player.prototype.levelUp = function () {
     this.radius += 10;
     this.maxHealth += 20;
 
-    this.updateVelBuffer(1);
+    this.updateVelBuffer(0.1);
 
 
     this.grabRadius += 1; //the range of rocks that will come to you for eating
-    this.power += 10; //power determines max size of things you can hold
+    this.power += 1; //power determines your damages
 
 
     this.food = 0;
@@ -396,11 +402,7 @@ Player.prototype.onDeath = function () {
 };
 
 Player.prototype.reset = function () {
-
-
-
     this.split();
-
 
 
     this.resetLevels();
@@ -449,8 +451,9 @@ Player.prototype.split = function () {
     var bodies = B2Common.createPolygonSplit(this.gameServer.box2d_world, this.body, vertices1, vertices2);
 
 
+    this.SCALE = 0.5;
     var clone1 = new Rock(x, y, this.SCALE / 2, this.gameServer, bodies[0], vertices1, "emerald");
-    var clone2 = new Rock(x, y, this.SCALE / 2, this.gameServer, bodies[1], vertices2, "emerald")   ;
+    var clone2 = new Rock(x, y, this.SCALE / 2, this.gameServer, bodies[1], vertices2, "emerald");
 
     clone1.body.GetFixtureList().SetUserData(clone1);
     clone2.body.GetFixtureList().SetUserData(clone2);
@@ -471,7 +474,6 @@ Player.prototype.split = function () {
 
     clone1.body.SetLinearVelocity(v1);
     clone2.body.SetLinearVelocity(v2);
-
 
 
 };

@@ -27,6 +27,7 @@ Player.prototype.update = function (playerInfo) {
     this.shooting = playerInfo.shooting;
     this.radius = playerInfo.radius;
     this.vulnerable = playerInfo.vulnerable;
+    this.vertices = playerInfo.vertices;
 };
 
 Player.prototype.show = function () {
@@ -47,7 +48,6 @@ Player.prototype.show = function () {
 
     ctx.strokeStyle = "rgba(252, 102, 37," + strokeAlpha + ")";
     if (this.shooting) {
-        console.log("GREEN");
         ctx.fillStyle = "green";
     }
     else if (this.vulnerable) {

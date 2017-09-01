@@ -17,6 +17,7 @@ function Rock(x, y, SCALE, gameServer, body, vertices, texture) {
     this.theta = getRandom(0, 3);
 
     texture ? this.texture = texture : this.getRandomTexture();
+    this.getPower();
     this.setDefaultHealth();
     this.setNeutral(100);
 
@@ -25,7 +26,7 @@ function Rock(x, y, SCALE, gameServer, body, vertices, texture) {
 
     this.owner = null;
     this.body = body;
-    this.feed = this.SCALE;
+    this.feed = this.SCALE * 2;
     this.init();
 }
 
@@ -89,6 +90,25 @@ Rock.prototype.getRandomTexture = function () {
     }
 };
 
+
+Rock.prototype.getPower = function () {
+    switch (this.texture) {
+        case "bronze":
+            this.realPower = 1;
+            break;
+        case "silver":
+            this.realPower = 2;
+            break;
+        case "gold":
+            this.realPower = 5;
+            break;
+        case "emerald":
+            this.realPower = 6;
+            break;
+    }
+    this.power = this.realPower;
+};
+
 Rock.prototype.setDefaultHealth = function () {
     var magnitude = 0;
     switch (this.texture) {
@@ -99,10 +119,10 @@ Rock.prototype.setDefaultHealth = function () {
             magnitude = 8;
             break;
         case "gold":
-            magnitude = 30;
+            magnitude = 40;
             break;
         case "emerald":
-            magnitude = 50;
+            magnitude = 70;
             break;
     }
 
@@ -172,7 +192,6 @@ Rock.prototype.checkSpeed = function () {
 
     if (this.fast && normalVel < 10) {
         this.fast = false;
-        this.justDefault = true;
     }
     else if (!this.fast && normalVel > 10) {
         this.fast = true;
@@ -182,7 +201,6 @@ Rock.prototype.checkSpeed = function () {
 
 Rock.prototype.move = function () {
     this.getOrigin();
-
     if (this.owner) {
         var playerPosition = this.owner.body.GetPosition();
         var v = this.body.GetLinearVelocity();
@@ -191,13 +209,13 @@ Rock.prototype.move = function () {
 
         if (inBounds(this.origin.x, playerPosition.x, 0.3) &&
             inBounds(this.origin.y, playerPosition.y, 0.3)) {
-                //do nothing
+            //do nothing
         }
         else {
             v.x = 2 * (playerPosition.x - this.origin.x);
             v.y = 2 * (playerPosition.y - this.origin.y);
         }
-        
+
         this.body.SetLinearVelocity(v);
     }
 };
@@ -262,8 +280,8 @@ Rock.prototype.decayVelocity = function () {
 };
 
 
-Rock.prototype.decreaseHealth = function (amount) {
-    this.health -= amount;
+Rock.prototype.decreaseHealth = function (entity, amount) {
+    this.health -= amount * entity.power;
 };
 
 

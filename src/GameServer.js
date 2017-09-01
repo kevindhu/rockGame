@@ -326,8 +326,8 @@ GameServer.prototype.setupCollisionHandler = function () {
             aVel.y - bVel.y);
 
         if (impact > 4) {
-            a.decreaseHealth(impact);
-            b.decreaseHealth(impact);
+            a.decreaseHealth(a, impact);
+            b.decreaseHealth(b, impact);
         }
     };
 
@@ -347,14 +347,13 @@ GameServer.prototype.setupCollisionHandler = function () {
         }
     };
 
-    var tryRPImpact = function (a, b) { //rock - player
+    var tryRPImpact = function (a, b, contact) { //rock - player
         if (a instanceof Entity.Rock && b instanceof Entity.Player) {
-            doImpact(a, b);
-
-            if (!this.ROCK_LIST[a.id]) {
-                console.log("ROCK GHOST SPOOKY: " + a.id);
-                a.init();
+            if (a.owner === b) {
+                contact.SetEnabled(false);
+                return;
             }
+            doImpact(a, b);
         }
     }.bind(this);
 
@@ -378,8 +377,8 @@ GameServer.prototype.setupCollisionHandler = function () {
         var b = contact.GetFixtureB().GetUserData();
 
         tryRRImpact(a, b, contact);
-        tryRPImpact(a, b);
-        tryRPImpact(b, a);
+        tryRPImpact(a, b, contact);
+        tryRPImpact(b, a, contact);
 
         tryPPImpact(a, b);
         tryPPImpact(b, a);

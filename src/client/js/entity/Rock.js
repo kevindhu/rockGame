@@ -44,7 +44,6 @@ Rock.prototype.show = function () {
 
     ctx.strokeStyle = !this.owner ? "blue" : "green";
     ctx.strokeStyle = this.fast ? "red" : ctx.strokeStyle;
-    ctx.strokeStyle = this.neutral ? "pink" : ctx.strokeStyle;
 
 
 
