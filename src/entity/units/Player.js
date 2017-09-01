@@ -50,7 +50,7 @@ Player.prototype.initB2 = function () {
     this.body = B2Common.createDisk(this.gameServer.box2d_world, this, this.x, this.y, this.radius / 50);
 
 
-    this.sensor = new PlayerSensor(this);
+    this.sensor = new PlayerSensor(this, this.radius/100 * 3);
 };
 
 Player.prototype.setVertices = function () {

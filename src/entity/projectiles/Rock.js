@@ -116,13 +116,13 @@ Rock.prototype.setDefaultHealth = function () {
             magnitude = 1;
             break;
         case "silver":
-            magnitude = 8;
-            break;
-        case "gold":
             magnitude = 40;
             break;
+        case "gold":
+            magnitude = 80;
+            break;
         case "emerald":
-            magnitude = 70;
+            magnitude = 100;
             break;
     }
 

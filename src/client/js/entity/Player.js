@@ -44,8 +44,6 @@ Player.prototype.show = function () {
     ctx.font = "20px Arial";
 
 
-
-
     ctx.strokeStyle = "rgba(252, 102, 37," + strokeAlpha + ")";
     if (this.shooting) {
         ctx.fillStyle = "green";
@@ -57,9 +55,6 @@ Player.prototype.show = function () {
         ctx.fillStyle = "rgba(123,0,0," + fillAlpha + ")";
     }
     ctx.lineWidth = 10;
-
-
-
 
 
     ctx.beginPath();
@@ -81,13 +76,21 @@ Player.prototype.show = function () {
     ctx.stroke();
 
     ctx.rotate(2 * Math.PI - this.theta);
+
+
+    if (!this.vulnerable) {
+        ctx.fillStyle = "rgba(0, 255, 0, 0.3)";
+        ctx.arc(0, 0, this.radius * 2, 0, 2 * Math.PI);
+        ctx.fill();
+    }
+
     ctx.translate(-this.x, -this.y);
 
 
     ctx.closePath();
 
 
-    if (1===3) {
+    if (1 === 3) {
         var radius = this.radius;
         ctx.beginPath();
         ctx.moveTo(this.x + radius, this.y);
@@ -102,14 +105,6 @@ Player.prototype.show = function () {
         ctx.stroke();
         ctx.fill();
     }
-
-
-
-
-
-
-
-
 
 
     ctx.fillStyle = "#ff9d60";
