@@ -3,14 +3,17 @@ var B2Common = require("../../modules/B2Common");
 var Arithmetic = require("../../modules/Arithmetic");
 var EntityFunctions = require('../EntityFunctions');
 var entityConfig = require('../entityConfig');
+var RockHandler = require('./RockHandler');
 var lerp = require('lerp');
 
 function Rock(x, y, SCALE, gameServer, body, vertices, texture) {
     this.gameServer = gameServer;
     this.packetHandler = gameServer.packetHandler;
 
+    this.handler = new RockHandler(this, this.gameServer);
+
     this.gameServer.rockCount += 1;
-    this.id = Math.random();
+    this.id = Math.floor(Math.random() * 1000000);
     this.x = x;
     this.y = y;
     this.SCALE = SCALE;
@@ -113,10 +116,10 @@ Rock.prototype.setDefaultHealth = function () {
     var magnitude = 0;
     switch (this.texture) {
         case "bronze":
-            magnitude = 10;
+            magnitude = 2;
             break;
         case "silver":
-            magnitude = 40;
+            magnitude = 10;
             break;
         case "gold":
             magnitude = 80;
@@ -182,6 +185,7 @@ Rock.prototype.tick = function () {
 
 
     this.packetHandler.updateRockPackets(this);
+    this.packetHandler._updateRockPackets(this);
 };
 
 

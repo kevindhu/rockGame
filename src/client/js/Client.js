@@ -24,9 +24,13 @@ Client.prototype.initSocket = function () {
     this.socket.verified = false;
 
     this.socket.on('initVerification', this.verify.bind(this));
+
+
     this.socket.on('updateEntities', this.handlePacket.bind(this));
+    this.socket.on('updateBinary', this.handleBinary.bind(this));
+
+
     this.socket.on('chatMessage', this.mainUI);
-    this.socket.on('updateLOL', this.handleLOL.bind(this));
     this.socket.on('ping', this.sendPong.bind(this));
     this.socket.on('finalPing', function (message) {
         console.log("PING: " + message);
@@ -178,17 +182,68 @@ Client.prototype.verify = function (data) {
 
 
 
-Client.prototype.handleLOL = function (data) {
+Client.prototype.handleBinary = function (data) {
     var reader = new BinaryReader(data);
 
     if (reader.length() > 20) {
-        //console.log(reader.readInt8());
 
-        //console.log(reader.readInt32()); //asteroid id
-        //console.log(reader.readInt32()); //owner id
+        var rockLength = reader.readInt8();
+        for (var i = 0; i<rockLength; i++) {
+            console.log("ROCK ID: " + reader.readInt32()); //rock id
+            console.log(reader.readInt32()); //owner id
 
-        //console.log(reader.readInt32()); //real x
-        //console.log(reader.readInt32()); //real y
+            console.log(reader.readInt32()/100); //real x
+            console.log(reader.readInt32()/100); //real y
+
+            console.log(reader.readInt16()); //radius
+
+            console.log(reader.readInt8()); //health
+            console.log(reader.readInt8()); //maxHealth
+            console.log(reader.readInt8()); //theta
+
+            console.log(reader.readInt8()); //FLAGS
+        }
+
+        var playerLength = reader.readInt8();
+        for (var i = 0; i<playerLength; i++) {
+            console.log("PLAYER ID: " + reader.readInt32()); //player id
+            console.log(reader.readInt32()/100); //real x
+            console.log(reader.readInt32()/100); //real y
+
+            console.log(reader.readInt16()); //radius
+
+            console.log(reader.readInt32()); //name
+
+            console.log(reader.readInt8()); //health
+            console.log(reader.readInt8()); //maxHealth
+
+            console.log(reader.readInt8()); //theta
+            console.log(reader.readInt8()); //level
+
+            console.log("FLAGS: " + reader.readInt8()); //FLAGS
+        }
+
+
+        var rockLength = reader.readInt8();
+        for (var i = 0; i<playerLength; i++) {
+            console.log("PLAYER ID: " + reader.readInt32()); //player id
+            console.log(reader.readInt32()/100); //real x
+            console.log(reader.readInt32()/100); //real y
+
+            console.log(reader.readInt16()); //radius
+
+            console.log(reader.readInt32()); //name
+
+            console.log(reader.readInt8()); //health
+            console.log(reader.readInt8()); //maxHealth
+
+            console.log(reader.readInt8()); //theta
+            console.log(reader.readInt8()); //level
+
+            console.log("FLAGS: " + reader.readInt8()); //FLAGS
+        }
+
+
     }
 };
 

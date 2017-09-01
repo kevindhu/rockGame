@@ -2,6 +2,7 @@ const entityConfig = require('../entityConfig');
 var EntityFunctions = require('../EntityFunctions');
 var Queue = require('../../modules/Queue');
 const PlayerSensor = require('../sensors/PlayerSensor');
+var PlayerHandler = require('./PlayerHandler');
 const Rock = require('../projectiles/Rock');
 
 
@@ -18,6 +19,8 @@ function Player(id, name, gameServer) {
 
     this.name = getName(name);
     this.type = "Player";
+
+    this.handler = new PlayerHandler(this, this.gameServer);
 
     this.x = entityConfig.WIDTH / 2;
     this.y = entityConfig.WIDTH / 2;
@@ -141,7 +144,7 @@ Player.prototype.tick = function () {
     this.x = this.body.GetPosition().x;
     this.y = this.body.GetPosition().y;
 
-    this.packetHandler.updatePlayersPackets(this);
+    this.packetHandler.updatePlayerPackets(this);
 };
 
 Player.prototype.setMove = function (x, y) {
