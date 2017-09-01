@@ -88,7 +88,6 @@ Client.prototype.initCanvases = function () {
     }.bind(this));
 
 
-
     document.addEventListener("mousemove", function (event) {
         if (!this.SELF_PLAYER) {
             return;
@@ -181,19 +180,18 @@ Client.prototype.verify = function (data) {
 };
 
 
-
 Client.prototype.handleBinary = function (data) {
     var reader = new BinaryReader(data);
 
-    if (reader.length() > 20) {
+    if (reader.length() > 1) {
 
         var rockLength = reader.readInt8();
-        for (var i = 0; i<rockLength; i++) {
+        for (var i = 0; i < rockLength; i++) {
             console.log("ROCK ID: " + reader.readInt32()); //rock id
             console.log(reader.readInt32()); //owner id
 
-            console.log(reader.readInt32()/100); //real x
-            console.log(reader.readInt32()/100); //real y
+            console.log(reader.readInt32() / 100); //real x
+            console.log(reader.readInt32() / 100); //real y
 
             console.log(reader.readInt16()); //radius
 
@@ -205,10 +203,10 @@ Client.prototype.handleBinary = function (data) {
         }
 
         var playerLength = reader.readInt8();
-        for (var i = 0; i<playerLength; i++) {
+        for (var i = 0; i < playerLength; i++) {
             console.log("PLAYER ID: " + reader.readInt32()); //player id
-            console.log(reader.readInt32()/100); //real x
-            console.log(reader.readInt32()/100); //real y
+            console.log(reader.readInt32() / 100); //real x
+            console.log(reader.readInt32() / 100); //real y
 
             console.log(reader.readInt16()); //radius
 
@@ -224,23 +222,37 @@ Client.prototype.handleBinary = function (data) {
         }
 
 
-        var rockLength = reader.readInt8();
-        for (var i = 0; i<playerLength; i++) {
-            console.log("PLAYER ID: " + reader.readInt32()); //player id
-            console.log(reader.readInt32()/100); //real x
-            console.log(reader.readInt32()/100); //real y
+        var rock2Length = reader.readInt8();
+        //console.log("ROCK LENGTH: " + rock2Length);
+        for (var i = 0; i < rock2Length; i++) {
 
-            console.log(reader.readInt16()); //radius
+            var rock = this.ROCK_LIST[reader.readInt32()];
+            if (rock) {
+                console.log("FIXXXX");
+                rock.owner = reader.readInt32();
 
-            console.log(reader.readInt32()); //name
+                //console.log("UPDATE ROCK ID: " + reader.readInt32()); //rock id
+                //console.log(reader.readInt32()); //owner id
 
-            console.log(reader.readInt8()); //health
-            console.log(reader.readInt8()); //maxHealth
+                rock.x = reader.readInt32() / 100;
+                rock.y = reader.readInt32() / 100;
+                rock.radius = reader.readInt16();
 
-            console.log(reader.readInt8()); //theta
-            console.log(reader.readInt8()); //level
+                //console.log(reader.readInt32() / 100); //real x
+                //console.log(reader.readInt32() / 100); //real y
+                //console.log(reader.readInt16()); //radius
 
-            console.log("FLAGS: " + reader.readInt8()); //FLAGS
+                rock.health = reader.readInt8();
+                rock.maxHealth = reader.readInt8();
+                rock.theta = reader.readInt16() / 100;
+
+                //console.log(reader.readInt8()); //health
+                //console.log(reader.readInt8()); //maxHealth
+                //console.log(reader.readInt8()); //theta
+
+                reader.readInt8()
+                //console.log(reader.readInt8()); //FLAGS
+            }
         }
 
 
@@ -330,7 +342,7 @@ Client.prototype.updateEntities = function (packet) {
             updateEntity(packet, this.TILE_LIST);
             break;
         case "rockInfo":
-            updateEntity(packet, this.ROCK_LIST);
+            //updateEntity(packet, this.ROCK_LIST);
             break;
         case "UIInfo":
             if (this.SELF_ID === packet.playerId) {
@@ -393,6 +405,7 @@ Client.prototype.drawScene = function (data) {
         return x < (player.x + range) && x > (player.x - range)
             && y < (player.y + range) && y > (player.y - range);
     }.bind(this);
+
     var translateScene = function () {
         this.mainCtx.setTransform(1, 0, 0, 1, 0, 0);
         this.scaleFactor = lerp(this.scaleFactor, this.mainScaleFactor, 0.3);
@@ -403,7 +416,13 @@ Client.prototype.drawScene = function (data) {
 
 
     if (!this.SELF_PLAYER) {
-        return;
+        if (this.SELF_ID) {
+            console.log("NO PLAYER BUT HOPE");
+            this.SELF_PLAYER = this.PLAYER_LIST[this.SELF_ID];
+        }
+        else {
+            return;
+        }
     }
 
     translateScene();
@@ -411,6 +430,7 @@ Client.prototype.drawScene = function (data) {
 
     this.mainCtx.fillStyle = "#1d1f21";
     this.mainCtx.fillRect(0, 0, 20000, 20000);
+
 
 
     for (var i = 0; i < entityList.length; i++) {
