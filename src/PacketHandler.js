@@ -190,7 +190,7 @@ PacketHandler.prototype._updatePlayerPackets = function (player) {
 };
 
 
-PacketHandler.prototype._updateRockPackets = function (rock) {
+PacketHandler.prototype.b_updateRockPackets = function (rock) {
     var info = rock.handler.updateInfo();
     var writer  = this.B_CHUNK_PACKETS[rock.chunk].updateRocks;
 
@@ -281,29 +281,6 @@ PacketHandler.prototype.addRockPackets = function (rock, ifInit) {
 };
 
 
-PacketHandler.prototype.updateRockPackets = function (rock) {
-    var pos = rock.body.GetPosition();
-    pos = new B2.b2Vec2(pos.x * 100, pos.y * 100);
-
-    var owner = rock.owner ? rock.owner.id : null;
-    var theta = rock.body.GetAngle();
-
-    var info = {
-        master: "update",
-        class: "rockInfo",
-        id: rock.id,
-        x: pos.x,
-        y: pos.y,
-        theta: theta,
-        owner: owner,
-        neutral: rock.neutral,
-        maxHealth: rock.maxHealth,
-        health: rock.health,
-        fast: rock.fast
-    };
-    this.CHUNK_PACKETS[rock.chunk].push(info);
-
-};
 
 PacketHandler.prototype.updatePlayerPackets = function (player) {
     this.CHUNK_PACKETS[player.chunk].push({

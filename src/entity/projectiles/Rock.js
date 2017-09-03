@@ -46,7 +46,7 @@ Rock.prototype.init = function () {
     }
     this.gameServer.CHUNKS[this.chunk].ROCK_LIST[this.id] = this;
     this.gameServer.ROCK_LIST[this.id] = this;
-    this.packetHandler.addRockPackets(this);
+    this.packetHandler.b_addRockPackets(this);
 };
 
 Rock.prototype.setB2 = function () {
@@ -83,29 +83,29 @@ Rock.prototype.setB2 = function () {
 Rock.prototype.getRandomTexture = function () {
     var num = Arithmetic.getRandomInt(0, 10);
     if (num < 7) {
-        this.texture = "bronze";
+        this.texture = 0;
     }
     else if (num < 9) {
-        this.texture = "silver";
+        this.texture = 1;
     }
     else {
-        this.texture = "gold";
+        this.texture = 2;
     }
 };
 
 
 Rock.prototype.getPower = function () {
     switch (this.texture) {
-        case "bronze":
+        case 0:
             this.realPower = 1;
             break;
-        case "silver":
+        case 1:
             this.realPower = 2;
             break;
-        case "gold":
+        case 2:
             this.realPower = 5;
             break;
-        case "emerald":
+        case 3:
             this.realPower = 6;
             break;
     }
@@ -115,16 +115,16 @@ Rock.prototype.getPower = function () {
 Rock.prototype.setDefaultHealth = function () {
     var magnitude = 0;
     switch (this.texture) {
-        case "bronze":
+        case 0:
+            magnitude = 1;
+            break;
+        case 1:
             magnitude = 2;
             break;
-        case "silver":
-            magnitude = 10;
-            break;
-        case "gold":
+        case 2:
             magnitude = 80;
             break;
-        case "emerald":
+        case 3:
             magnitude = 100;
             break;
     }
@@ -184,8 +184,7 @@ Rock.prototype.tick = function () {
     }
 
 
-    this.packetHandler.updateRockPackets(this);
-    this.packetHandler._updateRockPackets(this);
+    this.packetHandler.b_updateRockPackets(this);
 };
 
 

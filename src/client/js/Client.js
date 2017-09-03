@@ -25,7 +25,6 @@ Client.prototype.initSocket = function () {
 
     this.socket.on('initVerification', this.verify.bind(this));
 
-
     this.socket.on('updateEntities', this.handlePacket.bind(this));
     this.socket.on('updateBinary', this.handleBinary.bind(this));
 
@@ -184,22 +183,10 @@ Client.prototype.handleBinary = function (data) {
     var reader = new BinaryReader(data);
 
     if (reader.length() > 1) {
-
         var rockLength = reader.readInt8();
         for (var i = 0; i < rockLength; i++) {
-            console.log("ROCK ID: " + reader.readInt32()); //rock id
-            console.log(reader.readInt32()); //owner id
-
-            console.log(reader.readInt32() / 100); //real x
-            console.log(reader.readInt32() / 100); //real y
-
-            console.log(reader.readInt16()); //radius
-
-            console.log(reader.readInt8()); //health
-            console.log(reader.readInt8()); //maxHealth
-            console.log(reader.readInt8()); //theta
-
-            console.log(reader.readInt8()); //FLAGS
+            var rock = new Entity.Rock(reader, this);
+            this.ROCK_LIST[rock.id] = rock;
         }
 
         var playerLength = reader.readInt8();
@@ -223,35 +210,10 @@ Client.prototype.handleBinary = function (data) {
 
 
         var rock2Length = reader.readInt8();
-        //console.log("ROCK LENGTH: " + rock2Length);
         for (var i = 0; i < rock2Length; i++) {
-
             var rock = this.ROCK_LIST[reader.readInt32()];
             if (rock) {
-                console.log("FIXXXX");
-                rock.owner = reader.readInt32();
-
-                //console.log("UPDATE ROCK ID: " + reader.readInt32()); //rock id
-                //console.log(reader.readInt32()); //owner id
-
-                rock.x = reader.readInt32() / 100;
-                rock.y = reader.readInt32() / 100;
-                rock.radius = reader.readInt16();
-
-                //console.log(reader.readInt32() / 100); //real x
-                //console.log(reader.readInt32() / 100); //real y
-                //console.log(reader.readInt16()); //radius
-
-                rock.health = reader.readInt8();
-                rock.maxHealth = reader.readInt8();
-                rock.theta = reader.readInt16() / 100;
-
-                //console.log(reader.readInt8()); //health
-                //console.log(reader.readInt8()); //maxHealth
-                //console.log(reader.readInt8()); //theta
-
-                reader.readInt8()
-                //console.log(reader.readInt8()); //FLAGS
+                rock.update(reader);
             }
         }
 
@@ -292,7 +254,7 @@ Client.prototype.addEntities = function (packet) {
 
     switch (packet.class) {
         case "rockInfo":
-            addEntity(packet, this.ROCK_LIST, Entity.Rock);
+            //addEntity(packet, this.ROCK_LIST, Entity.Rock);
             break;
         case "tileInfo":
             addEntity(packet, this.TILE_LIST, Entity.Tile);

@@ -1,10 +1,38 @@
-function Rock(rockInfo, client) {
-    this.x = rockInfo.x;
-    this.y = rockInfo.y;
-    this.vertices = rockInfo.vertices;
-    this.theta = rockInfo.theta;
-    this.texture = rockInfo.texture;
-    this.neutral = rockInfo.neutral;
+function Rock(reader, client) {
+    this.id = reader.readInt32();
+    this.owner = reader.readInt32();
+
+    this.x = reader.readInt32() / 100;
+    this.y = reader.readInt32() / 100;
+
+    this.vertices = [];
+    var count = reader.readInt8();
+    for (var i = 0; i < count; i++) {
+        this.vertices[i] = [];
+        this.vertices[i][0] = reader.readInt8();
+        this.vertices[i][1] = reader.readInt8();
+    }
+
+
+    this.health = reader.readInt8();
+    this.maxHealth = reader.readInt8();
+
+    this.theta = reader.readInt16();
+    this.texture = reader.readInt8();
+
+    switch (reader.readInt8()) {
+        case 1:
+            this.neutral = true;
+            break;
+        case 16:
+            this.fast = true;
+            break;
+        case 17:
+            this.neutral = true;
+            this.fast = true;
+            break;
+    }
+
     this.client = client;
 }
 
@@ -19,6 +47,29 @@ Rock.prototype.update = function (rockInfo) {
     this.fast = rockInfo.fast;
 };
 
+Rock.prototype.update = function (reader) {
+    this.owner = reader.readInt32();
+    this.x = reader.readInt32() / 100;
+    this.y = reader.readInt32() / 100;
+
+    this.health = reader.readInt8();
+    this.maxHealth = reader.readInt8();
+    this.theta = reader.readInt16() / 100;
+
+    switch (reader.readInt8()) { //flags
+        case 1:
+            this.neutral = true;
+            break;
+        case 16:
+            this.fast = true;
+            break;
+        case 17:
+            this.neutral = true;
+            this.fast = true;
+            break;
+    }
+};
+
 
 Rock.prototype.show = function () {
     var ctx = this.client.mainCtx;
@@ -27,16 +78,16 @@ Rock.prototype.show = function () {
 
     ctx.fillStyle = "pink"; //default color
     switch (this.texture) {
-        case "bronze":
+        case 0:
             ctx.fillStyle = "brown";
             break;
-        case "silver":
+        case 1:
             ctx.fillStyle = "grey";
             break;
-        case "gold":
+        case 2:
             ctx.fillStyle = "yellow";
             break;
-        case "emerald":
+        case 3:
             ctx.fillStyle = "green";
             break;
     }
@@ -44,7 +95,6 @@ Rock.prototype.show = function () {
 
     ctx.strokeStyle = !this.owner ? "blue" : "green";
     ctx.strokeStyle = this.fast ? "red" : ctx.strokeStyle;
-
 
 
     ctx.beginPath();

@@ -7,7 +7,6 @@ function RockHandler(rock, gameServer) {
 }
 
 
-
 RockHandler.prototype.addInfo = function () {
     var writer = new BinaryWriter();
     var rock = this.rock;
@@ -15,23 +14,26 @@ RockHandler.prototype.addInfo = function () {
     var x = rock.body.GetPosition().x;
     var y = rock.body.GetPosition().y;
     var theta = rock.body.GetAngle();
+    var ownerId = rock.owner ? rock.owner.id >>> 0 : 0 >>> 0;
+
+    writer.writeUInt32(rock.id >>> 0);
+    writer.writeUInt32(ownerId);
+    writer.writeUInt32(x * 10000 >> 0);
+    writer.writeUInt32(y * 10000 >> 0);
 
 
-
-    // Write update record
-    writer.writeUInt32(rock.id >>> 0); //id
-    (rock.owner) ? writer.writeUInt32(rock.owner.id >>> 0) : writer.writeUInt32(0 >>> 0); //owner id
-
-    writer.writeUInt32(x * 100 >> 0);                // x
-    writer.writeUInt32(y * 100 >> 0);                // y
-
-    writer.writeUInt16(rock.radius >>> 0);             //radius
+    writer.writeUInt8(rock.vertices.length >>> 0); //write vertices
+    for (var i = 0; i < rock.vertices.length; i++) {
+        writer.writeUInt8(rock.vertices[i][0]);
+        writer.writeUInt8(rock.vertices[i][1]);
+    }
 
     writer.writeUInt8(rock.health >>> 0);              //health
     writer.writeUInt8(rock.maxHealth >>> 0);           //maxHealth
 
-    writer.writeUInt8(theta * 100 >>> 0);              //theta
-    //writer.writeUInt8(rock.texture >>> 0);            //texture
+    writer.writeUInt16(theta * 100 >>> 0);              //theta
+    writer.writeUInt8(rock.texture >>> 0);             //texture
+
 
     var flags = 0;
     if (rock.neutral)
@@ -51,23 +53,17 @@ RockHandler.prototype.updateInfo = function () {
     var x = rock.body.GetPosition().x;
     var y = rock.body.GetPosition().y;
     var theta = rock.body.GetAngle();
+    var ownerId = rock.owner ? rock.owner.id >>> 0 : 0 >>> 0;
 
 
-
-    // Write update record
-    writer.writeUInt32(rock.id >>> 0); //id
-    (rock.owner) ? writer.writeUInt32(rock.owner.id >>> 0) : writer.writeUInt32(0 >>> 0); //owner id
-
-    writer.writeUInt32(x * 100 >> 0);                // x
-    writer.writeUInt32(y * 100 >> 0);                // y
-
-    writer.writeUInt16(rock.radius >>> 0);             //radius
+    writer.writeUInt32(rock.id >>> 0);
+    writer.writeUInt32(ownerId);
+    writer.writeUInt32(x * 10000 >> 0);
+    writer.writeUInt32(y * 10000 >> 0);
 
     writer.writeUInt8(rock.health >>> 0);              //health
     writer.writeUInt8(rock.maxHealth >>> 0);           //maxHealth
-
-    writer.writeUInt8(theta * 100 >>> 0);              //theta
-    //writer.writeUInt8(rock.texture >>> 0);            //texture
+    writer.writeUInt16(theta * 100 >>> 0);              //theta
 
     var flags = 0;
     if (rock.neutral)
