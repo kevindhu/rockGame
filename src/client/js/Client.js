@@ -10,6 +10,7 @@ function Client() {
     this.SLASH = [];
     this.SLASH_ARRAY = [];
     this.mouseMoveTimer = 0;
+    this.updates = [];
     this.init();
 }
 
@@ -181,15 +182,7 @@ Client.prototype.verify = function (data) {
 };
 
 
-Client.prototype.handleBinary = function (data) {
-    var i, rock;
-    var reader = new BinaryReader(data);
-
-
-    if (reader.length() < 1) {
-        return;
-    }
-
+Client.prototype.applyUpdate = function (reader) {
     var rockLength = reader.readUInt8();
     for (i = 0; i < rockLength; i++) {
         rock = new Entity.Rock(reader, this);
@@ -210,11 +203,8 @@ Client.prototype.handleBinary = function (data) {
             rock.update(reader);
         }
         else {
-            console.log("MISSING ROCK: " + id);
-            if (!id) {
-                console.log("LENGTH OF ROCKS: " + rock2Length);
-            }
-            console.log(this.ROCK_LIST);
+            //console.log("MISSING ROCK: " + id);
+            //console.log(this.ROCK_LIST);
         }
     }
 
@@ -238,6 +228,22 @@ Client.prototype.handleBinary = function (data) {
         id = reader.readUInt32();
         delete this.PLAYER_LIST[id];
     }
+};
+
+
+Client.prototype.handleBinary = function (data) {
+    var reader = new BinaryReader(data);
+    if (reader.length() < 1) {
+        return;
+    }
+
+    var step = reader.readUInt32();
+    this.currStep = step;
+
+    this.updates.push({
+        step: step,
+        reader: reader
+    });
 };
 
 
@@ -385,17 +391,6 @@ Client.prototype.drawScene = function (data) {
     }.bind(this);
 
 
-    if (!this.SELF_PLAYER) {
-        if (this.SELF_ID) {
-            console.log("NO PLAYER BUT HOPE");
-            this.SELF_PLAYER = this.PLAYER_LIST[this.SELF_ID];
-        }
-        else {
-            return;
-        }
-    }
-
-
     this.SELF_PLAYER.tick();
 
 
@@ -420,9 +415,49 @@ Client.prototype.drawScene = function (data) {
     }
 };
 
+Client.prototype.clientUpdate = function () {
+    if (!this.SELF_PLAYER) {
+        if (this.SELF_ID) {
+            console.log("NO PLAYER BUT HOPE");
+            this.SELF_PLAYER = this.PLAYER_LIST[this.SELF_ID];
+        }
+        else {
+            return;
+        }
+    }
+
+    this.updateStep();
+    this.drawScene();
+};
+
+Client.prototype.updateStep = function () {
+    var step = this.currStep - 10;
+    var update = this.findUpdatePacket(step);
+    if (!update) {
+        console.log("NO UPDATE FOUND FOR STEP: " + step);
+        return;
+    }
+
+    this.applyUpdate(update.reader);
+};
+
+
+Client.prototype.findUpdatePacket = function (step) {
+    var length = this.updates.length;
+
+    for (var i = length - 1; i > 0; i--) {
+        var update = this.updates[i];
+
+        if (update.step === step) {
+            this.updates.splice(0,i + 1);
+            return update;
+        }
+    }
+    return null;
+};
 
 Client.prototype.start = function () {
-    setInterval(this.drawScene.bind(this), 1000 / 25);
+    setInterval(this.clientUpdate.bind(this), 1000 / 25);
 };
 
 function lerp(a, b, ratio) {

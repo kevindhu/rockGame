@@ -32,8 +32,22 @@ function Rock(reader, client) {
             break;
     }
 
+    this.updates = [];
+
     this.client = client;
 }
+
+
+Rock.prototype.applyUpdate = function (update) {
+    this.owner = update.owner;
+    this.x = update.x;
+    this.y = update.y;
+    this.health = update.health;
+    this.maxHealth = update.maxHealth;
+    this.theta = update.theta;
+    this.neutral = update.neutral;
+    this.fast = update.fast;
+};
 
 
 Rock.prototype.update = function (reader) {

@@ -149,7 +149,6 @@ Player.prototype.tick = function () {
     this.x = this.body.GetPosition().x;
     this.y = this.body.GetPosition().y;
 
-    //this.packetHandler.updatePlayerPackets(this);
     this.packetHandler.b_updatePlayerPackets(this);
 };
 

@@ -39,6 +39,7 @@ function Player(reader, client) {
         this.client.SELF_PLAYER = this;
     }
 
+    this.collisionTimer = 0;
 
     this.mover = {
         x: 0,
@@ -52,17 +53,9 @@ function Player(reader, client) {
 }
 
 
-
-
 Player.prototype.update = function (reader) {
-    if (this.colliding || this.shooting) {
-        this.x = lerp(this.x, reader.readUInt32() / 100, 1); //real x
-        this.y = lerp(this.y, reader.readUInt32() / 100, 1); //real y
-    }
-    else {
-        this.x = reader.readUInt32() / 100; //real x
-        this.y = reader.readUInt32() / 100; //real y
-    }
+    this.x = reader.readUInt32() / 100; //real x
+    this.y = reader.readUInt32() / 100; //real y
 
     this.radius = reader.readUInt16(); //radius
     this.name = reader.readInt32(); //name
@@ -70,7 +63,7 @@ Player.prototype.update = function (reader) {
     this.health = reader.readUInt8(); //health
     this.maxHealth = reader.readUInt8(); //maxHealth
 
-    this.theta123 = reader.readInt16() / 100; //theta
+    this.theta = reader.readInt16() / 100; //theta
     this.level = reader.readUInt8(); //level
 
     var flags = reader.readUInt16();
@@ -82,13 +75,12 @@ Player.prototype.update = function (reader) {
 };
 
 
-
 Player.prototype.tick = function () {
     if (this.realMover) {
         this.mover.x = lerp(this.mover.x, this.realMover.x, 0.15);
         this.mover.y = lerp(this.mover.y, this.realMover.y, 0.15);
     }
-    this.move(this.mover.x, this.mover.y);
+    //this.move(this.mover.x, this.mover.y);
 };
 
 
@@ -100,12 +92,11 @@ Player.prototype.setMove = function (x, y) {
 };
 
 
-
 Player.prototype.getTheta = function (target, origin) {
     this.theta = Math.atan2(target.y - origin.y, target.x - origin.x) % (2 * Math.PI);
 };
 
-Player.prototype.move = function (x,y) {
+Player.prototype.move = function (x, y) {
     var target = {
         x: this.x + x,
         y: this.y + y
@@ -125,10 +116,9 @@ Player.prototype.move = function (x,y) {
 
     var velBuffer = 3; //change soon
 
-    if (!this.shooting && !this.colliding) {
-        this.x += 100 * x / normalVel / velBuffer;
-        this.y += 100 * y / normalVel / velBuffer;
-    }
+    this.x += 100 * x / normalVel / velBuffer;
+    this.y += 100 * y / normalVel / velBuffer;
+
 };
 
 

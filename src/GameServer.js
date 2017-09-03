@@ -29,6 +29,7 @@ function GameServer() {
         Math.sqrt(entityConfig.TILES);
     this.startTime = Date.now();
 
+    this.step = 0;
     this.rockCount = 0;
 }
 
@@ -119,7 +120,10 @@ GameServer.prototype.spawnRocks = function () {
 };
 
 GameServer.prototype.update = function () {
+    var prevTimeStamp = this.timeStamp;
+
     this.timeStamp = Date.now();
+    this.step += 1;
 
     if (this.timeStamp % 50 === 0) {
         this.packetHandler.sendPing(this.timeStamp);

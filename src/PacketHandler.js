@@ -17,7 +17,9 @@ function PacketHandler(gameServer) {
 }
 
 
-function Packet() {
+function Packet(gameServer) {
+    this.gameServer = gameServer;
+
     this.addRocks = new BinaryWriter();
     this.addRocks.length = 0;
 
@@ -38,6 +40,8 @@ function Packet() {
 Packet.prototype.build = function () {
     var writer = new BinaryWriter();
 
+    writer.writeUInt32(this.gameServer.step);
+
     // Write update record
     writer.writeUInt8(this.addRocks.length);
     writer.writeBytes(this.addRocks.toBuffer());
@@ -57,7 +61,8 @@ Packet.prototype.build = function () {
     writer.writeUInt8(this.deletePlayers.length);
     writer.writeBytes(this.deletePlayers.toBuffer());
 
-    writer.writeUInt16(0 >> 0); //terminate record
+    //Terminate record
+    writer.writeUInt8(0 >> 0);
     return writer.toBuffer();
 };
 
@@ -69,7 +74,7 @@ PacketHandler.prototype.sendVerificationPackets = function (socket) {
 PacketHandler.prototype.resetChunkPackets = function () {
     for (var i = 0; i < entityConfig.CHUNKS; i++) {
         this.CHUNK_PACKETS[i] = [];
-        this.B_CHUNK_PACKETS[i] = new Packet();
+        this.B_CHUNK_PACKETS[i] = new Packet(this.gameServer);
     }
 
     this.masterPacket = [];
@@ -118,7 +123,7 @@ PacketHandler.prototype.b_createChunkPacket = function (chunk) {
         }
     };
 
-    var packet = new Packet();
+    var packet = new Packet(this.gameServer);
 
     populateBit(PLAYER_LIST, packet.addPlayers, this.b_addPlayerPackets);
     populateBit(ROCK_LIST, packet.addRocks, this.b_addRockPackets);
@@ -160,29 +165,6 @@ PacketHandler.prototype.b_addRockPackets = function (rock, writer) {
     writer = writer ? writer : this.B_CHUNK_PACKETS[rock.chunk].addRocks;
     writer.writeBytes(info);
     writer.length++;
-};
-
-
-PacketHandler.prototype._updatePlayerPackets = function (player) {
-    var temp = {
-        master: "update",
-        class: "playerInfo",
-        id: player.id,
-        x: player.x * 100,
-        y: player.y * 100,
-        health: player.health,
-        maxHealth: player.maxHealth,
-        theta: player.theta,
-        level: player.level,
-        selected: player.selected,
-        active: player.active,
-        slash: player.slash,
-        radius: player.radius,
-        range: player.range
-    };
-
-    var info = player.handler.updateInfo();
-    this.B_CHUNK_PACKETS[player.chunk].updatePlayers.writeBytes(info);
 };
 
 
@@ -329,11 +311,14 @@ PacketHandler.prototype.sendPing = function (timestamp) {
 
 PacketHandler.prototype.sendPackets = function () {
     var id;
+
+
     for (var index in this.gameServer.SOCKET_LIST) {
         var socket = this.gameServer.SOCKET_LIST[index];
         if (socket.player) {
             var player = socket.player;
 
+            //TODO: Change this
             if (player.chunkAdd) {
                 for (id in player.chunkAdd) {
                     socket.emit('updateEntities', this.createChunkPacket(id));
@@ -346,12 +331,11 @@ PacketHandler.prototype.sendPackets = function () {
             }
 
 
-            socket.emit('updateEntities', this.masterPacket); //global updates
 
+            socket.emit('updateEntities', this.masterPacket); //global updates
 
             var chunks = player.findNeighboringChunks();
             for (id in chunks) {
-                socket.emit('updateEntities', this.CHUNK_PACKETS[id]);
                 socket.emit('updateBinary', this.B_CHUNK_PACKETS[id].build());
             }
         }
