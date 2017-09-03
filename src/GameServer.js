@@ -242,7 +242,6 @@ GameServer.prototype.start = function () {
         }.bind(this));
 
 
-
         socket.on('keyEvent', function (data) {
             if (!player) {
                 return;
@@ -347,9 +346,16 @@ GameServer.prototype.setupCollisionHandler = function () {
                 contact.SetEnabled(false);
                 return;
             }
+            b.colliding = true;
             doImpact(a, b);
         }
     }.bind(this);
+
+    var tryRPLeave = function (a, b) {
+        if (a instanceof Entity.Rock && b instanceof Entity.Player) {
+            b.colliding = false;
+        }
+    };
 
 
     var tryPPImpact = function (a, b) {
@@ -365,6 +371,7 @@ GameServer.prototype.setupCollisionHandler = function () {
             }
         }
     };
+
 
     B2.b2ContactListener.prototype.BeginContact = function (contact) {
         var a = contact.GetFixtureA().GetUserData();
@@ -388,6 +395,14 @@ GameServer.prototype.setupCollisionHandler = function () {
         var a = contact.GetFixtureA().GetUserData();
         var b = contact.GetFixtureB().GetUserData();
     }.bind(this);
+
+    B2.b2ContactListener.prototype.EndContact = function (contact) {
+        var a = contact.GetFixtureA().GetUserData();
+        var b = contact.GetFixtureB().GetUserData();
+
+        tryRPLeave(a, b);
+        tryRPLeave(b, a);
+    };
 };
 
 

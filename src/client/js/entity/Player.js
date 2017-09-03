@@ -55,8 +55,14 @@ function Player(reader, client) {
 
 
 Player.prototype.update = function (reader) {
-    this.x = reader.readUInt32() / 100; //real x
-    this.y = reader.readUInt32() / 100; //real y
+    if (this.colliding || this.shooting) {
+        this.x = lerp(this.x, reader.readUInt32() / 100, 1); //real x
+        this.y = lerp(this.y, reader.readUInt32() / 100, 1); //real y
+    }
+    else {
+        this.x = reader.readUInt32() / 100; //real x
+        this.y = reader.readUInt32() / 100; //real y
+    }
 
     this.radius = reader.readUInt16(); //radius
     this.name = reader.readInt32(); //name
@@ -64,23 +70,15 @@ Player.prototype.update = function (reader) {
     this.health = reader.readUInt8(); //health
     this.maxHealth = reader.readUInt8(); //maxHealth
 
-    this.theta = reader.readInt16() / 100; //theta
+    this.theta123 = reader.readInt16() / 100; //theta
     this.level = reader.readUInt8(); //level
 
-    this.shooting = false;
-    this.vulnerable = false;
-    switch (reader.readUInt8()) {    //flags
-        case 1:
-            this.vulnerable = true;
-            break;
-        case 16:
-            this.shooting = true;
-            break;
-        case 17:
-            this.vulnerable = true;
-            this.shooting = true;
-            break;
-    }
+    var flags = reader.readUInt16();
+
+    this.shooting = Number(String(flags).charAt(0)) === 1;
+    this.vulnerable = Number(String(flags).charAt(1)) === 1;
+    this.colliding = Number(String(flags).charAt(2)) === 1;
+
 };
 
 
@@ -127,9 +125,10 @@ Player.prototype.move = function (x,y) {
 
     var velBuffer = 3; //change soon
 
-
-    this.x += 100 * x / normalVel / velBuffer;
-    this.y += 100 * y / normalVel / velBuffer;
+    if (!this.shooting && !this.colliding) {
+        this.x += 100 * x / normalVel / velBuffer;
+        this.y += 100 * y / normalVel / velBuffer;
+    }
 };
 
 

@@ -23,7 +23,7 @@ PlayerHandler.prototype.addInfo = function () {
     writer.writeUInt16(player.radius >>> 0);             //radius
 
     var nameNum = "";
-    for (var i = 0; i<player.name.length; i++) {
+    for (var i = 0; i < player.name.length; i++) {
         const val = player.name.toLowerCase().charCodeAt(i) - 97 + 1;
         nameNum = nameNum + "" + val;
     }
@@ -68,7 +68,7 @@ PlayerHandler.prototype.updateInfo = function () {
     writer.writeUInt16(player.radius >>> 0);             //radius
 
     var nameNum = "";
-    for (var i = 0; i<player.name.length; i++) {
+    for (var i = 0; i < player.name.length; i++) {
         const val = player.name.toLowerCase().charCodeAt(i) - 97 + 1;
         nameNum = nameNum + "" + val;
     }
@@ -81,11 +81,18 @@ PlayerHandler.prototype.updateInfo = function () {
     writer.writeUInt8(player.level >>> 0);                  //level
 
     var flags = 0;
-    if (player.vulnerable)
-        flags |= 0x01;
-    if (player.shooting)
-        flags |= 0x10;
-    writer.writeUInt8(flags >>> 0);                    //flags
+    if (player.shooting) {
+        flags |= 0x100;
+    }
+    if (player.vulnerable) {
+        flags |= 0x010;
+    }
+    if (player.colliding) {
+        flags |= 0x001;
+    }
+    writer.writeUInt16(parseInt(flags.toString(16)) >>> 0);                    //flags
+
+
 
     return writer.toBuffer();
 };
@@ -99,7 +106,6 @@ PlayerHandler.prototype.deleteInfo = function () {
     writer.writeUInt32(player.id >>> 0);         // Rock ID
     return writer.toBuffer();
 };
-
 
 
 module.exports = PlayerHandler;

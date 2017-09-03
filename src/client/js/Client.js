@@ -126,7 +126,7 @@ Client.prototype.initCanvases = function () {
                 y: y
             });
 
-            this.SELF_PLAYER.setMove(x,y);
+            this.SELF_PLAYER.setMove(x, y);
         }
     }.bind(this));
 };
@@ -395,9 +395,9 @@ Client.prototype.drawScene = function (data) {
         }
     }
 
-    if (!this.SELF_PLAYER.shooting) {
-        this.SELF_PLAYER.tick();
-    }
+
+    this.SELF_PLAYER.tick();
+
 
     translateScene();
     this.mainCtx.clearRect(0, 0, 11000, 11000);

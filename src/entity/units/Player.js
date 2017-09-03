@@ -29,7 +29,8 @@ function Player(id, name, gameServer) {
         x: 0,
         y: 0
     };
-
+    this.collisions = {};
+    this.collisions = 0;
 
     this.power = 1;
     this.rocks = [];
@@ -134,6 +135,7 @@ Player.prototype.tick = function () {
             this.vulnerable = false;
         }
     }
+
 
     this.increaseHealth(0.1);
 
