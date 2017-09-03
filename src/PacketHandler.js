@@ -97,7 +97,6 @@ PacketHandler.prototype.createChunkPacket = function (chunk, id) {
 
     populate(PLAYER_LIST, this.addPlayerPackets);
     populate(this.gameServer.CHUNKS[chunk].TILE_LIST, this.addTilePackets);
-    populate(this.gameServer.CHUNKS[chunk].ROCK_LIST, this.addRockPackets);
     if (id) {
         initPacket.push({
             master: "add",
@@ -166,7 +165,6 @@ PacketHandler.prototype.b_addRockPackets = function (rock, writer) {
 };
 
 
-
 PacketHandler.prototype._updatePlayerPackets = function (player) {
     var temp = {
         master: "update",
@@ -192,10 +190,10 @@ PacketHandler.prototype._updatePlayerPackets = function (player) {
 
 PacketHandler.prototype.b_updateRockPackets = function (rock) {
     var info = rock.handler.updateInfo();
-    var writer  = this.B_CHUNK_PACKETS[rock.chunk].updateRocks;
+    var writer = this.B_CHUNK_PACKETS[rock.chunk].updateRocks;
 
     writer.writeBytes(info);
-    writer.length ++;
+    writer.length++;
 };
 
 
@@ -245,7 +243,6 @@ PacketHandler.prototype.addPlayerPackets = function (player, ifInit) {
     }
 };
 
-
 PacketHandler.prototype.addChatPackets = function (name, message) {
     this.masterPacket.push({
         master: "add",
@@ -254,33 +251,6 @@ PacketHandler.prototype.addChatPackets = function (name, message) {
         chatMessage: message
     });
 };
-
-
-PacketHandler.prototype.addRockPackets = function (rock, ifInit) {
-    var vector = rock.body.GetPosition();
-    var realPos = new B2.b2Vec2(vector.x * 100, vector.y * 100);
-    var theta = rock.body.GetAngle();
-
-    var info = {
-        master: "add",
-        class: "rockInfo",
-        id: rock.id,
-        x: realPos.x,
-        y: realPos.y,
-        vertices: rock.vertices,
-        theta: theta,
-        texture: rock.texture,
-        neutral: rock.neutral
-    };
-    if (ifInit) {
-        return info;
-    }
-    else {
-        this.CHUNK_PACKETS[rock.chunk].push(info);
-    }
-};
-
-
 
 PacketHandler.prototype.updatePlayerPackets = function (player) {
     this.CHUNK_PACKETS[player.chunk].push({
@@ -300,7 +270,6 @@ PacketHandler.prototype.updatePlayerPackets = function (player) {
         vertices: player.vertices
     });
 };
-
 
 PacketHandler.prototype.deletePlayerPackets = function (player, chunk) {
     var info = {

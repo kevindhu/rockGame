@@ -32,7 +32,7 @@ Client.prototype.initSocket = function () {
     this.socket.on('chatMessage', this.mainUI);
     this.socket.on('ping', this.sendPong.bind(this));
     this.socket.on('finalPing', function (message) {
-        console.log("PING: " + message);
+        //console.log("PING: " + message);
     });
 
 
@@ -211,7 +211,7 @@ Client.prototype.handleBinary = function (data) {
 
         var rock2Length = reader.readInt8();
         for (var i = 0; i < rock2Length; i++) {
-            var rock = this.ROCK_LIST[reader.readInt32()];
+            var rock = this.ROCK_LIST[reader.readUInt32()];
             if (rock) {
                 rock.update(reader);
             }

@@ -1,16 +1,16 @@
 function Rock(reader, client) {
-    this.id = reader.readInt32();
-    this.owner = reader.readInt32();
+    this.id = reader.readUInt32();
+    this.owner = reader.readUInt32();
 
-    this.x = reader.readInt32() / 100;
-    this.y = reader.readInt32() / 100;
+    this.x = reader.readUInt32() / 100;
+    this.y = reader.readUInt32() / 100;
 
     this.vertices = [];
-    var count = reader.readInt8();
+    var count = reader.readUInt8();
     for (var i = 0; i < count; i++) {
         this.vertices[i] = [];
-        this.vertices[i][0] = reader.readInt8();
-        this.vertices[i][1] = reader.readInt8();
+        this.vertices[i][0] = reader.readInt16() / 1000;
+        this.vertices[i][1] = reader.readInt16() / 1000;
     }
 
 
@@ -18,7 +18,7 @@ function Rock(reader, client) {
     this.maxHealth = reader.readInt8();
 
     this.theta = reader.readInt16();
-    this.texture = reader.readInt8();
+    this.texture = reader.readUInt8();
 
     switch (reader.readInt8()) {
         case 1:
@@ -36,27 +36,20 @@ function Rock(reader, client) {
     this.client = client;
 }
 
-Rock.prototype.update = function (rockInfo) {
-    this.x = rockInfo.x;
-    this.y = rockInfo.y;
-    this.theta = rockInfo.theta;
-    this.owner = rockInfo.owner;
-    this.neutral = rockInfo.neutral;
-    this.health = rockInfo.health;
-    this.maxHealth = rockInfo.maxHealth;
-    this.fast = rockInfo.fast;
-};
 
 Rock.prototype.update = function (reader) {
-    this.owner = reader.readInt32();
-    this.x = reader.readInt32() / 100;
-    this.y = reader.readInt32() / 100;
+    console.log("KEY: " + reader.readUInt8());
+
+    this.owner = reader.readUInt32();
+    this.x = reader.readUInt32() / 100;
+    this.y = reader.readUInt32() / 100;
 
     this.health = reader.readInt8();
     this.maxHealth = reader.readInt8();
+
     this.theta = reader.readInt16() / 100;
 
-    switch (reader.readInt8()) { //flags
+    switch (reader.readUInt8()) { //flags
         case 1:
             this.neutral = true;
             break;
@@ -123,7 +116,7 @@ Rock.prototype.show = function () {
 
     ctx.closePath();
 
-
+    console.log(this.health);
     if (this.health && this.maxHealth && this.health > 0) { //health bar
         ctx.lineWidth = 10;
         ctx.beginPath();

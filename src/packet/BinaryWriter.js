@@ -22,10 +22,22 @@ BinaryWriter.prototype.writeUInt8 = function (value) {
     this.allocLength += 1;
 };
 
+BinaryWriter.prototype.writeInt8 = function (value) {
+    this.sharedBuffer.writeInt8(value, this.allocLength, true);
+    this.allocLength += 1;
+};
+
 BinaryWriter.prototype.writeUInt16 = function (value) {
     this.sharedBuffer.writeUInt16BE(value, this.allocLength, true);
     this.allocLength += 2;
 };
+
+
+BinaryWriter.prototype.writeInt16 = function (value) {
+    this.sharedBuffer.writeInt16BE(value, this.allocLength, true);
+    this.allocLength += 2;
+};
+
 
 BinaryWriter.prototype.writeUInt32 = function (value) {
     this.sharedBuffer.writeUInt32BE(value, this.allocLength, true);
