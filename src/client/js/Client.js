@@ -227,7 +227,7 @@ Client.prototype.handleBinary = function (data) {
         }
     }
 
-    var rock3Length = reader.readUInt8();
+    var rock3Length = reader.readUInt8(); //delete rocks
     for (i = 0; i < rock3Length; i++) {
         id = reader.readUInt32();
         delete this.ROCK_LIST[id];
@@ -395,7 +395,9 @@ Client.prototype.drawScene = function (data) {
         }
     }
 
-    //this.SELF_PLAYER.tick();
+    if (!this.SELF_PLAYER.shooting) {
+        this.SELF_PLAYER.tick();
+    }
 
     translateScene();
     this.mainCtx.clearRect(0, 0, 11000, 11000);

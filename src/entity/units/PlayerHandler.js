@@ -17,8 +17,8 @@ PlayerHandler.prototype.addInfo = function () {
 
     // Write update record
     writer.writeUInt32(player.id >>> 0);             //id
-    writer.writeUInt32(x * 10000 >> 0);                // x
-    writer.writeUInt32(y * 10000 >> 0);                // y
+    writer.writeUInt32(x * 100 >> 0);                // x
+    writer.writeUInt32(y * 100 >> 0);                // y
 
     writer.writeUInt16(player.radius >>> 0);             //radius
 

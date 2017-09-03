@@ -64,12 +64,11 @@ Player.prototype.update = function (reader) {
     this.health = reader.readUInt8(); //health
     this.maxHealth = reader.readUInt8(); //maxHealth
 
-    this.theta123 = reader.readInt16() / 100; //theta
+    this.theta = reader.readInt16() / 100; //theta
     this.level = reader.readUInt8(); //level
 
     this.shooting = false;
     this.vulnerable = false;
-
     switch (reader.readUInt8()) {    //flags
         case 1:
             this.vulnerable = true;
@@ -91,7 +90,7 @@ Player.prototype.tick = function () {
         this.mover.x = lerp(this.mover.x, this.realMover.x, 0.15);
         this.mover.y = lerp(this.mover.y, this.realMover.y, 0.15);
     }
-    //this.move(this.mover.x, this.mover.y);
+    this.move(this.mover.x, this.mover.y);
 };
 
 
