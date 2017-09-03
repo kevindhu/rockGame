@@ -38,7 +38,20 @@ function Player(reader, client) {
     if (!this.SELF_PLAYER && this.id === this.client.SELF_ID) {
         this.client.SELF_PLAYER = this;
     }
+
+
+    this.mover = {
+        x: 0,
+        y: 0
+    };
+
+    this.realMover = {
+        x: 0,
+        y: 0
+    };
 }
+
+
 
 
 Player.prototype.update = function (reader) {
@@ -51,7 +64,7 @@ Player.prototype.update = function (reader) {
     this.health = reader.readUInt8(); //health
     this.maxHealth = reader.readUInt8(); //maxHealth
 
-    this.theta = reader.readInt16() / 100; //theta
+    this.theta123 = reader.readInt16() / 100; //theta
     this.level = reader.readUInt8(); //level
 
     this.shooting = false;
@@ -70,6 +83,56 @@ Player.prototype.update = function (reader) {
             break;
     }
 };
+
+
+
+Player.prototype.tick = function () {
+    if (this.realMover) {
+        this.mover.x = lerp(this.mover.x, this.realMover.x, 0.15);
+        this.mover.y = lerp(this.mover.y, this.realMover.y, 0.15);
+    }
+    //this.move(this.mover.x, this.mover.y);
+};
+
+
+Player.prototype.setMove = function (x, y) {
+    this.realMover = {
+        x: x,
+        y: y
+    };
+};
+
+
+
+Player.prototype.getTheta = function (target, origin) {
+    this.theta = Math.atan2(target.y - origin.y, target.x - origin.x) % (2 * Math.PI);
+};
+
+Player.prototype.move = function (x,y) {
+    var target = {
+        x: this.x + x,
+        y: this.y + y
+    };
+    var origin = {
+        x: this.x,
+        y: this.y
+    };
+
+    this.getTheta(target, origin);
+
+
+    var normalVel = normal(x, y);
+    if (normalVel < 1) {
+        normalVel = 1;
+    }
+
+    var velBuffer = 3; //change soon
+
+
+    this.x += 100 * x / normalVel / velBuffer;
+    this.y += 100 * y / normalVel / velBuffer;
+};
+
 
 Player.prototype.show = function () {
     var ctx = this.client.mainCtx;
@@ -175,5 +238,15 @@ Player.prototype.show = function () {
 function getRandom(min, max) {
     return Math.random() * (max - min) + min;
 }
+
+
+function normal(x, y) {
+    return Math.sqrt(x * x + y * y);
+}
+
+function lerp(a, b, ratio) {
+    return a + ratio * (b - a);
+}
+
 
 module.exports = Player;
