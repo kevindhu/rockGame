@@ -453,8 +453,8 @@ Player.prototype.split = function () {
 
 
     this.SCALE = 0.5;
-    var clone1 = new Rock(x, y, this.SCALE / 2, this.gameServer, bodies[0], vertices1, "emerald");
-    var clone2 = new Rock(x, y, this.SCALE / 2, this.gameServer, bodies[1], vertices2, "emerald");
+    var clone1 = new Rock(x, y, this.SCALE / 2, this.gameServer, bodies[0], vertices1, 3);
+    var clone2 = new Rock(x, y, this.SCALE / 2, this.gameServer, bodies[1], vertices2, 3);
 
     clone1.body.GetFixtureList().SetUserData(clone1);
     clone2.body.GetFixtureList().SetUserData(clone2);

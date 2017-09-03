@@ -19,7 +19,7 @@ function Rock(x, y, SCALE, gameServer, body, vertices, texture) {
     this.SCALE = SCALE;
     this.theta = getRandom(0, 3);
 
-    texture ? this.texture = texture : this.getRandomTexture();
+    this.texture = texture ? texture : this.getRandomTexture();
     this.getPower();
     this.setDefaultHealth();
     this.setNeutral(100);
@@ -83,29 +83,29 @@ Rock.prototype.setB2 = function () {
 Rock.prototype.getRandomTexture = function () {
     var num = Arithmetic.getRandomInt(0, 10);
     if (num < 7) {
-        this.texture = 0;
+        return 1;
     }
     else if (num < 9) {
-        this.texture = 1;
+        return 2;
     }
     else {
-        this.texture = 2;
+        return 3;
     }
 };
 
 
 Rock.prototype.getPower = function () {
     switch (this.texture) {
-        case 0:
+        case 1:
             this.realPower = 1;
             break;
-        case 1:
+        case 2:
             this.realPower = 2;
             break;
-        case 2:
+        case 3:
             this.realPower = 5;
             break;
-        case 3:
+        case 4:
             this.realPower = 6;
             break;
     }
@@ -115,16 +115,16 @@ Rock.prototype.getPower = function () {
 Rock.prototype.setDefaultHealth = function () {
     var magnitude = 0;
     switch (this.texture) {
-        case 0:
+        case 1:
             magnitude = 1;
             break;
-        case 1:
+        case 2:
             magnitude = 2;
             break;
-        case 2:
+        case 3:
             magnitude = 80;
             break;
-        case 3:
+        case 4:
             magnitude = 100;
             break;
     }
@@ -147,7 +147,6 @@ Rock.prototype.tick = function () {
     this.move();
     this.checkSpeed();
 
-
     if (this.health <= 0 && !this.splitting) {
         this.splitting = true;
         this.splitTimer = 1;
@@ -158,6 +157,7 @@ Rock.prototype.tick = function () {
         }
         else {
             this.split();
+            return;
         }
     }
 

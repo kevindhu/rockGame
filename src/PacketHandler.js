@@ -51,13 +51,11 @@ Packet.prototype.build = function () {
     writer.writeUInt8(0x6);
     writer.writeBytes(this.updatePlayers.toBuffer());
 
-
     writer.writeUInt8(0x3);
     writer.writeBytes(this.deleteRocks.toBuffer());
 
     writer.writeUInt8(0x4);
     writer.writeBytes(this.deletePlayers.toBuffer());
-
 
     writer.writeUInt16(0 >> 0); //terminate record
     return writer.toBuffer();

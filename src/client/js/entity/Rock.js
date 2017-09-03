@@ -13,14 +13,13 @@ function Rock(reader, client) {
         this.vertices[i][1] = reader.readInt16() / 1000;
     }
 
-
     this.health = reader.readInt8();
     this.maxHealth = reader.readInt8();
 
-    this.theta = reader.readInt16();
+    this.theta = reader.readInt16() / 100;
     this.texture = reader.readUInt8();
 
-    switch (reader.readInt8()) {
+    switch (reader.readUInt8()) {
         case 1:
             this.neutral = true;
             break;
@@ -38,8 +37,7 @@ function Rock(reader, client) {
 
 
 Rock.prototype.update = function (reader) {
-    console.log("KEY: " + reader.readUInt8());
-
+    //console.log("KEY: " + reader.readUInt8());
     this.owner = reader.readUInt32();
     this.x = reader.readUInt32() / 100;
     this.y = reader.readUInt32() / 100;
@@ -71,16 +69,16 @@ Rock.prototype.show = function () {
 
     ctx.fillStyle = "pink"; //default color
     switch (this.texture) {
-        case 0:
+        case 1:
             ctx.fillStyle = "brown";
             break;
-        case 1:
+        case 2:
             ctx.fillStyle = "grey";
             break;
-        case 2:
+        case 3:
             ctx.fillStyle = "yellow";
             break;
-        case 3:
+        case 4:
             ctx.fillStyle = "green";
             break;
     }
@@ -116,7 +114,6 @@ Rock.prototype.show = function () {
 
     ctx.closePath();
 
-    console.log(this.health);
     if (this.health && this.maxHealth && this.health > 0) { //health bar
         ctx.lineWidth = 10;
         ctx.beginPath();

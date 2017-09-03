@@ -180,44 +180,55 @@ Client.prototype.verify = function (data) {
 
 
 Client.prototype.handleBinary = function (data) {
+    var i, rock;
     var reader = new BinaryReader(data);
 
-    if (reader.length() > 1) {
-        var rockLength = reader.readInt8();
-        for (var i = 0; i < rockLength; i++) {
-            var rock = new Entity.Rock(reader, this);
-            this.ROCK_LIST[rock.id] = rock;
+
+    if (reader.length() < 1) {
+        return;
+    }
+
+    var rockLength = reader.readUInt8();
+    for (i = 0; i < rockLength; i++) {
+        rock = new Entity.Rock(reader, this);
+        this.ROCK_LIST[rock.id] = rock;
+        console.log("NEW ROCK: " + rock.id);
+    }
+
+    var playerLength = reader.readUInt8();
+    for (i = 0; i < playerLength; i++) {
+        console.log("PLAYER ID: " + reader.readInt32()); //player id
+        console.log(reader.readInt32() / 100); //real x
+        console.log(reader.readInt32() / 100); //real y
+
+        console.log(reader.readInt16()); //radius
+
+        console.log(reader.readInt32()); //name
+
+        console.log(reader.readInt8()); //health
+        console.log(reader.readInt8()); //maxHealth
+
+        console.log(reader.readInt8()); //theta
+        console.log(reader.readInt8()); //level
+
+        console.log("FLAGS: " + reader.readInt8()); //FLAGS
+    }
+
+
+    var rock2Length = reader.readUInt8();
+    for (i = 0; i < rock2Length; i++) {
+        var id = reader.readUInt32();
+        rock = this.ROCK_LIST[id];
+        if (rock) {
+            rock.update(reader);
         }
-
-        var playerLength = reader.readInt8();
-        for (var i = 0; i < playerLength; i++) {
-            console.log("PLAYER ID: " + reader.readInt32()); //player id
-            console.log(reader.readInt32() / 100); //real x
-            console.log(reader.readInt32() / 100); //real y
-
-            console.log(reader.readInt16()); //radius
-
-            console.log(reader.readInt32()); //name
-
-            console.log(reader.readInt8()); //health
-            console.log(reader.readInt8()); //maxHealth
-
-            console.log(reader.readInt8()); //theta
-            console.log(reader.readInt8()); //level
-
-            console.log("FLAGS: " + reader.readInt8()); //FLAGS
-        }
-
-
-        var rock2Length = reader.readInt8();
-        for (var i = 0; i < rock2Length; i++) {
-            var rock = this.ROCK_LIST[reader.readUInt32()];
-            if (rock) {
-                rock.update(reader);
+        else {
+            console.log("MISSING ROCK: " + id);
+            if (!id) {
+                console.log("LENGTH OF ROCKS: " + rock2Length);
             }
+            console.log(this.ROCK_LIST);
         }
-
-
     }
 };
 
@@ -333,10 +344,8 @@ Client.prototype.deleteEntities = function (packet) {
         case "playerInfo":
             deleteEntity(packet, this.PLAYER_LIST, this.PLAYER_ARRAY);
             break;
-        case "asteroidInfo":
-            deleteEntity(packet, this.ASTEROID_LIST);
-            break;
         case "rockInfo":
+            console.log("DELETE ROCK: " + packet.id);
             deleteEntity(packet, this.ROCK_LIST);
             break;
         case "animationInfo":
@@ -392,7 +401,6 @@ Client.prototype.drawScene = function (data) {
 
     this.mainCtx.fillStyle = "#1d1f21";
     this.mainCtx.fillRect(0, 0, 20000, 20000);
-
 
 
     for (var i = 0; i < entityList.length; i++) {
