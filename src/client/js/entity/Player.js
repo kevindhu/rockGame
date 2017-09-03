@@ -1,33 +1,74 @@
-function Player(playerInfo, client) {
-    this.id = playerInfo.id;
-    this.name = playerInfo.name;
-    this.x = playerInfo.x;
-    this.y = playerInfo.y;
-    this.health = playerInfo.health;
-    this.maxHealth = playerInfo.maxHealth;
-    this.theta = playerInfo.theta;
-    this.level = playerInfo.level; //need to implement again
-    this.radius = playerInfo.radius;
-    this.vertices = playerInfo.vertices;
+function Player(reader, client) {
+    this.id = reader.readUInt32(); //player id
+    this.x = reader.readUInt32() / 100; //real x
+    this.y = reader.readUInt32() / 100; //real y
+
+    this.radius = reader.readUInt16(); //radius
+    this.name = reader.readUInt32(); //name
+
+    this.vertices = [];            //vertices
+    var count = reader.readUInt8();
+    for (var i = 0; i < count; i++) {
+        this.vertices[i] = [];
+        this.vertices[i][0] = reader.readInt16() / 1000;
+        this.vertices[i][1] = reader.readInt16() / 1000;
+    }
+
+    this.health = reader.readUInt8(); //health
+    this.maxHealth = reader.readUInt8(); //maxHealth
+
+    this.theta = reader.readInt16() / 100; //theta
+    this.level = reader.readUInt8(); //level
+
+    switch (reader.readUInt8()) {    //flags
+        case 1:
+            this.vulnerable = true;
+            break;
+        case 16:
+            this.shooting = true;
+            break;
+        case 17:
+            this.vulnerable = true;
+            this.shooting = true;
+            break;
+    }
+
     this.client = client;
 
     if (!this.SELF_PLAYER && this.id === this.client.SELF_ID) {
-        this.client.active = this.active; //probably should change this
         this.client.SELF_PLAYER = this;
     }
 }
 
-Player.prototype.update = function (playerInfo) {
-    this.x = playerInfo.x;
-    this.y = playerInfo.y;
-    this.health = playerInfo.health;
-    this.maxHealth = playerInfo.maxHealth;
-    this.theta = playerInfo.theta;
-    this.level = playerInfo.level;
-    this.shooting = playerInfo.shooting;
-    this.radius = playerInfo.radius;
-    this.vulnerable = playerInfo.vulnerable;
-    this.vertices = playerInfo.vertices;
+
+Player.prototype.update = function (reader) {
+    this.x = reader.readUInt32() / 100; //real x
+    this.y = reader.readUInt32() / 100; //real y
+
+    this.radius = reader.readUInt16(); //radius
+    this.name = reader.readInt32(); //name
+
+    this.health = reader.readUInt8(); //health
+    this.maxHealth = reader.readUInt8(); //maxHealth
+
+    this.theta = reader.readInt16() / 100; //theta
+    this.level = reader.readUInt8(); //level
+
+    this.shooting = false;
+    this.vulnerable = false;
+
+    switch (reader.readUInt8()) {    //flags
+        case 1:
+            this.vulnerable = true;
+            break;
+        case 16:
+            this.shooting = true;
+            break;
+        case 17:
+            this.vulnerable = true;
+            this.shooting = true;
+            break;
+    }
 };
 
 Player.prototype.show = function () {

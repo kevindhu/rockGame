@@ -192,28 +192,13 @@ Client.prototype.handleBinary = function (data) {
     for (i = 0; i < rockLength; i++) {
         rock = new Entity.Rock(reader, this);
         this.ROCK_LIST[rock.id] = rock;
-        console.log("NEW ROCK: " + rock.id);
     }
 
     var playerLength = reader.readUInt8();
     for (i = 0; i < playerLength; i++) {
-        console.log("PLAYER ID: " + reader.readInt32()); //player id
-        console.log(reader.readInt32() / 100); //real x
-        console.log(reader.readInt32() / 100); //real y
-
-        console.log(reader.readInt16()); //radius
-
-        console.log(reader.readInt32()); //name
-
-        console.log(reader.readInt8()); //health
-        console.log(reader.readInt8()); //maxHealth
-
-        console.log(reader.readInt8()); //theta
-        console.log(reader.readInt8()); //level
-
-        console.log("FLAGS: " + reader.readInt8()); //FLAGS
+        player = new Entity.Player(reader, this);
+        this.PLAYER_LIST[player.id] = player;
     }
-
 
     var rock2Length = reader.readUInt8();
     for (i = 0; i < rock2Length; i++) {
@@ -229,6 +214,27 @@ Client.prototype.handleBinary = function (data) {
             }
             console.log(this.ROCK_LIST);
         }
+    }
+
+    var player2Length = reader.readUInt8();
+    for (i = 0; i < player2Length; i++) {
+        id = reader.readUInt32();
+        var player = this.PLAYER_LIST[id];
+        if (player) {
+            player.update(reader);
+        }
+    }
+
+    var rock3Length = reader.readUInt8();
+    for (i = 0; i < rock3Length; i++) {
+        id = reader.readUInt32();
+        delete this.ROCK_LIST[id];
+    }
+
+    var player3Length = reader.readUInt8();
+    for (i = 0; i < player3Length; i++) {
+        id = reader.readUInt32();
+        delete this.PLAYER_LIST[id];
     }
 };
 
@@ -264,14 +270,11 @@ Client.prototype.addEntities = function (packet) {
     }.bind(this);
 
     switch (packet.class) {
-        case "rockInfo":
-            //addEntity(packet, this.ROCK_LIST, Entity.Rock);
-            break;
         case "tileInfo":
             addEntity(packet, this.TILE_LIST, Entity.Tile);
             break;
         case "playerInfo":
-            addEntity(packet, this.PLAYER_LIST, Entity.Player, this.PLAYER_ARRAY);
+            //addEntity(packet, this.PLAYER_LIST, Entity.Player, this.PLAYER_ARRAY);
             break;
         case "animationInfo":
             if (packet.id === this.SELF_ID) {
@@ -309,13 +312,10 @@ Client.prototype.updateEntities = function (packet) {
 
     switch (packet.class) {
         case "playerInfo":
-            updateEntity(packet, this.PLAYER_LIST);
+            //updateEntity(packet, this.PLAYER_LIST);
             break;
         case "tileInfo":
             updateEntity(packet, this.TILE_LIST);
-            break;
-        case "rockInfo":
-            //updateEntity(packet, this.ROCK_LIST);
             break;
         case "UIInfo":
             if (this.SELF_ID === packet.playerId) {
@@ -334,6 +334,7 @@ Client.prototype.deleteEntities = function (packet) {
             var index = array.indexOf(packet.id);
             array.splice(index, 1);
         }
+        console.log(list[packet.id]);
         delete list[packet.id];
     };
 
@@ -342,11 +343,7 @@ Client.prototype.deleteEntities = function (packet) {
             deleteEntity(packet, this.TILE_LIST);
             break;
         case "playerInfo":
-            deleteEntity(packet, this.PLAYER_LIST, this.PLAYER_ARRAY);
-            break;
-        case "rockInfo":
-            console.log("DELETE ROCK: " + packet.id);
-            deleteEntity(packet, this.ROCK_LIST);
+            //deleteEntity(packet, this.PLAYER_LIST, this.PLAYER_ARRAY);
             break;
         case "animationInfo":
             deleteEntity(packet, this.ANIMATION_LIST);

@@ -231,8 +231,7 @@ Rock.prototype.onDelete = function () {
     }
     this.gameServer.box2d_world.DestroyBody(this.body);
 
-    this.packetHandler.deleteRockPackets(this);
-
+    this.packetHandler.b_deleteRockPackets(this);
     delete this.gameServer.CHUNKS[this.chunk].ROCK_LIST[this.id];
     delete this.gameServer.ROCK_LIST[this.id];
 };
@@ -256,7 +255,6 @@ Rock.prototype.removeOwner = function () {
     }
     this.owner.removeRock(this);
     this.owner = null;
-    playerPosition = null;
 };
 
 Rock.prototype.getTheta = function (target, origin) {

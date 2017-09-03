@@ -48,13 +48,13 @@ Packet.prototype.build = function () {
     writer.writeUInt8(this.updateRocks.length);
     writer.writeBytes(this.updateRocks.toBuffer());
 
-    writer.writeUInt8(0x6);
+    writer.writeUInt8(this.updatePlayers.length);
     writer.writeBytes(this.updatePlayers.toBuffer());
 
-    writer.writeUInt8(0x3);
+    writer.writeUInt8(this.deleteRocks.length);
     writer.writeBytes(this.deleteRocks.toBuffer());
 
-    writer.writeUInt8(0x4);
+    writer.writeUInt8(this.deletePlayers.length);
     writer.writeBytes(this.deletePlayers.toBuffer());
 
     writer.writeUInt16(0 >> 0); //terminate record
@@ -194,14 +194,29 @@ PacketHandler.prototype.b_updateRockPackets = function (rock) {
     writer.length++;
 };
 
+PacketHandler.prototype.b_updatePlayerPackets = function (player) {
+    var info = player.handler.updateInfo();
+    var writer = this.B_CHUNK_PACKETS[player.chunk].updatePlayers;
 
-PacketHandler.prototype._deletePlayerPackets = function (player, chunk) {
+    writer.writeBytes(info);
+    writer.length++;
+};
+
+
+PacketHandler.prototype.b_deletePlayerPackets = function (player) {
     var info = player.handler.deleteInfo();
-    if (chunk) {
-        return info;
-    } else {
-        this.B_CHUNK_PACKETS[player.chunk].deletePlayers.writeBytes(info);
-    }
+    var writer = this.B_CHUNK_PACKETS[player.chunk].deleteRocks;
+
+    writer.writeBytes(info);
+    writer.length ++;
+};
+
+PacketHandler.prototype.b_deleteRockPackets = function (rock) {
+    var info = rock.handler.deleteInfo();
+    var writer = this.B_CHUNK_PACKETS[rock.chunk].deleteRocks;
+
+    writer.writeBytes(info);
+    writer.length ++;
 };
 
 

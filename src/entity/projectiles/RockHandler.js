@@ -27,8 +27,8 @@ RockHandler.prototype.addInfo = function () {
         writer.writeInt16(rock.vertices[i][0] * 1000);
         writer.writeInt16(rock.vertices[i][1] * 1000);
     }
-    writer.writeInt8(rock.health >>> 0);              //health
-    writer.writeInt8(rock.maxHealth >>> 0);           //maxHealth
+    writer.writeInt16(rock.health >>> 0);              //health
+    writer.writeInt16(rock.maxHealth >>> 0);           //maxHealth
 
     writer.writeInt16(theta * 100 >>> 0);              //theta
     writer.writeUInt8(rock.texture >>> 0);             //texture
@@ -60,8 +60,8 @@ RockHandler.prototype.updateInfo = function () {
     writer.writeUInt32(y * 10000 >> 0);
 
 
-    writer.writeInt8(rock.health >>> 0);              //health
-    writer.writeInt8(rock.maxHealth >>> 0);           //maxHealth
+    writer.writeInt16(rock.health >>> 0);              //health
+    writer.writeInt16(rock.maxHealth >>> 0);           //maxHealth
 
     writer.writeInt16(theta * 100 >>> 0);              //theta
 
@@ -82,7 +82,7 @@ RockHandler.prototype.deleteInfo = function () {
 
     // Write delete record
     writer.writeUInt32(rock.id >>> 0);         // Rock ID
-    writer.writeUInt32(0 >> 0); //terminate rock record
+    return writer.toBuffer();
 };
 
 module.exports = RockHandler;

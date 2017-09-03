@@ -44,7 +44,9 @@ Player.prototype.init = function () {
     this.gameServer.PLAYER_LIST[this.id] = this;
     this.chunk = EntityFunctions.findChunk(this.gameServer, this);
     this.gameServer.CHUNKS[this.chunk].PLAYER_LIST[this.id] = this;
-    this.gameServer.packetHandler.addPlayerPackets(this);
+
+    //this.gameServer.packetHandler.addPlayerPackets(this);
+    this.gameServer.packetHandler.b_addPlayerPackets(this);
 };
 
 Player.prototype.initB2 = function () {
@@ -74,7 +76,8 @@ Player.prototype.setVertices = function () {
 Player.prototype.onDelete = function () {
     delete this.gameServer.PLAYER_LIST[this.id];
     delete this.gameServer.CHUNKS[this.chunk].PLAYER_LIST[this.id];
-    this.packetHandler.deletePlayerPackets(this);
+    //this.packetHandler.deletePlayerPackets(this);
+    this.packetHandler.b_deletePlayerPackets(this);
 };
 
 
@@ -144,7 +147,8 @@ Player.prototype.tick = function () {
     this.x = this.body.GetPosition().x;
     this.y = this.body.GetPosition().y;
 
-    this.packetHandler.updatePlayerPackets(this);
+    //this.packetHandler.updatePlayerPackets(this);
+    this.packetHandler.b_updatePlayerPackets(this);
 };
 
 Player.prototype.setMove = function (x, y) {
@@ -428,11 +432,9 @@ Player.prototype.split = function () {
     var lastVertex = new B2.b2Vec2();
     lastVertex.Set((vertices[count - 1][0] + vertices[0][0]) / 2, (vertices[count - 1][1] + vertices[0][1]) / 2);
 
-
     var vertices1 = [];
     var vertices2 = [];
     var i;
-
 
     vertices1.push([lastVertex.x, lastVertex.y]);
     for (i = 0; i < middle; i++) {
@@ -453,8 +455,8 @@ Player.prototype.split = function () {
 
 
     this.SCALE = 0.5;
-    var clone1 = new Rock(x, y, this.SCALE / 2, this.gameServer, bodies[0], vertices1, 3);
-    var clone2 = new Rock(x, y, this.SCALE / 2, this.gameServer, bodies[1], vertices2, 3);
+    var clone1 = new Rock(x, y, this.SCALE / 2, this.gameServer, bodies[0], vertices1, 4);
+    var clone2 = new Rock(x, y, this.SCALE / 2, this.gameServer, bodies[1], vertices2, 4);
 
     clone1.body.GetFixtureList().SetUserData(clone1);
     clone2.body.GetFixtureList().SetUserData(clone2);
@@ -463,7 +465,7 @@ Player.prototype.split = function () {
     clone2.body.SetAngularVelocity(this.body.GetAngularVelocity());
 
 
-    var theta = Math.atan2(this.body.GetLinearVelocity().y, this.body.GetLinearVelocity().x);
+    var theta = this.theta;
     var normalVel = normal(this.body.GetLinearVelocity().y, this.body.GetLinearVelocity().x);
     var v1 = clone1.body.GetLinearVelocity();
     var v2 = clone2.body.GetLinearVelocity();

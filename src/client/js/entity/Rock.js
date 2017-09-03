@@ -13,8 +13,8 @@ function Rock(reader, client) {
         this.vertices[i][1] = reader.readInt16() / 1000;
     }
 
-    this.health = reader.readInt8();
-    this.maxHealth = reader.readInt8();
+    this.health = reader.readInt16();
+    this.maxHealth = reader.readInt16();
 
     this.theta = reader.readInt16() / 100;
     this.texture = reader.readUInt8();
@@ -42,11 +42,13 @@ Rock.prototype.update = function (reader) {
     this.x = reader.readUInt32() / 100;
     this.y = reader.readUInt32() / 100;
 
-    this.health = reader.readInt8();
-    this.maxHealth = reader.readInt8();
+    this.health = reader.readInt16();
+    this.maxHealth = reader.readInt16();
 
     this.theta = reader.readInt16() / 100;
 
+    this.neutral = false;
+    this.fast = false;
     switch (reader.readUInt8()) { //flags
         case 1:
             this.neutral = true;
