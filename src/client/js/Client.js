@@ -247,7 +247,8 @@ Client.prototype.handleBinary = function (data) {
     }
 
 
-    this.currStep = step;
+    this.lastStep = step;
+    this.currStep = step - 3;
 
     //this.applyUpdate(reader);
 
@@ -445,16 +446,19 @@ Client.prototype.clientUpdate = function () {
 };
 
 Client.prototype.updateStep = function () {
-    var step = this.currStep - 3;
-    var update = this.findUpdatePacket(step);
+    var update = this.findUpdatePacket(this.currStep);
     if (!update) {
+        if (this.lastStep - this.currStep > 10) {
+            console.log("STEP RANGE TOO BIG");
+        }
         return;
     }
 
-    if (update.reader && update.reader._offset < 10) {
+    if (update.reader._offset < 10) {
         this.applyUpdate(update.reader);
-        update.reader = null;
     }
+
+    this.currStep += 1;
 
 };
 
@@ -466,6 +470,7 @@ Client.prototype.findUpdatePacket = function (step) {
         var update = this.updates[i];
 
         if (update.step === step) {
+            this.updates.splice(0, i+1);
             return update;
         }
     }
