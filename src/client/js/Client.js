@@ -102,15 +102,6 @@ Client.prototype.initCanvases = function () {
             return;
         }
 
-        if (this.clickTemp) { //see if shooting or mining
-            this.clickTimer += 1;
-            if (this.clickTimer > 3) {
-                this.clickTimer = 0;
-                this.clickTemp = false;
-                this.mining = true;
-            }
-        }
-
         if (!this.pre) {
             this.pre = {x: x, y: y}
         }
@@ -121,6 +112,7 @@ Client.prototype.initCanvases = function () {
                 x = 0;
                 y = 0;
             }
+
             this.socket.emit('move', {
                 id: this.SELF_ID,
                 x: x,
@@ -446,6 +438,10 @@ Client.prototype.clientUpdate = function () {
 };
 
 Client.prototype.updateStep = function () {
+    var stepRange = this.lastStep - this.currStep;
+    console.log("STEP RANGE: " + stepRange);
+
+
     var update = this.findUpdatePacket(this.currStep);
     if (!update) {
         if (this.lastStep - this.currStep > 10) {
