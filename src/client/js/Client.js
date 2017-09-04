@@ -440,20 +440,18 @@ Client.prototype.clientUpdate = function () {
 Client.prototype.updateStep = function () {
     var stepRange = this.lastStep - this.currStep;
     console.log("STEP RANGE: " + stepRange);
+    console.log("CURRENT STEP: " + this.currStep);
     console.log("LAST STEP: " + this.lastStep);
 
-    var update = this.findUpdatePacket(this.currStep);
-    if (!update) {
-        if (this.lastStep - this.currStep > 10) {
-            console.log("STEP RANGE TOO BIG");
-        }
+
+    if (this.currStep > this.lastStep) {
         return;
     }
 
-    if (update.reader._offset < 10) {
-        this.applyUpdate(update.reader);
-    }
+    var update = this.findUpdatePacket(this.currStep);
 
+
+    this.applyUpdate(update.reader);
     this.currStep += 1;
 
 };
@@ -466,7 +464,7 @@ Client.prototype.findUpdatePacket = function (step) {
         var update = this.updates[i];
 
         if (update.step === step) {
-            this.updates.splice(0, i+1);
+            this.updates.splice(0, i + 1);
             return update;
         }
     }
