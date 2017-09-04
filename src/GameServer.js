@@ -348,7 +348,7 @@ GameServer.prototype.setupCollisionHandler = function () {
         var impact = normal(aVel.x - bVel.x,
             aVel.y - bVel.y);
 
-        if (impact > 4) {
+        if (impact > 10) {
             a.decreaseHealth(a, impact);
             b.decreaseHealth(b, impact);
         }

@@ -103,10 +103,10 @@ Rock.prototype.getPower = function () {
             this.realPower = 2;
             break;
         case 3:
-            this.realPower = 5;
+            this.realPower = 3;
             break;
         case 4:
-            this.realPower = 6;
+            this.realPower = 4;
             break;
     }
     this.power = this.realPower;
@@ -116,20 +116,20 @@ Rock.prototype.setDefaultHealth = function () {
     var magnitude = 0;
     switch (this.texture) {
         case 1:
-            magnitude = 1;
-            break;
-        case 2:
             magnitude = 2;
             break;
+        case 2:
+            magnitude = 5;
+            break;
         case 3:
-            magnitude = 80;
+            magnitude = 30;
             break;
         case 4:
-            magnitude = 100;
+            magnitude = 40;
             break;
     }
 
-    this.maxHealth = this.SCALE * 3 * (1 + magnitude);
+    this.maxHealth = 2 * 3 * (1 + magnitude);
     this.health = this.maxHealth;
 };
 
@@ -389,6 +389,11 @@ Rock.prototype.split = function () {
 
     clone1.body.SetLinearVelocity(v1);
     clone2.body.SetLinearVelocity(v2);
+
+    var health = 0 - this.health;
+    console.log("DECREASE HEALTH: " + health);
+    clone1.decreaseHealth(this, 0 - this.health);
+    clone2.decreaseHealth(this, 0 - this.health);
 
     this.onDelete();
 

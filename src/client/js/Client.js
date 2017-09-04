@@ -452,7 +452,7 @@ Client.prototype.updateStep = function () {
         console.log("STEP RANGE TOO SMALL: SERVER TOO SLOW");
         return;
     }
-    if (this.lastStep - this.currStep > 10) {
+    if (this.lastStep - this.currStep > 6) {
         console.log("STEP RANGE TOO LARGE: CLIENT IS TOO SLOW");
         var update = this.findUpdatePacket(this.currStep);
         if (!update) {
