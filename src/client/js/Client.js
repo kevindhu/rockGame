@@ -33,7 +33,8 @@ Client.prototype.initSocket = function () {
     this.socket.on('chatMessage', this.mainUI);
     this.socket.on('ping', this.sendPong.bind(this));
     this.socket.on('finalPing', function (message) {
-        //console.log("PING: " + message);
+        console.log("PING: " + message);
+        this.currPing = message;
     });
 
 
@@ -241,7 +242,7 @@ Client.prototype.handleBinary = function (data) {
 
 
     this.lastStep = step;
-    console.log("LAST STEP: "  + step);
+    console.log("LAST STEP: " + step);
 
 
     if (!this.currStep) {
@@ -452,7 +453,7 @@ Client.prototype.updateStep = function () {
         console.log("STEP RANGE TOO SMALL: SERVER TOO SLOW");
         return;
     }
-    if (this.lastStep - this.currStep > 6) {
+    if (this.lastStep - this.currStep > 5 + this.currPing / 50) {
         console.log("STEP RANGE TOO LARGE: CLIENT IS TOO SLOW");
         var update = this.findUpdatePacket(this.currStep);
         if (!update) {
