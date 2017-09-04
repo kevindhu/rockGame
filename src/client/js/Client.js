@@ -241,7 +241,7 @@ Client.prototype.handleBinary = function (data) {
 
 
     this.lastStep = step;
-    //console.log("LAST STEP: "  + step);
+    console.log("LAST STEP: "  + step);
 
 
     if (!this.currStep) {
@@ -466,7 +466,6 @@ Client.prototype.updateStep = function () {
         this.applyUpdate(update.reader);
         this.currStep += 1;
 
-
         this.updateStep();
 
     }
@@ -478,7 +477,7 @@ Client.prototype.updateStep = function () {
     }
 
     if (update.reader._offset > 10) {
-        console.log(this.updates);
+        //console.log(this.updates);
     }
     this.applyUpdate(update.reader);
     this.currStep += 1;
