@@ -135,8 +135,20 @@ GameServer.prototype.update = function () {
     this.updatePlayers();
     this.updateRocks();
 
+    this.sendPackets();
     this.packetHandler.sendPackets();
 };
+
+
+GameServer.prototype.sendPackets = function () {
+    var id, player;
+    for (id in this.PLAYER_LIST) {
+        player = this.PLAYER_LIST[id];
+        player.sendSocketPackets();
+    }
+};
+
+
 GameServer.prototype.updatePlayers = function () {
     for (var id in this.PLAYER_LIST) {
         var player = this.PLAYER_LIST[id];
@@ -147,7 +159,6 @@ GameServer.prototype.updateRocks = function () {
     var id, rock;
 
     this.spawnRocks();
-
     for (id in this.ROCK_LIST) {
         rock = this.ROCK_LIST[id];
         rock.tick();
@@ -294,9 +305,8 @@ GameServer.prototype.start = function () {
 };
 
 GameServer.prototype.createPlayer = function (socket, info) {
-    return new Entity.Player(socket.id, info.name, this);
+    return new Entity.Player(socket, info.name, this);
 };
-
 
 GameServer.prototype.setupCollisionHandler = function () {
     var tryAddRock = function (a, b) {
@@ -328,7 +338,7 @@ GameServer.prototype.setupCollisionHandler = function () {
 
     var tryRemoveViewRock = function (a, b) {
         if (a instanceof Entity.Rock && b instanceof Entity.PlayerSensor) {
-            b.parent.removePlayerView(a);
+            b.parent.removeRockView(a);
         }
     };
 

@@ -152,8 +152,8 @@ function createRandomPolygon(world, user, vertices, x, y, texture) {
         'friction': 0.0,
         'restitution': 0.5,
 
-        'linearDamping': 0.2,
-        'angularDamping': 1.0,
+        'linearDamping': 0.6,
+        'angularDamping': 0.1,
 
         'gravityScale': 1.0,
         'type': B2.b2Body.b2_dynamicBody,
@@ -199,7 +199,7 @@ function createPolygonSplit(world, body, v1, v2) {
         'restitution': 0.5,
 
         'linearDamping': 0.2,
-        'angularDamping': 1.0,
+        'angularDamping': 0.5,
 
         'gravityScale': 1.0,
         'type': B2.b2Body.b2_dynamicBody,

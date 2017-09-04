@@ -100,13 +100,13 @@ Rock.prototype.getPower = function () {
             this.realPower = 1;
             break;
         case 2:
-            this.realPower = 2;
+            this.realPower = 1.1;
             break;
         case 3:
-            this.realPower = 3;
+            this.realPower = 1.2;
             break;
         case 4:
-            this.realPower = 4;
+            this.realPower = 1.3;
             break;
     }
     this.power = this.realPower;
@@ -265,7 +265,7 @@ Rock.prototype.getRandomVelocity = function () {
     var v = this.body.GetLinearVelocity();
     v.Add(new B2.b2Vec2(getRandom(-0.4, 0.4), getRandom(-0.4, 0.4)));
     this.body.SetLinearVelocity(v);
-    this.body.SetAngularVelocity(1);
+    this.body.SetAngularVelocity(getRandom(-1, 1));
 };
 
 Rock.prototype.decayVelocity = function () {
@@ -390,10 +390,10 @@ Rock.prototype.split = function () {
     clone1.body.SetLinearVelocity(v1);
     clone2.body.SetLinearVelocity(v2);
 
-    var health = 0 - this.health;
-    console.log("DECREASE HEALTH: " + health);
-    clone1.decreaseHealth(this, 0 - this.health);
-    clone2.decreaseHealth(this, 0 - this.health);
+    var dmg = 0 - this.health;
+
+    clone1.decreaseHealth(this, dmg);
+    clone2.decreaseHealth(this, dmg);
 
     this.onDelete();
 

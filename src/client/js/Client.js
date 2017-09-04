@@ -56,19 +56,6 @@ Client.prototype.initCanvases = function () {
         if (!this.SELF_ID) {
             return;
         }
-        var x = ((event.x / this.mainCanvas.offsetWidth * 1000) - this.mainCanvas.width / 2) / this.scaleFactor;
-        var y = ((event.y / this.mainCanvas.offsetHeight * 500) - this.mainCanvas.height / 2) / this.scaleFactor;
-
-
-        if (Math.abs(x) + Math.abs(y) < 200) {
-            this.playerClicked = true;
-            this.circleConstruct = [];
-            this.circleStageCount = 0;
-        }
-        else {
-            this.clickTemp = true;
-            this.clickTimer = 0;
-        }
     }.bind(this));
     document.addEventListener("mouseup", function (event) {
         if (!this.SELF_ID) {
@@ -87,8 +74,6 @@ Client.prototype.initCanvases = function () {
         this.clickTimer = 0;
 
     }.bind(this));
-
-
     document.addEventListener("mousemove", function (event) {
         if (!this.SELF_PLAYER) {
             return;
@@ -177,7 +162,6 @@ Client.prototype.verify = function (data) {
 
 Client.prototype.applyUpdate = function (reader) {
     var rockLength = reader.readUInt8();
-
     for (i = 0; i < rockLength; i++) {
         rock = new Entity.Rock(reader, this);
         this.ROCK_LIST[rock.id] = rock;
@@ -222,6 +206,12 @@ Client.prototype.applyUpdate = function (reader) {
         id = reader.readUInt32();
         delete this.PLAYER_LIST[id];
     }
+
+    var hasId = reader.readUInt8() === 1;
+    if (hasId) {
+        this.SELF_ID = reader.readUInt32();
+    }
+
 };
 
 
@@ -242,7 +232,8 @@ Client.prototype.handleBinary = function (data) {
 
 
     this.lastStep = step;
-    console.log("LAST STEP: " + step);
+
+    //console.log("LAST STEP: " + step);
 
 
     if (!this.currStep) {
@@ -266,12 +257,6 @@ Client.prototype.handlePacket = function (data) {
             case "add":
                 this.addEntities(packet);
                 break;
-            case "delete":
-                this.deleteEntities(packet);
-                break;
-            case "update":
-                this.updateEntities(packet);
-                break;
         }
     }
 };
@@ -292,87 +277,12 @@ Client.prototype.addEntities = function (packet) {
         case "tileInfo":
             addEntity(packet, this.TILE_LIST, Entity.Tile);
             break;
-        case "playerInfo":
-            //addEntity(packet, this.PLAYER_LIST, Entity.Player, this.PLAYER_ARRAY);
-            break;
-        case "animationInfo":
-            if (packet.id === this.SELF_ID) {
-                addEntity(packet, this.ANIMATION_LIST, Entity.Animation);
-            }
-            break;
-        case "UIInfo":
-            if (this.SELF_ID === packet.playerId) {
-                this.mainUI.open(packet);
-            }
-            break;
-        case "selfId":
-            if (!this.SELF_ID) {
-                this.SELF_ID = packet.selfId;
-                this.mainUI.gameUI.open();
-            }
-            break;
         case "chatInfo":
             this.mainUI.gameUI.chatUI.addMessage(packet);
             break;
     }
 };
 
-Client.prototype.updateEntities = function (packet) {
-    function updateEntity(packet, list) {
-        if (!packet) {
-            return;
-        }
-        var entity = list[packet.id];
-        if (!entity) {
-            return;
-        }
-        entity.update(packet);
-    }
-
-    switch (packet.class) {
-        case "playerInfo":
-            //updateEntity(packet, this.PLAYER_LIST);
-            break;
-        case "tileInfo":
-            updateEntity(packet, this.TILE_LIST);
-            break;
-        case "UIInfo":
-            if (this.SELF_ID === packet.playerId) {
-                this.mainUI.update(packet);
-            }
-            break;
-    }
-};
-
-Client.prototype.deleteEntities = function (packet) {
-    var deleteEntity = function (packet, list, array) {
-        if (!packet) {
-            return;
-        }
-        if (array) {
-            var index = array.indexOf(packet.id);
-            array.splice(index, 1);
-        }
-        delete list[packet.id];
-    };
-
-    switch (packet.class) {
-        case "tileInfo":
-            deleteEntity(packet, this.TILE_LIST);
-            break;
-        case "playerInfo":
-            //deleteEntity(packet, this.PLAYER_LIST, this.PLAYER_ARRAY);
-            break;
-        case "animationInfo":
-            deleteEntity(packet, this.ANIMATION_LIST);
-            break;
-        case "UIInfo":
-            if (this.SELF_ID === packet.id) {
-                this.mainUI.close(packet.action);
-            }
-            break;
-    }
-};
 
 Client.prototype.drawScene = function (data) {
     this.mainUI.updateLeaderBoard();
@@ -442,12 +352,11 @@ Client.prototype.clientUpdate = function () {
 };
 
 Client.prototype.updateStep = function () {
-    var stepRange = this.lastStep - this.currStep;
-    if (!stepRange) {
+    if (!this.lastStep || !this.currStep) {
         return;
     }
 
-    //console.log("CURR STEP: "  + this.currStep);
+    //console.log("CURR STEP: " + this.currStep);
 
     if (this.currStep > this.lastStep) {
         console.log("STEP RANGE TOO SMALL: SERVER TOO SLOW");
@@ -484,7 +393,6 @@ Client.prototype.updateStep = function () {
     this.currStep += 1;
 };
 
-
 Client.prototype.findUpdatePacket = function (step) {
     var length = this.updates.length;
 
@@ -512,10 +420,6 @@ function lerp(a, b, ratio) {
 
 function square(a) {
     return a * a;
-}
-
-function vectorNormal(a) {
-    return a.x * a.x + a.y * a.y;
 }
 
 module.exports = Client;

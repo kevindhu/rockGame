@@ -3,6 +3,7 @@ var EntityFunctions = require('../EntityFunctions');
 var Queue = require('../../modules/Queue');
 const PlayerSensor = require('../sensors/PlayerSensor');
 var PlayerHandler = require('./PlayerHandler');
+var Packet = require('../../packet/Packet');
 const Rock = require('../projectiles/Rock');
 
 
@@ -10,10 +11,11 @@ var B2 = require('../../modules/B2');
 var B2Common = require('../../modules/B2Common');
 var lerp = require('lerp');
 
-function Player(id, name, gameServer) {
+function Player(socket, name, gameServer) {
     this.gameServer = gameServer;
     this.packetHandler = gameServer.packetHandler;
-    this.id = id;
+    this.socket = socket;
+    this.id = socket.id;
 
     this.theta = 0;
 
@@ -35,7 +37,15 @@ function Player(id, name, gameServer) {
     this.power = 1;
     this.rocks = [];
 
-    this.rockViews = {};
+    this.addRockViews = {};
+    this.updateRockViews = {};
+    this.deleteRockViews = {};
+
+    this.addPlayerViews = {};
+    this.updatePlayerViews = {};
+    this.deletePlayerViews = {};
+
+
     this.playerViews = {};
 
     this.resetLevels();
@@ -49,8 +59,9 @@ Player.prototype.init = function () {
     this.chunk = EntityFunctions.findChunk(this.gameServer, this);
     this.gameServer.CHUNKS[this.chunk].PLAYER_LIST[this.id] = this;
 
-    //this.gameServer.packetHandler.addPlayerPackets(this);
-    this.gameServer.packetHandler.b_addPlayerPackets(this);
+    //this.gameServer.packetHandler.b_addPlayerPackets(this);
+
+    this.initializing = true;
 };
 
 Player.prototype.initB2 = function () {
@@ -59,7 +70,7 @@ Player.prototype.initB2 = function () {
     this.body = B2Common.createDisk(this.gameServer.box2d_world, this, this.x, this.y, this.radius / 50);
 
 
-    this.sensor = new PlayerSensor(this, this.radius/100 * 3);
+    this.sensor = new PlayerSensor(this, this.radius / 100 * 50);
 };
 
 Player.prototype.setVertices = function () {
@@ -287,21 +298,23 @@ Player.prototype.addRock = function (rock) {
 };
 
 Player.prototype.addRockView = function (rock) {
-    this.rockViews[rock.id] = rock;
+    this.addRockViews[rock.id] = rock;
+    this.updateRockViews[rock.id] = rock;
 };
 
-
 Player.prototype.addPlayerView = function (player) {
-    this.playerViews[player.id] = player;
+    this.addPlayerViews[player.id] = player;
+    this.updatePlayerViews[player.id] = player;
 };
 
 Player.prototype.removeRockView = function (rock) {
-    delete this.rockViews[rock.id];
+    delete this.updateRockViews[rock.id];
+    this.deleteRockViews[rock.id] = rock;
 };
 
-
 Player.prototype.removePlayerView = function (player) {
-    delete this.playerViews[player.id];
+    delete this.updatePlayerViews[player.id];
+    this.deletePlayerViews[player.id] = player;
 };
 
 
@@ -441,6 +454,62 @@ Player.prototype.reset = function () {
     this.y = entityConfig.WIDTH / 2;
 
     this.resetBody();
+};
+
+
+Player.prototype.sendSocketPackets = function () {
+    var id;
+    var rock, player;
+
+    var packet = new Packet(this.gameServer);
+
+    if (this.initializing) {
+        this.initializing = false;
+        packet.SELF_ID = this.id;
+        packet.hasId = true;
+        this.packetHandler.b_addRockPackets(this, packet.addPlayers);
+    }
+
+
+    for (id in this.addRockViews) {
+        rock = this.addRockViews[id];
+        this.packetHandler.b_addRockPackets(rock, packet.addRocks);
+    }
+
+    for (id in this.addPlayerViews) {
+        player = this.addPlayerViews[id];
+        this.packetHandler.b_addPlayerPackets(player, packet.addPlayers);
+    }
+
+
+    for (id in this.updateRockViews) {
+        rock = this.updateRockViews[id];
+        this.packetHandler.b_updateRockPackets(rock, packet.updateRocks);
+    }
+
+    for (id in this.updatePlayerViews) {
+        player = this.updatePlayerViews[id];
+        this.packetHandler.b_updatePlayerPackets(player, packet.updatePlayers);
+    }
+    this.packetHandler.b_updatePlayerPackets(this, packet.updatePlayers);
+
+    for (id in this.deleteRockViews) {
+        rock = this.deleteRockViews[id];
+        this.packetHandler.b_deleteRockPackets(rock, packet.deleteRocks);
+    }
+
+    for (id in this.deletePlayerViews) {
+        player = this.deletePlayerViews[id];
+        this.packetHandler.b_deletePlayerPackets(player, packet.deletePlayers);
+    }
+
+    this.addRockViews = {};
+    this.addPlayerViews = {};
+
+    this.deleteRockViews = {};
+    this.deletePlayerViews = {};
+
+    this.socket.emit('updateBinary', packet.build());
 };
 
 
