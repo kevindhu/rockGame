@@ -307,6 +307,32 @@ GameServer.prototype.setupCollisionHandler = function () {
         }
     };
 
+
+    var tryAddViewRock = function (a, b) {
+        if (a instanceof Entity.Rock && b instanceof Entity.PlayerSensor) {
+            b.parent.addRockView(a);
+        }
+    };
+
+    var tryAddViewPlayer = function (a, b) {
+        if (a instanceof Entity.Player && b instanceof Entity.PlayerSensor) {
+            b.parent.addPlayerView(a);
+        }
+    };
+
+    var tryRemoveViewPlayer = function (a, b) {
+        if (a instanceof Entity.Player && b instanceof Entity.PlayerSensor) {
+            b.parent.removePlayerView(a);
+        }
+    };
+
+    var tryRemoveViewRock = function (a, b) {
+        if (a instanceof Entity.Rock && b instanceof Entity.PlayerSensor) {
+            b.parent.removePlayerView(a);
+        }
+    };
+
+
     var tryEatRock = function (a, b, contact) {
         if (a instanceof Entity.Rock && b instanceof Entity.Player) {
             if (b.containsRock(a)) {
@@ -350,16 +376,9 @@ GameServer.prototype.setupCollisionHandler = function () {
                 contact.SetEnabled(false);
                 return;
             }
-            b.colliding = true;
             doImpact(a, b);
         }
     }.bind(this);
-
-    var tryRPLeave = function (a, b) {
-        if (a instanceof Entity.Rock && b instanceof Entity.Player) {
-            b.colliding = false;
-        }
-    };
 
 
     var tryPPImpact = function (a, b) {
@@ -385,6 +404,12 @@ GameServer.prototype.setupCollisionHandler = function () {
         tryRPImpact(a, b, contact);
         tryRPImpact(b, a, contact);
 
+        tryAddViewRock(a, b);
+        tryAddViewRock(b, a);
+
+        tryAddViewPlayer(a, b);
+        tryAddViewPlayer(b, a);
+
         tryPPImpact(a, b);
         tryPPImpact(b, a);
 
@@ -404,8 +429,12 @@ GameServer.prototype.setupCollisionHandler = function () {
         var a = contact.GetFixtureA().GetUserData();
         var b = contact.GetFixtureB().GetUserData();
 
-        tryRPLeave(a, b);
-        tryRPLeave(b, a);
+
+        tryRemoveViewRock(a, b);
+        tryRemoveViewRock(b, a);
+
+        tryRemoveViewPlayer(a, b);
+        tryRemoveViewPlayer(b, a);
     };
 };
 

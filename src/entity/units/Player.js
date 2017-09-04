@@ -35,6 +35,9 @@ function Player(id, name, gameServer) {
     this.power = 1;
     this.rocks = [];
 
+    this.rockViews = {};
+    this.playerViews = {};
+
     this.resetLevels();
     this.init();
 }
@@ -282,6 +285,25 @@ Player.prototype.addRock = function (rock) {
         rock.addOwner(this);
     }
 };
+
+Player.prototype.addRockView = function (rock) {
+    this.rockViews[rock.id] = rock;
+};
+
+
+Player.prototype.addPlayerView = function (player) {
+    this.playerViews[player.id] = player;
+};
+
+Player.prototype.removeRockView = function (rock) {
+    delete this.rockViews[rock.id];
+};
+
+
+Player.prototype.removePlayerView = function (player) {
+    delete this.playerViews[player.id];
+};
+
 
 Player.prototype.containsRock = function (rock) {
     for (var i = 0; i < this.rocks.length; i++) {

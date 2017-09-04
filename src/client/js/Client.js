@@ -231,6 +231,7 @@ Client.prototype.handleBinary = function (data) {
     }
 
     var step = reader.readUInt32();
+
     if (!this.initialStep) {
         this.initialStep = step;
     }
@@ -240,6 +241,9 @@ Client.prototype.handleBinary = function (data) {
 
 
     this.lastStep = step;
+    //console.log("LAST STEP: "  + step);
+
+
     if (!this.currStep) {
         this.currStep = step - 3;
     }
@@ -442,13 +446,29 @@ Client.prototype.updateStep = function () {
         return;
     }
 
+    //console.log("CURR STEP: "  + this.currStep);
+
     if (this.currStep > this.lastStep) {
         console.log("STEP RANGE TOO SMALL: SERVER TOO SLOW");
         return;
     }
     if (this.lastStep - this.currStep > 10) {
         console.log("STEP RANGE TOO LARGE: CLIENT IS TOO SLOW");
-        //TODO: fix this
+        var update = this.findUpdatePacket(this.currStep);
+        if (!update) {
+            this.currStep += 1;
+            return;
+        }
+
+        if (update.reader._offset > 10) {
+            console.log(this.updates);
+        }
+        this.applyUpdate(update.reader);
+        this.currStep += 1;
+
+
+        this.updateStep();
+
     }
 
     var update = this.findUpdatePacket(this.currStep);
