@@ -54,7 +54,6 @@ RockHandler.prototype.updateInfo = function () {
     var ownerId = rock.owner ? rock.owner.id >>> 0 : 0 >>> 0;
 
     writer.writeUInt32(rock.id >>> 0);
-    //writer.writeUInt8(14); //key
     writer.writeUInt32(ownerId);
     writer.writeUInt32(x * 10000 >> 0);
     writer.writeUInt32(y * 10000 >> 0);

@@ -35,7 +35,7 @@ function Player(reader, client) {
 
     this.client = client;
 
-    if (!this.SELF_PLAYER && this.id === this.client.SELF_ID) {
+    if (!this.client.SELF_PLAYER && this.id === this.client.SELF_ID) {
         this.client.SELF_PLAYER = this;
     }
 

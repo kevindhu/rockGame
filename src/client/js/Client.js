@@ -184,12 +184,15 @@ Client.prototype.verify = function (data) {
 
 Client.prototype.applyUpdate = function (reader) {
     var rockLength = reader.readUInt8();
+
     for (i = 0; i < rockLength; i++) {
         rock = new Entity.Rock(reader, this);
         this.ROCK_LIST[rock.id] = rock;
     }
 
+
     var playerLength = reader.readUInt8();
+
     for (i = 0; i < playerLength; i++) {
         player = new Entity.Player(reader, this);
         this.PLAYER_LIST[player.id] = player;
@@ -199,12 +202,10 @@ Client.prototype.applyUpdate = function (reader) {
     for (i = 0; i < rock2Length; i++) {
         var id = reader.readUInt32();
         rock = this.ROCK_LIST[id];
+
+
         if (rock) {
             rock.update(reader);
-        }
-        else {
-            //console.log("MISSING ROCK: " + id);
-            //console.log(this.ROCK_LIST);
         }
     }
 
@@ -238,12 +239,25 @@ Client.prototype.handleBinary = function (data) {
     }
 
     var step = reader.readUInt32();
+    if (!this.initialStep) {
+        this.initialStep = step;
+    }
+    else if (this.initialStep === step) {
+        return;
+    }
+
+
     this.currStep = step;
+
+    //this.applyUpdate(reader);
+
 
     this.updates.push({
         step: step,
         reader: reader
     });
+
+    reader.step = step;
 };
 
 
@@ -342,7 +356,6 @@ Client.prototype.deleteEntities = function (packet) {
             var index = array.indexOf(packet.id);
             array.splice(index, 1);
         }
-        console.log(list[packet.id]);
         delete list[packet.id];
     };
 
@@ -416,40 +429,43 @@ Client.prototype.drawScene = function (data) {
 };
 
 Client.prototype.clientUpdate = function () {
+    this.updateStep();
+
+
     if (!this.SELF_PLAYER) {
         if (this.SELF_ID) {
-            console.log("NO PLAYER BUT HOPE");
             this.SELF_PLAYER = this.PLAYER_LIST[this.SELF_ID];
+            return;
         }
         else {
             return;
         }
     }
-
-    this.updateStep();
     this.drawScene();
 };
 
 Client.prototype.updateStep = function () {
-    var step = this.currStep - 10;
+    var step = this.currStep - 3;
     var update = this.findUpdatePacket(step);
     if (!update) {
-        console.log("NO UPDATE FOUND FOR STEP: " + step);
         return;
     }
 
-    this.applyUpdate(update.reader);
+    if (update.reader && update.reader._offset < 10) {
+        this.applyUpdate(update.reader);
+        update.reader = null;
+    }
+
 };
 
 
 Client.prototype.findUpdatePacket = function (step) {
     var length = this.updates.length;
 
-    for (var i = length - 1; i > 0; i--) {
+    for (var i = length - 1; i >= 0; i--) {
         var update = this.updates[i];
 
         if (update.step === step) {
-            this.updates.splice(0,i + 1);
             return update;
         }
     }

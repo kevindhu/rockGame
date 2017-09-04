@@ -38,20 +38,8 @@ function Rock(reader, client) {
 }
 
 
-Rock.prototype.applyUpdate = function (update) {
-    this.owner = update.owner;
-    this.x = update.x;
-    this.y = update.y;
-    this.health = update.health;
-    this.maxHealth = update.maxHealth;
-    this.theta = update.theta;
-    this.neutral = update.neutral;
-    this.fast = update.fast;
-};
-
 
 Rock.prototype.update = function (reader) {
-    //console.log("KEY: " + reader.readUInt8());
     this.owner = reader.readUInt32();
     this.x = reader.readUInt32() / 100;
     this.y = reader.readUInt32() / 100;

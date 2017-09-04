@@ -37,20 +37,31 @@ function Packet(gameServer) {
     this.deletePlayers.length = 0;
 }
 
-Packet.prototype.build = function () {
+Packet.prototype.build = function (init) {
+    var step = this.gameServer.step;
+    if (init) {
+        console.log(step);
+    }
+
     var writer = new BinaryWriter();
 
-    writer.writeUInt32(this.gameServer.step);
-
+    writer.writeUInt32(step);
     // Write update record
     writer.writeUInt8(this.addRocks.length);
     writer.writeBytes(this.addRocks.toBuffer());
 
+
+    if (init) {
+        console.log(this.addRocks.length);
+    }
+
     writer.writeUInt8(this.addPlayers.length);
     writer.writeBytes(this.addPlayers.toBuffer());
 
+
     writer.writeUInt8(this.updateRocks.length);
     writer.writeBytes(this.updateRocks.toBuffer());
+
 
     writer.writeUInt8(this.updatePlayers.length);
     writer.writeBytes(this.updatePlayers.toBuffer());
@@ -89,7 +100,6 @@ PacketHandler.prototype.sendChunkInitPackets = function (socket, chunk) {
 
 PacketHandler.prototype.createChunkPacket = function (chunk, id) {
     var PLAYER_LIST = this.gameServer.CHUNKS[chunk].PLAYER_LIST;
-    var ROCK_LIST = this.gameServer.CHUNKS[chunk].ROCK_LIST;
     var initPacket = [];
     var populate = function (list, call) {
         for (var i in list) {
@@ -128,7 +138,7 @@ PacketHandler.prototype.b_createChunkPacket = function (chunk) {
     populateBit(PLAYER_LIST, packet.addPlayers, this.b_addPlayerPackets);
     populateBit(ROCK_LIST, packet.addRocks, this.b_addRockPackets);
 
-    return packet.build();
+    return packet.build(true);
 };
 
 

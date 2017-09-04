@@ -18,6 +18,7 @@ BinaryReader.prototype.readUInt8 = function () {
     return value;
 };
 
+
 BinaryReader.prototype.readInt16 = function () {
     var value = this._buffer.getInt16(this._offset);
     this._offset += 2;
