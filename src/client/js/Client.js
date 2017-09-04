@@ -240,10 +240,9 @@ Client.prototype.handleBinary = function (data) {
 
 
     this.lastStep = step;
-    this.currStep = step - 3;
-
-    //this.applyUpdate(reader);
-
+    if (!this.currStep) {
+        this.currStep = step - 3;
+    }
 
     this.updates.push({
         step: step,
@@ -439,21 +438,33 @@ Client.prototype.clientUpdate = function () {
 
 Client.prototype.updateStep = function () {
     var stepRange = this.lastStep - this.currStep;
+    if (!stepRange) {
+        return;
+    }
+
     console.log("STEP RANGE: " + stepRange);
     console.log("CURRENT STEP: " + this.currStep);
     console.log("LAST STEP: " + this.lastStep);
-
 
     if (this.currStep > this.lastStep) {
         return;
     }
 
+    if (this.lastStep - this.currStep > 10) {
+        console.log("STEP RANGE TOO LARGE: CLIENT IS TOO SLOW")
+    }
+
     var update = this.findUpdatePacket(this.currStep);
+    if (!update) {
+        this.currStep += 1;
+        return;
+    }
 
-
+    if (update.reader._offset > 10) {
+        console.log(this.updates);
+    }
     this.applyUpdate(update.reader);
     this.currStep += 1;
-
 };
 
 
@@ -464,10 +475,12 @@ Client.prototype.findUpdatePacket = function (step) {
         var update = this.updates[i];
 
         if (update.step === step) {
-            this.updates.splice(0, i + 1);
+            this.updates.splice(0, i);
             return update;
         }
     }
+    console.log('NULLLLL');
+    console.log(this.updates);
     return null;
 };
 
