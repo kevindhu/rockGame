@@ -442,16 +442,13 @@ Client.prototype.updateStep = function () {
         return;
     }
 
-    console.log("STEP RANGE: " + stepRange);
-    console.log("CURRENT STEP: " + this.currStep);
-    console.log("LAST STEP: " + this.lastStep);
-
     if (this.currStep > this.lastStep) {
+        console.log("STEP RANGE TOO SMALL: SERVER TOO SLOW");
         return;
     }
-
     if (this.lastStep - this.currStep > 10) {
-        console.log("STEP RANGE TOO LARGE: CLIENT IS TOO SLOW")
+        console.log("STEP RANGE TOO LARGE: CLIENT IS TOO SLOW");
+        //TODO: fix this
     }
 
     var update = this.findUpdatePacket(this.currStep);
@@ -479,10 +476,10 @@ Client.prototype.findUpdatePacket = function (step) {
             return update;
         }
     }
-    console.log('NULLLLL');
-    console.log(this.updates);
+    console.log('COULD NOT FIND PACKET FOR STEP: ' + step);
     return null;
 };
+
 
 Client.prototype.start = function () {
     setInterval(this.clientUpdate.bind(this), 1000 / 25);
