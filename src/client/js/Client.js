@@ -440,7 +440,7 @@ Client.prototype.clientUpdate = function () {
 Client.prototype.updateStep = function () {
     var stepRange = this.lastStep - this.currStep;
     console.log("STEP RANGE: " + stepRange);
-
+    console.log("LAST STEP: " + this.lastStep);
 
     var update = this.findUpdatePacket(this.currStep);
     if (!update) {
