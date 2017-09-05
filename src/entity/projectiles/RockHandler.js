@@ -22,7 +22,7 @@ RockHandler.prototype.addInfo = function () {
     writer.writeUInt32(y * 10000 >> 0);
 
 
-    writer.writeUInt8(rock.vertices.length >>> 0); //write vertices
+    writer.writeUInt16(rock.vertices.length >>> 0); //write vertices
     for (var i = 0; i < rock.vertices.length; i++) {
         writer.writeInt16(rock.vertices[i][0] * 1000);
         writer.writeInt16(rock.vertices[i][1] * 1000);
@@ -51,10 +51,10 @@ RockHandler.prototype.updateInfo = function () {
     var x = rock.body.GetPosition().x;
     var y = rock.body.GetPosition().y;
     var theta = rock.body.GetAngle();
-    var ownerId = rock.owner ? rock.owner.id >>> 0 : 0 >>> 0;
+    var ownerId = rock.owner ? rock.owner.id : 0;
 
     writer.writeUInt32(rock.id >>> 0);
-    writer.writeUInt32(ownerId);
+    writer.writeUInt32(ownerId >>> 0);
     writer.writeUInt32(x * 10000 >> 0);
     writer.writeUInt32(y * 10000 >> 0);
 

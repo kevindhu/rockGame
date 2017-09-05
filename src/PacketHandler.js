@@ -54,13 +54,11 @@ Packet.prototype.build = function (init) {
     writer.writeBytes(this.addPlayers.toBuffer());
 
 
-
     writer.writeUInt16(this.updateRocks.length);
     writer.writeBytes(this.updateRocks.toBuffer());
 
     writer.writeUInt8(this.updatePlayers.length);
     writer.writeBytes(this.updatePlayers.toBuffer());
-
 
 
     writer.writeUInt16(this.deleteRocks.length);
@@ -92,7 +90,7 @@ PacketHandler.prototype.sendChunkInitPackets = function (socket, chunk) {
     console.log("STEP: " + this.gameServer.step + " CHUNK: " + chunk);
 
     socket.emit('updateEntities', this.createChunkPacket(chunk, socket.id));
-    socket.emit('updateBinary', this.b_createChunkPacket(chunk));
+    socket.emit('updateBinary', this.b_createChunkPacket(chunk).build());
 };
 
 
@@ -136,7 +134,7 @@ PacketHandler.prototype.b_createChunkPacket = function (chunk) {
     populateBit(PLAYER_LIST, packet.addPlayers, this.b_addPlayerPackets);
     populateBit(ROCK_LIST, packet.addRocks, this.b_addRockPackets);
 
-    return packet.build(true);
+    return packet;
 };
 
 
@@ -155,7 +153,7 @@ PacketHandler.prototype.b_deleteChunkPacket = function (chunk) {
 
     populateBit(PLAYER_LIST, packet.deletePlayers, this.b_deletePlayerPackets);
     populateBit(ROCK_LIST, packet.deleteRocks, this.b_deleteRockPackets);
-    return packet.build(true);
+    return packet;
 };
 
 
@@ -194,17 +192,17 @@ PacketHandler.prototype.b_updatePlayerPackets = function (player) {
 };
 
 
-PacketHandler.prototype.b_deletePlayerPackets = function (player) {
+PacketHandler.prototype.b_deletePlayerPackets = function (player, writer) {
     var info = player.handler.deleteInfo();
-    var writer = this.B_CHUNK_PACKETS[player.chunk].deleteRocks;
+    writer = writer ? writer : this.B_CHUNK_PACKETS[player.chunk].deleteRocks;
 
     writer.writeBytes(info);
     writer.length++;
 };
 
-PacketHandler.prototype.b_deleteRockPackets = function (rock) {
+PacketHandler.prototype.b_deleteRockPackets = function (rock, writer) {
     var info = rock.handler.deleteInfo();
-    var writer = this.B_CHUNK_PACKETS[rock.chunk].deleteRocks;
+    writer = writer ? writer : this.B_CHUNK_PACKETS[rock.chunk].deleteRocks;
 
     writer.writeBytes(info);
     writer.length++;
@@ -327,25 +325,29 @@ PacketHandler.prototype.sendPackets = function () {
         if (socket.initialized) {
             var player = socket.player;
 
-            //TODO: Change this
+            //socket.emit('updateEntities', this.masterPacket); //global updates
+
+            var packets = [];
+            var packet;
             if (player.chunkAdd) {
                 for (id in player.chunkAdd) {
-                    //socket.emit('updateEntities', this.b_createChunkPacket(id));
+                    console.log("NEW CHUNK " + id);
+                    packet = this.b_createChunkPacket(id);
+                    packets.push(packet);
                 }
+                player.chunkAdd = false;
             }
             if (player.chunkDelete) {
                 for (id in player.chunkDelete) {
-                    //socket.emit('updateEntities', this.b_deleteChunkPacket(id));
+                    packet = this.b_deleteChunkPacket(id);
+                    packets.push(packet);
                 }
+                player.chunkDelete = false;
             }
 
-
-            socket.emit('updateEntities', this.masterPacket); //global updates
-
             var chunks = player.findNeighboringChunks();
-            var packets = [];
             for (id in chunks) {
-                var packet = this.B_CHUNK_PACKETS[id];
+                packet = this.B_CHUNK_PACKETS[id];
                 packets.push(packet);
             }
             socket.emit('updateBinary', this.buildAllPackets(packets));
@@ -390,7 +392,6 @@ PacketHandler.prototype.buildAllPackets = function (packets) {
     writer.writeBytes(tempWriter.toBuffer());
 
 
-
     //updateRocks
     totalLength = 0;
     tempWriter = new BinaryWriter();
@@ -398,15 +399,9 @@ PacketHandler.prototype.buildAllPackets = function (packets) {
         var packet = packets[i];
         totalLength += packet.updateRocks.length;
         tempWriter.writeBytes(packet.updateRocks.toBuffer());
-        //console.log("UPDATE ROCKS LENGTH: " + tempWriter.allocLength);
     }
     writer.writeUInt16(totalLength);
-
-    //console.log("TOTAL UPDATE ROCKS LENGTH: " + totalLength);
     writer.writeBytes(tempWriter.toBuffer());
-
-    console.log("TOTAL LENGTH: " + writer.allocLength);
-
 
 
     //updatePlayers
@@ -417,12 +412,8 @@ PacketHandler.prototype.buildAllPackets = function (packets) {
         totalLength += packet.updatePlayers.length;
         tempWriter.writeBytes(packet.updatePlayers.toBuffer());
     }
-
-    console.log("STEP: " + step);
-    console.log(totalLength);
     writer.writeUInt8(totalLength);
     writer.writeBytes(tempWriter.toBuffer());
-
 
 
     //deleteRocks
@@ -447,7 +438,6 @@ PacketHandler.prototype.buildAllPackets = function (packets) {
     }
     writer.writeUInt8(totalLength);
     writer.writeBytes(tempWriter.toBuffer());
-
 
 
     //Terminate record

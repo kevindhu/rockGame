@@ -1,19 +1,22 @@
 function Rock(reader, client) {
     if (!reader) {
+        console.log("MAKING NEW FAKE ROCK");
+        this.client = client;
         return; //for fake rock purposes
     }
+    var prev = reader._offset;
+
 
     this.id = reader.readUInt32();
-
-    console.log("NEW ROCK: " + this.id);
+    //console.log("NEW ROCK: " + this.id);
 
     this.owner = reader.readUInt32();
-
     this.x = reader.readUInt32() / 100;
     this.y = reader.readUInt32() / 100;
 
     this.vertices = [];
-    var count = reader.readUInt8();
+    var count = reader.readUInt16();
+    //console.log("COUNT: " + count);
     for (var i = 0; i < count; i++) {
         this.vertices[i] = [];
         this.vertices[i][0] = reader.readInt16() / 1000;
@@ -38,6 +41,8 @@ function Rock(reader, client) {
             this.fast = true;
             break;
     }
+    var delta = reader._offset - prev;
+    //console.log("DELTA: " + delta);
 
     this.updates = [];
 
@@ -45,8 +50,9 @@ function Rock(reader, client) {
 }
 
 
-
 Rock.prototype.update = function (reader) {
+    this.updateTimer = 50;
+
     this.owner = reader.readUInt32();
     this.x = reader.readUInt32() / 100;
     this.y = reader.readUInt32() / 100;
@@ -74,6 +80,13 @@ Rock.prototype.update = function (reader) {
 
 
 Rock.prototype.show = function () {
+    this.updateTimer -= 1;
+
+    if (this.updateTimer <= 0) {
+        delete this.client.ROCK_LIST[this.id];
+        return;
+    }
+
     var ctx = this.client.mainCtx;
     var SCALE = 100;
 

@@ -13,9 +13,9 @@ function Rock(x, y, SCALE, gameServer, body, vertices, texture) {
     this.handler = new RockHandler(this, this.gameServer);
 
     this.gameServer.rockCount += 1;
-    this.id = Math.floor(Math.random() * 1000000);
+    this.id = Math.abs(Math.floor(Math.random() * 10000000));
 
-    console.log("NEW ROCK: " + this.id);
+    //console.log("NEW ROCK: " + this.id);
 
     this.x = x;
     this.y = y;
@@ -28,7 +28,7 @@ function Rock(x, y, SCALE, gameServer, body, vertices, texture) {
     this.setNeutral(100);
 
     this.vertices = vertices;
-    this.sides = Math.round(getRandom(4, 8));
+    this.sides = Math.floor(getRandom(4, 8));
 
     this.owner = null;
     this.body = body;
@@ -44,9 +44,6 @@ Rock.prototype.init = function () {
 
     this.chunk = EntityFunctions.findChunk(this.gameServer, this);
 
-    if (this.chunk !== 0) {
-        this.chunk = 0;
-    }
     this.gameServer.CHUNKS[this.chunk].ROCK_LIST[this.id] = this;
     this.gameServer.ROCK_LIST[this.id] = this;
     this.packetHandler.b_addRockPackets(this);

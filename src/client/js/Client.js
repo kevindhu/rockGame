@@ -18,7 +18,6 @@ Client.prototype.init = function () {
     this.initCanvases();
     this.initLists();
     this.initViewers();
-    this.fakeRock = new Entity.Rock();
 };
 Client.prototype.initSocket = function () {
     this.socket = io();
@@ -207,7 +206,11 @@ Client.prototype.applyUpdate = function (reader) {
         }
         else {
             console.log("FUCK YOU MATE " + id);
-            this.fakeRock.update(reader);
+
+            var fakeRock = new Entity.Rock(null, this);
+            fakeRock.update(reader);
+
+            this.ROCK_LIST[id] = fakeRock;
         }
     }
 
@@ -225,6 +228,8 @@ Client.prototype.applyUpdate = function (reader) {
     for (i = 0; i < rock3Length; i++) {
         id = reader.readUInt32();
         delete this.ROCK_LIST[id];
+
+        //console.log("DELETED ROCK: " + id);
     }
 
     var player3Length = reader.readUInt8();
@@ -249,8 +254,6 @@ Client.prototype.handleBinary = function (data) {
     else if (this.initialStep === step) {
         return;
     }
-
-    var prevStep = this.lastStep;
     this.lastStep = step;
 
 
@@ -455,49 +458,52 @@ Client.prototype.clientUpdate = function () {
 
 Client.prototype.updateStep = function () {
     var stepRange = this.lastStep - this.currStep;
+    var update;
+
     if (!stepRange) {
         return;
     }
+    //console.log(this.updates[0]);
 
-    //console.log("CURR STEP: "  + this.currStep);
-
-
-
+    if (this.currStep < this.initialStep) {
+        this.currStep += 1;
+        return;
+    }
     if (this.currStep > this.lastStep) {
         console.log("STEP RANGE TOO SMALL: SERVER TOO SLOW");
         return;
-    }
+    } //too fast
     if (this.lastStep - this.currStep > 5 + this.currPing / 50) {
-        console.log("STEP RANGE TOO LARGE: CLIENT IS TOO SLOW");
-        var update = this.findUpdatePacket(this.currStep);
+        console.log("STEP RANGE TOO LARGE: CLIENT IS TOO SLOW FOR STEP: " + this.currStep);
+        update = this.findUpdatePacket(this.currStep);
         if (!update) {
-            console.log("NO UPDATE");
+            console.log("UPDATE NOT FOUND!!!!");
             this.currStep += 1;
             return;
         }
-        console.log("OFFSET BAD: " + update.reader._offset);
         if (update.reader._offset > 10) {
+            console.log("OFFSET IS TOO LARGE");
             this.currStep += 1;
             return;
         }
 
         this.applyUpdate(update.reader);
         this.currStep += 1;
-
         this.updateStep();
+        return;
+    } //too slow
 
-    }
-
-    var update = this.findUpdatePacket(this.currStep);
+    update = this.findUpdatePacket(this.currStep);
     if (!update) {
+        console.log("CANNOT FIND UPDATE FOR STEP: " + this.currStep);
         this.currStep += 1;
         return;
     }
-
-
     if (update.reader._offset > 10) {
-        console.log("BAD");
+        console.log("OFFSET IS TOO LARGE FOR STEP: " + this.currStep);
         console.log(this.updates[0]);
+        this.currStep += 1;
+        return;
     }
     this.applyUpdate(update.reader);
     this.currStep += 1;
@@ -516,6 +522,11 @@ Client.prototype.findUpdatePacket = function (step) {
         }
     }
     console.log('COULD NOT FIND PACKET FOR STEP: ' + step);
+    console.log(this.updates[0]);
+    console.log(this.updates[1]);
+    console.log(this.updates[2]);
+
+
     return null;
 };
 

@@ -77,9 +77,6 @@ GameServer.prototype.initNewClients = function () {
             return;
         }
 
-        if (socket.timer !== 0) {
-            socket.timer -= 1;
-        }
         else if (socket.stage <= 8) {
             var rowLength = Math.sqrt(entityConfig.CHUNKS);
             var chunk = socket.player.chunk;
@@ -97,7 +94,6 @@ GameServer.prototype.initNewClients = function () {
             }
             chunk += xIndex + rowLength * yIndex;
             this.packetHandler.sendChunkInitPackets(socket, chunk);
-            socket.timer = 2;
             socket.stage++;
         }
         else {
@@ -185,8 +181,7 @@ GameServer.prototype.start = function () {
     var io = require('socket.io')(server, {});
     io.sockets.on('connection', function (socket) {
         var player;
-        socket.id = Math.floor(Math.random() * 1000000);
-        socket.timer = 0;
+        socket.id = Math.abs(Math.floor(Math.random() * 1000000));
         socket.life = 100;
         socket.verified = false;
         socket.stage = 0;

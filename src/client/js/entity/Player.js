@@ -13,6 +13,7 @@ function Player(reader, client) {
         this.vertices[i][0] = reader.readInt16() / 1000;
         this.vertices[i][1] = reader.readInt16() / 1000;
     }
+    console.log("PLAYER VERTICES COUNT: " + count);
 
     this.health = reader.readUInt8(); //health
     this.maxHealth = reader.readUInt8(); //maxHealth

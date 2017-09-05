@@ -31,6 +31,7 @@ function Player(id, name, gameServer) {
     };
 
     this.power = 1;
+    this.chunkTimer = 0;
     this.rocks = [];
 
     this.resetLevels();
@@ -136,7 +137,12 @@ Player.prototype.tick = function () {
 
 
     this.increaseHealth(0.1);
-    this.updateChunk();
+
+    this.chunkTimer -= 1;
+    if (this.chunkTimer <= 0) {
+        this.chunkTimer = 5;
+        this.updateChunk();
+    }
 
 
     if (this.realMover) {
@@ -366,7 +372,7 @@ Player.prototype.levelUp = function () {
     this.resettingBody = true;
 
 
-    console.log("LEVEL UP: " + this.level);
+    //console.log("LEVEL UP: " + this.level);
 };
 
 
