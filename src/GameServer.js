@@ -135,20 +135,8 @@ GameServer.prototype.update = function () {
     this.updatePlayers();
     this.updateRocks();
 
-    this.sendPackets();
     this.packetHandler.sendPackets();
 };
-
-
-GameServer.prototype.sendPackets = function () {
-    var id, player;
-    for (id in this.PLAYER_LIST) {
-        player = this.PLAYER_LIST[id];
-        player.sendSocketPackets();
-    }
-};
-
-
 GameServer.prototype.updatePlayers = function () {
     for (var id in this.PLAYER_LIST) {
         var player = this.PLAYER_LIST[id];
@@ -159,6 +147,7 @@ GameServer.prototype.updateRocks = function () {
     var id, rock;
 
     this.spawnRocks();
+
     for (id in this.ROCK_LIST) {
         rock = this.ROCK_LIST[id];
         rock.tick();
@@ -305,8 +294,9 @@ GameServer.prototype.start = function () {
 };
 
 GameServer.prototype.createPlayer = function (socket, info) {
-    return new Entity.Player(socket, info.name, this);
+    return new Entity.Player(socket.id, info.name, this);
 };
+
 
 GameServer.prototype.setupCollisionHandler = function () {
     var tryAddRock = function (a, b) {
@@ -317,30 +307,6 @@ GameServer.prototype.setupCollisionHandler = function () {
         }
     };
 
-
-    var tryAddViewRock = function (a, b) {
-        if (a instanceof Entity.Rock && b instanceof Entity.PlayerSensor) {
-            b.parent.addRockView(a);
-        }
-    };
-
-    var tryAddViewPlayer = function (a, b) {
-        if (a instanceof Entity.Player && b instanceof Entity.PlayerSensor) {
-            b.parent.addPlayerView(a);
-        }
-    };
-
-    var tryRemoveViewPlayer = function (a, b) {
-        if (a instanceof Entity.Player && b instanceof Entity.PlayerSensor) {
-            b.parent.removePlayerView(a);
-        }
-    };
-
-    var tryRemoveViewRock = function (a, b) {
-        if (a instanceof Entity.Rock && b instanceof Entity.PlayerSensor) {
-            b.parent.removeRockView(a);
-        }
-    };
 
 
     var tryEatRock = function (a, b, contact) {
@@ -414,12 +380,6 @@ GameServer.prototype.setupCollisionHandler = function () {
         tryRPImpact(a, b, contact);
         tryRPImpact(b, a, contact);
 
-        tryAddViewRock(a, b);
-        tryAddViewRock(b, a);
-
-        tryAddViewPlayer(a, b);
-        tryAddViewPlayer(b, a);
-
         tryPPImpact(a, b);
         tryPPImpact(b, a);
 
@@ -438,13 +398,6 @@ GameServer.prototype.setupCollisionHandler = function () {
     B2.b2ContactListener.prototype.EndContact = function (contact) {
         var a = contact.GetFixtureA().GetUserData();
         var b = contact.GetFixtureB().GetUserData();
-
-
-        tryRemoveViewRock(a, b);
-        tryRemoveViewRock(b, a);
-
-        tryRemoveViewPlayer(a, b);
-        tryRemoveViewPlayer(b, a);
     };
 };
 
