@@ -1,5 +1,12 @@
 function Rock(reader, client) {
+    if (!reader) {
+        return; //for fake rock purposes
+    }
+
     this.id = reader.readUInt32();
+
+    console.log("NEW ROCK: " + this.id);
+
     this.owner = reader.readUInt32();
 
     this.x = reader.readUInt32() / 100;

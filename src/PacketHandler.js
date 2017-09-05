@@ -375,6 +375,7 @@ PacketHandler.prototype.buildAllPackets = function (packets) {
     writer.writeUInt16(totalLength);
     writer.writeBytes(tempWriter.toBuffer());
 
+    //console.log("ADD ROCKS: " + writer.allocLength);
 
 
     //addPlayers
@@ -397,9 +398,14 @@ PacketHandler.prototype.buildAllPackets = function (packets) {
         var packet = packets[i];
         totalLength += packet.updateRocks.length;
         tempWriter.writeBytes(packet.updateRocks.toBuffer());
+        //console.log("UPDATE ROCKS LENGTH: " + tempWriter.allocLength);
     }
     writer.writeUInt16(totalLength);
+
+    //console.log("TOTAL UPDATE ROCKS LENGTH: " + totalLength);
     writer.writeBytes(tempWriter.toBuffer());
+
+    console.log("TOTAL LENGTH: " + writer.allocLength);
 
 
 
@@ -411,6 +417,9 @@ PacketHandler.prototype.buildAllPackets = function (packets) {
         totalLength += packet.updatePlayers.length;
         tempWriter.writeBytes(packet.updatePlayers.toBuffer());
     }
+
+    console.log("STEP: " + step);
+    console.log(totalLength);
     writer.writeUInt8(totalLength);
     writer.writeBytes(tempWriter.toBuffer());
 

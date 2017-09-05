@@ -14,6 +14,9 @@ function Rock(x, y, SCALE, gameServer, body, vertices, texture) {
 
     this.gameServer.rockCount += 1;
     this.id = Math.floor(Math.random() * 1000000);
+
+    console.log("NEW ROCK: " + this.id);
+
     this.x = x;
     this.y = y;
     this.SCALE = SCALE;

@@ -18,6 +18,7 @@ Client.prototype.init = function () {
     this.initCanvases();
     this.initLists();
     this.initViewers();
+    this.fakeRock = new Entity.Rock();
 };
 Client.prototype.initSocket = function () {
     this.socket = io();
@@ -178,7 +179,6 @@ Client.prototype.verify = function (data) {
 
 
 Client.prototype.applyUpdate = function (reader) {
-    console.log("APPLYING UPDATE");
     var rockLength = reader.readUInt16();
 
     for (i = 0; i < rockLength; i++) {
@@ -195,6 +195,8 @@ Client.prototype.applyUpdate = function (reader) {
     }
 
     var rock2Length = reader.readUInt16();
+
+
     for (i = 0; i < rock2Length; i++) {
         var id = reader.readUInt32();
         rock = this.ROCK_LIST[id];
@@ -203,7 +205,12 @@ Client.prototype.applyUpdate = function (reader) {
         if (rock) {
             rock.update(reader);
         }
+        else {
+            console.log("FUCK YOU MATE " + id);
+            this.fakeRock.update(reader);
+        }
     }
+
 
     var player2Length = reader.readUInt8();
     for (i = 0; i < player2Length; i++) {
@@ -225,10 +232,6 @@ Client.prototype.applyUpdate = function (reader) {
         id = reader.readUInt32();
         delete this.PLAYER_LIST[id];
     }
-
-    if (rock2Length > 0) { //update rocks
-        console.log(rock2Length);
-    }
 };
 
 
@@ -247,8 +250,10 @@ Client.prototype.handleBinary = function (data) {
         return;
     }
 
-
+    var prevStep = this.lastStep;
     this.lastStep = step;
+
+
     //console.log("LAST STEP: " + step);
 
 
@@ -456,22 +461,26 @@ Client.prototype.updateStep = function () {
 
     //console.log("CURR STEP: "  + this.currStep);
 
+
+
     if (this.currStep > this.lastStep) {
         console.log("STEP RANGE TOO SMALL: SERVER TOO SLOW");
         return;
     }
-    //console.log(this.currPing / 50);
     if (this.lastStep - this.currStep > 5 + this.currPing / 50) {
         console.log("STEP RANGE TOO LARGE: CLIENT IS TOO SLOW");
         var update = this.findUpdatePacket(this.currStep);
         if (!update) {
+            console.log("NO UPDATE");
+            this.currStep += 1;
+            return;
+        }
+        console.log("OFFSET BAD: " + update.reader._offset);
+        if (update.reader._offset > 10) {
             this.currStep += 1;
             return;
         }
 
-        if (update.reader._offset > 10) {
-            console.log(this.updates);
-        }
         this.applyUpdate(update.reader);
         this.currStep += 1;
 
@@ -485,8 +494,10 @@ Client.prototype.updateStep = function () {
         return;
     }
 
+
     if (update.reader._offset > 10) {
-        //console.log(this.updates);
+        console.log("BAD");
+        console.log(this.updates[0]);
     }
     this.applyUpdate(update.reader);
     this.currStep += 1;
