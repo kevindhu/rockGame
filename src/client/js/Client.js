@@ -178,29 +178,27 @@ Client.prototype.verify = function (data) {
 
 
 Client.prototype.applyUpdate = function (reader) {
-    var rockLength = reader.readUInt16();
+    var i;
 
+    var rockLength = reader.readUInt16(); //add rocks
     for (i = 0; i < rockLength; i++) {
         rock = new Entity.Rock(reader, this);
         this.ROCK_LIST[rock.id] = rock;
     }
 
-
     var playerLength = reader.readUInt8();
-
     for (i = 0; i < playerLength; i++) {
         player = new Entity.Player(reader, this);
+        if (player.id === this.SELF_ID) {
+            this.SELF_PLAYER = player;
+        }
         this.PLAYER_LIST[player.id] = player;
     }
 
-    var rock2Length = reader.readUInt16();
-
-
+    var rock2Length = reader.readUInt16(); //update rocks
     for (i = 0; i < rock2Length; i++) {
         var id = reader.readUInt32();
         rock = this.ROCK_LIST[id];
-
-
         if (rock) {
             rock.update(reader);
         }
@@ -245,7 +243,6 @@ Client.prototype.handleBinary = function (data) {
     if (reader.length() < 1) {
         return;
     }
-
     var step = reader.readUInt32();
 
     if (!this.initialStep) {
@@ -256,20 +253,17 @@ Client.prototype.handleBinary = function (data) {
     }
     this.lastStep = step;
 
-
     //console.log("LAST STEP: " + step);
-
 
     if (!this.currStep) {
         this.currStep = step - 3;
     }
 
+
     this.updates.push({
         step: step,
         reader: reader
     });
-
-    reader.step = step;
 };
 
 
@@ -414,6 +408,7 @@ Client.prototype.drawScene = function (data) {
         this.mainCtx.scale(this.scaleFactor, this.scaleFactor);
         this.mainCtx.translate(-this.SELF_PLAYER.x, -this.SELF_PLAYER.y);
     }.bind(this);
+
 
 
     this.SELF_PLAYER.tick();
