@@ -6,11 +6,10 @@ function Client() {
     this.SELF_ID = null;
     this.SELF_PLAYER = null;
     this.TRAIL = null;
-
-    this.SLASH = [];
-    this.SLASH_ARRAY = [];
-    this.mouseMoveTimer = 0;
     this.updates = [];
+
+    this.currPing = 0;
+
     this.init();
 }
 
@@ -33,8 +32,11 @@ Client.prototype.initSocket = function () {
     this.socket.on('chatMessage', this.mainUI);
     this.socket.on('ping', this.sendPong.bind(this));
     this.socket.on('finalPing', function (message) {
-        console.log("PING: " + message);
+        //console.log("PING: " + message);
         this.currPing = message;
+        if (this.currPing > 90000) {
+            this.currPing = 10;
+        }
     });
 
 
@@ -176,6 +178,7 @@ Client.prototype.verify = function (data) {
 
 
 Client.prototype.applyUpdate = function (reader) {
+    console.log("APPLYING UPDATE");
     var rockLength = reader.readUInt16();
 
     for (i = 0; i < rockLength; i++) {
@@ -222,6 +225,10 @@ Client.prototype.applyUpdate = function (reader) {
         id = reader.readUInt32();
         delete this.PLAYER_LIST[id];
     }
+
+    if (rock2Length > 0) { //update rocks
+        console.log(rock2Length);
+    }
 };
 
 
@@ -242,7 +249,7 @@ Client.prototype.handleBinary = function (data) {
 
 
     this.lastStep = step;
-    console.log("LAST STEP: " + step);
+    //console.log("LAST STEP: " + step);
 
 
     if (!this.currStep) {
@@ -453,6 +460,7 @@ Client.prototype.updateStep = function () {
         console.log("STEP RANGE TOO SMALL: SERVER TOO SLOW");
         return;
     }
+    //console.log(this.currPing / 50);
     if (this.lastStep - this.currStep > 5 + this.currPing / 50) {
         console.log("STEP RANGE TOO LARGE: CLIENT IS TOO SLOW");
         var update = this.findUpdatePacket(this.currStep);

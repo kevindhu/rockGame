@@ -80,7 +80,7 @@ Player.prototype.onDelete = function () {
 };
 
 
-Player.prototype.updateChunk = function () {
+Player.prototype.changeChunk = function () {
     var newChunk = EntityFunctions.findChunk(this.gameServer, this);
     if (newChunk !== this.chunk) {
         delete this.gameServer.CHUNKS[this.chunk].PLAYER_LIST[this.id];
@@ -136,6 +136,7 @@ Player.prototype.tick = function () {
 
 
     this.increaseHealth(0.1);
+    this.updateChunk();
 
 
     if (this.realMover) {
@@ -195,10 +196,12 @@ Player.prototype.increaseHealth = function (amount) {
 
 Player.prototype.updateChunk = function () {
     var oldChunks = this.findNeighboringChunks();
+    this.changeChunk();
     var newChunks = this.findNeighboringChunks();
     this.chunkAdd = this.findChunkDifference(newChunks, oldChunks);
     this.chunkDelete = this.findChunkDifference(oldChunks, newChunks);
 };
+
 Player.prototype.findChunkDifference = function (chunks1, chunks2) {
     var id;
     var delta = {};

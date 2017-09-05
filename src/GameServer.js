@@ -62,6 +62,7 @@ GameServer.prototype.initNewClients = function () {
         var socket = this.SOCKET_LIST[id];
         if (!socket) {
             delete this.INIT_SOCKET_LIST[id];
+            return;
         }
 
         if (!socket.verified) { //verify new client socket
@@ -100,6 +101,7 @@ GameServer.prototype.initNewClients = function () {
             socket.stage++;
         }
         else {
+            socket.initialized = true;
             delete this.INIT_SOCKET_LIST[id];
         }
     }
@@ -120,8 +122,6 @@ GameServer.prototype.spawnRocks = function () {
 };
 
 GameServer.prototype.update = function () {
-    var prevTimeStamp = this.timeStamp;
-
     this.timeStamp = Date.now();
     this.step += 1;
 
@@ -287,7 +287,6 @@ GameServer.prototype.start = function () {
                 player.onDelete();
             }
             delete this.SOCKET_LIST[socket.id];
-            delete this.INIT_SOCKET_LIST[socket.id];
         }.bind(this));
     }.bind(this));
     setInterval(this.update.bind(this), 1000 / 25);
@@ -306,7 +305,6 @@ GameServer.prototype.setupCollisionHandler = function () {
             }
         }
     };
-
 
 
     var tryEatRock = function (a, b, contact) {

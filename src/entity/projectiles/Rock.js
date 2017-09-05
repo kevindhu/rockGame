@@ -122,10 +122,10 @@ Rock.prototype.setDefaultHealth = function () {
             magnitude = 5;
             break;
         case 3:
-            magnitude = 30;
+            magnitude = 40;
             break;
         case 4:
-            magnitude = 40;
+            magnitude = 50;
             break;
     }
 
