@@ -95,7 +95,6 @@ PacketHandler.prototype.sendChunkInitPackets = function (socket, chunk) {
 
 
 PacketHandler.prototype.createChunkPacket = function (chunk, id) {
-    var PLAYER_LIST = this.gameServer.CHUNKS[chunk].PLAYER_LIST;
     var initPacket = [];
     var populate = function (list, call) {
         for (var i in list) {
@@ -104,8 +103,7 @@ PacketHandler.prototype.createChunkPacket = function (chunk, id) {
         }
     };
 
-    populate(PLAYER_LIST, this.addPlayerPackets);
-    populate(this.gameServer.CHUNKS[chunk].TILE_LIST, this.addTilePackets);
+    //populate(this.gameServer.CHUNKS[chunk].TILE_LIST, this.addTilePackets);
     if (id) {
         initPacket.push({
             master: "add",

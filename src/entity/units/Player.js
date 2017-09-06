@@ -400,8 +400,8 @@ Player.prototype.move = function (x, y) {
     }
 
     var pos = this.body.GetPosition();
-    pos.x += x / normalVel / this.velBuffer;
-    pos.y += y / normalVel / this.velBuffer;
+    pos.x += 1.5 * x / normalVel / this.velBuffer;
+    pos.y += 1.5 * y / normalVel / this.velBuffer;
 
     this.body.SetPosition(pos);
 

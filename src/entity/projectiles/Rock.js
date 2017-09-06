@@ -175,15 +175,6 @@ Rock.prototype.tick = function () {
         }
     }
 
-
-    if (this.neutral) {
-        this.neutralTimer -= 1;
-        if (this.neutralTimer <= 0) {
-            this.removeNeutral();
-        }
-    }
-
-
     this.packetHandler.b_updateRockPackets(this);
 };
 
@@ -203,8 +194,8 @@ Rock.prototype.checkSpeed = function () {
 
 
 Rock.prototype.move = function () {
-    this.getOrigin();
     if (this.owner) {
+        this.getOrigin();
         var playerPosition = this.owner.body.GetPosition();
         var v = this.body.GetLinearVelocity();
         this.getTheta(playerPosition, this.origin);

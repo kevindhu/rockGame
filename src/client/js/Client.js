@@ -415,7 +415,7 @@ Client.prototype.drawScene = function (data) {
 
 
     translateScene();
-    this.mainCtx.clearRect(0, 0, 11000, 11000);
+    this.mainCtx.clearRect(0, 0, 20000, 20000);
 
     this.mainCtx.fillStyle = "#1d1f21";
     this.mainCtx.fillRect(0, 0, 20000, 20000);
