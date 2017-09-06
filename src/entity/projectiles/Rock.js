@@ -23,6 +23,7 @@ function Rock(x, y, SCALE, gameServer, body, vertices, texture) {
     this.theta = getRandom(0, 3);
 
     this.texture = texture ? texture : this.getRandomTexture();
+    this.getFeed();
     this.getPower();
     this.setDefaultHealth();
     this.setNeutral(100);
@@ -32,7 +33,6 @@ function Rock(x, y, SCALE, gameServer, body, vertices, texture) {
 
     this.owner = null;
     this.body = body;
-    this.feed = this.SCALE * 2;
     this.init();
 }
 
@@ -107,6 +107,26 @@ Rock.prototype.getPower = function () {
             break;
         case 4:
             this.realPower = 4;
+            break;
+    }
+    this.power = this.realPower;
+};
+
+
+
+Rock.prototype.getFeed = function () {
+    switch (this.texture) {
+        case 1:
+            this.feed = 1;
+            break;
+        case 2:
+            this.feed = 4;
+            break;
+        case 3:
+            this.feed = 10;
+            break;
+        case 4:
+            this.feed = 20;
             break;
     }
     this.power = this.realPower;
@@ -339,19 +359,34 @@ Rock.prototype.split = function () {
     var vertices2 = [];
     var i;
 
+    if (getRandom(0,3) > 1) { //default
+        vertices1.push([lastVertex.x, lastVertex.y]);
+        for (i = 0; i < middle; i++) {
+            vertices1.push([vertices[i].x, vertices[i].y]);
+        }
+        vertices1.push([middleVertex.x, middleVertex.y]);
 
-    vertices1.push([lastVertex.x, lastVertex.y]);
-    for (i = 0; i < middle; i++) {
-        vertices1.push([vertices[i].x, vertices[i].y]);
+
+        vertices2.push([middleVertex.x, middleVertex.y]);
+        for (i = middle; i < count; i++) {
+            vertices2.push([vertices[i].x, vertices[i].y]);
+        }
+        vertices2.push([lastVertex.x, lastVertex.y]);
     }
-    vertices1.push([middleVertex.x, middleVertex.y]);
+    else { //one big, one small
+        for (i = 0; i < middle; i++) {
+            vertices1.push([vertices[i].x, vertices[i].y]);
+        }
+        vertices1.push([middleVertex.x, middleVertex.y]);
 
 
-    vertices2.push([middleVertex.x, middleVertex.y]);
-    for (i = middle; i < count; i++) {
-        vertices2.push([vertices[i].x, vertices[i].y]);
+        vertices2.push([middleVertex.x, middleVertex.y]);
+        for (i = middle; i < count; i++) {
+            vertices2.push([vertices[i].x, vertices[i].y]);
+        }
+        vertices2.push([vertices[0].x, vertices[0].y]);
     }
-    vertices2.push([lastVertex.x, lastVertex.y]);
+
 
     var x = Math.floor(this.body.GetPosition().x);
     var y = Math.floor(this.body.GetPosition().y);

@@ -106,7 +106,7 @@ GameServer.prototype.initNewClients = function () {
 GameServer.prototype.spawnRandomRock = function () {
     var x = Arithmetic.getRandomInt(entityConfig.BORDER_WIDTH, entityConfig.WIDTH - entityConfig.BORDER_WIDTH);
     var y = Arithmetic.getRandomInt(entityConfig.BORDER_WIDTH, entityConfig.WIDTH - entityConfig.BORDER_WIDTH);
-    return new Entity.Rock(x, y, getRandom(2, 8), this);
+    return new Entity.Rock(x, y, getRandom(2, 30), this);
 };
 
 

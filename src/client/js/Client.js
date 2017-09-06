@@ -415,10 +415,10 @@ Client.prototype.drawScene = function (data) {
 
 
     translateScene();
-    this.mainCtx.clearRect(0, 0, 20000, 20000);
+    this.mainCtx.clearRect(0, 0, 30000, 30000);
 
     this.mainCtx.fillStyle = "#1d1f21";
-    this.mainCtx.fillRect(0, 0, 20000, 20000);
+    this.mainCtx.fillRect(0, 0, 30000, 30000);
 
 
     for (var i = 0; i < entityList.length; i++) {
