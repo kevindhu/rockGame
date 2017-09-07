@@ -35,8 +35,8 @@ PlayerHandler.prototype.addInfo = function () {
         writer.writeInt16(player.vertices[i][1] * 1000);
     }
 
-    writer.writeUInt8(player.health >>> 0);              //health
-    writer.writeUInt8(player.maxHealth >>> 0);           //maxHealth
+    writer.writeUInt16(player.health >>> 0);              //health
+    writer.writeUInt16(player.maxHealth >>> 0);           //maxHealth
 
     writer.writeInt16(player.theta * 100 >>> 0);            //theta
     writer.writeUInt8(player.level >>> 0);                  //level
@@ -74,8 +74,8 @@ PlayerHandler.prototype.updateInfo = function () {
     }
     writer.writeUInt32(parseInt(nameNum) >>> 0);              //name
 
-    writer.writeUInt8(player.health >>> 0);              //health
-    writer.writeUInt8(player.maxHealth >>> 0);           //maxHealth
+    writer.writeUInt16(player.health >>> 0);              //health
+    writer.writeUInt16(player.maxHealth >>> 0);           //maxHealth
 
     writer.writeInt16(player.theta * 100 >>> 0);            //theta
     writer.writeUInt8(player.level >>> 0);                  //level

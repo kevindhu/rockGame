@@ -4,6 +4,7 @@ function Player(reader, client) {
     this.y = reader.readUInt32() / 100; //real y
 
     this.radius = reader.readUInt16(); //radius
+    console.log("NEW PLAYER RADIUS: " + this.radius);
     this.name = reader.readUInt32(); //name
 
     this.vertices = [];            //vertices
@@ -15,8 +16,8 @@ function Player(reader, client) {
     }
     console.log("PLAYER VERTICES COUNT: " + count);
 
-    this.health = reader.readUInt8(); //health
-    this.maxHealth = reader.readUInt8(); //maxHealth
+    this.health = reader.readUInt16(); //health
+    this.maxHealth = reader.readUInt16(); //maxHealth
 
     this.theta = reader.readInt16() / 100; //theta
     this.level = reader.readUInt8(); //level
@@ -58,11 +59,17 @@ Player.prototype.update = function (reader) {
     this.x = reader.readUInt32() / 100; //real x
     this.y = reader.readUInt32() / 100; //real y
 
-    this.radius = reader.readUInt16(); //radius
+    var  radius = reader.readUInt16(); //radius
+    if (radius !== this.radius) {
+        console.log("NEW UPDATE PLAYER RADIUS: " + this.radius);
+        this.radius = radius;
+    }
+
+
     this.name = reader.readInt32(); //name
 
-    this.health = reader.readUInt8(); //health
-    this.maxHealth = reader.readUInt8(); //maxHealth
+    this.health = reader.readUInt16(); //health
+    this.maxHealth = reader.readUInt16(); //maxHealth
 
     this.theta = reader.readInt16() / 100; //theta
     this.level = reader.readUInt8(); //level
@@ -205,6 +212,9 @@ Player.prototype.show = function () {
 
 
     if (this.health && this.maxHealth && this.health > 0) { //health bar
+        if (this.health > this.maxHealth) {
+            console.log(this.health, this.maxHealth);
+        }
         ctx.lineWidth = 10;
         ctx.beginPath();
         ctx.strokeStyle = "black";

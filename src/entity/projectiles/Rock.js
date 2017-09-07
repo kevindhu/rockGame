@@ -113,7 +113,6 @@ Rock.prototype.getPower = function () {
 };
 
 
-
 Rock.prototype.getFeed = function () {
     switch (this.texture) {
         case 1:
@@ -359,7 +358,21 @@ Rock.prototype.split = function () {
     var vertices2 = [];
     var i;
 
-    if (getRandom(0,3) > 1) { //default
+
+    if (getRandom(0, 3) < 1 && count > 3) { //one big, one small
+        for (i = 0; i < middle; i++) {
+            vertices1.push([vertices[i].x, vertices[i].y]);
+        }
+        vertices1.push([middleVertex.x, middleVertex.y]);
+
+
+        vertices2.push([middleVertex.x, middleVertex.y]);
+        for (i = middle; i < count; i++) {
+            vertices2.push([vertices[i].x, vertices[i].y]);
+        }
+        vertices2.push([vertices[0].x, vertices[0].y]);
+    }
+    else { //default
         vertices1.push([lastVertex.x, lastVertex.y]);
         for (i = 0; i < middle; i++) {
             vertices1.push([vertices[i].x, vertices[i].y]);
@@ -373,19 +386,6 @@ Rock.prototype.split = function () {
         }
         vertices2.push([lastVertex.x, lastVertex.y]);
     }
-    else { //one big, one small
-        for (i = 0; i < middle; i++) {
-            vertices1.push([vertices[i].x, vertices[i].y]);
-        }
-        vertices1.push([middleVertex.x, middleVertex.y]);
-
-
-        vertices2.push([middleVertex.x, middleVertex.y]);
-        for (i = middle; i < count; i++) {
-            vertices2.push([vertices[i].x, vertices[i].y]);
-        }
-        vertices2.push([vertices[0].x, vertices[0].y]);
-    }
 
 
     var x = Math.floor(this.body.GetPosition().x);
@@ -393,8 +393,8 @@ Rock.prototype.split = function () {
     var bodies = B2Common.createPolygonSplit(this.gameServer.box2d_world, this.body, vertices1, vertices2);
 
 
-    var clone1 = new Rock(x, y, this.SCALE / 2, this.gameServer, bodies[0], vertices1, this.texture);
-    var clone2 = new Rock(x, y, this.SCALE / 2, this.gameServer, bodies[1], vertices2, this.texture);
+    var clone1 = new Rock(x, y, this.SCALE * 3 / 5, this.gameServer, bodies[0], vertices1, this.texture);
+    var clone2 = new Rock(x, y, this.SCALE * 3 / 5, this.gameServer, bodies[1], vertices2, this.texture);
 
     clone1.body.GetFixtureList().SetUserData(clone1);
     clone2.body.GetFixtureList().SetUserData(clone2);
@@ -408,17 +408,17 @@ Rock.prototype.split = function () {
     var v1 = clone1.body.GetLinearVelocity();
     var v2 = clone2.body.GetLinearVelocity();
 
-    v1.x = normalVel * Math.cos(theta + 0.1);
-    v1.y = normalVel * Math.sin(theta + 0.1);
-    v2.x = normalVel * Math.cos(theta - 0.1);
-    v2.y = normalVel * Math.sin(theta - 0.1);
+    v1.x = normalVel * Math.cos(theta + 0.1) / 3;
+    v1.y = normalVel * Math.sin(theta + 0.1) / 3;
+    v2.x = normalVel * Math.cos(theta - 0.1) / 3;
+    v2.y = normalVel * Math.sin(theta - 0.1) / 3;
 
     clone1.body.SetLinearVelocity(v1);
     clone2.body.SetLinearVelocity(v2);
 
     var dmg = 0 - this.health;
-    clone1.decreaseHealth(this, dmg/2);
-    clone2.decreaseHealth(this, dmg/2);
+    clone1.decreaseHealth(this, dmg / 2);
+    clone2.decreaseHealth(this, dmg / 2);
 
     this.onDelete();
 

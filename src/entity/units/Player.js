@@ -136,7 +136,7 @@ Player.prototype.tick = function () {
     }
 
 
-    this.increaseHealth(0.1);
+    this.increaseHealth(0.3);
 
     this.chunkTimer -= 1;
     if (this.chunkTimer <= 0) {
@@ -165,7 +165,7 @@ Player.prototype.setMove = function (x, y) {
 };
 
 Player.prototype.resetLevels = function () {
-    this.maxHealth = 60;
+    this.maxHealth = 200;
     this.health = this.maxHealth;
 
     this.level = 0;
@@ -419,8 +419,6 @@ Player.prototype.onDeath = function () {
 
 Player.prototype.reset = function () {
     this.split();
-
-
     this.resetLevels();
 
     this.x = entityConfig.WIDTH / 2;

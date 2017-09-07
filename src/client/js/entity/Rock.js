@@ -138,7 +138,7 @@ Rock.prototype.show = function () {
 
     ctx.closePath();
 
-    if (this.health && this.maxHealth && this.health > 0) { //health bar
+    if (1 === 2 && this.health && this.maxHealth && this.health > 0) { //health bar
         ctx.lineWidth = 10;
         ctx.beginPath();
         ctx.strokeStyle = "black";

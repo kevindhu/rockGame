@@ -214,6 +214,7 @@ Client.prototype.applyUpdate = function (reader) {
 
 
     var player2Length = reader.readUInt8();
+    //console.log("PLAYER UPDATE LENGTH: " + player2Length);
     for (i = 0; i < player2Length; i++) {
         id = reader.readUInt32();
         var player = this.PLAYER_LIST[id];
@@ -465,11 +466,11 @@ Client.prototype.updateStep = function () {
         return;
     }
     if (this.currStep > this.lastStep) {
-        console.log("STEP RANGE TOO SMALL: SERVER TOO SLOW");
+        //console.log("STEP RANGE TOO SMALL: SERVER TOO SLOW");
         return;
     } //too fast
     if (this.lastStep - this.currStep > 5 + this.currPing / 50) {
-        console.log("STEP RANGE TOO LARGE: CLIENT IS TOO SLOW FOR STEP: " + this.currStep);
+        //console.log("STEP RANGE TOO LARGE: CLIENT IS TOO SLOW FOR STEP: " + this.currStep);
         update = this.findUpdatePacket(this.currStep);
         if (!update) {
             console.log("UPDATE NOT FOUND!!!!");
