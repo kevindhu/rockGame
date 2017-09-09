@@ -470,7 +470,7 @@ Client.prototype.updateStep = function () {
         return;
     } //too fast
     if (this.lastStep - this.currStep > 5 + this.currPing / 50) {
-        //console.log("STEP RANGE TOO LARGE: CLIENT IS TOO SLOW FOR STEP: " + this.currStep);
+        console.log("STEP RANGE TOO LARGE: CLIENT IS TOO SLOW FOR STEP: " + this.currStep);
         update = this.findUpdatePacket(this.currStep);
         if (!update) {
             console.log("UPDATE NOT FOUND!!!!");

@@ -103,7 +103,7 @@ PacketHandler.prototype.createChunkPacket = function (chunk, id) {
         }
     };
 
-    //populate(this.gameServer.CHUNKS[chunk].TILE_LIST, this.addTilePackets);
+    populate(this.gameServer.CHUNKS[chunk].TILE_LIST, this.addTilePackets);
     if (id) {
         initPacket.push({
             master: "add",

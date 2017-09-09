@@ -56,6 +56,7 @@ function Player(reader, client) {
 
 
 Player.prototype.update = function (reader) {
+    this.updateTimer = 50;
     this.x = reader.readUInt32() / 100; //real x
     this.y = reader.readUInt32() / 100; //real y
 
@@ -131,6 +132,11 @@ Player.prototype.move = function (x, y) {
 
 
 Player.prototype.show = function () {
+    this.updateTimer -= 1;
+    if (this.updateTimer <= 0) {
+        delete this.client.PLAYER_LIST[this.id];
+    }
+
     var ctx = this.client.mainCtx;
     var selfId = this.client.SELF_ID;
     var fillAlpha;
