@@ -1,4 +1,3 @@
-const entityConfig = require('../entityConfig');
 const BinaryWriter = require('../../packet/BinaryWriter');
 
 function RockHandler(rock, gameServer) {

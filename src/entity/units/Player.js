@@ -45,7 +45,6 @@ Player.prototype.init = function () {
     this.chunk = EntityFunctions.findChunk(this.gameServer, this);
     this.gameServer.CHUNKS[this.chunk].PLAYER_LIST[this.id] = this;
 
-    //this.gameServer.packetHandler.addPlayerPackets(this);
     this.gameServer.packetHandler.b_addPlayerPackets(this);
 };
 

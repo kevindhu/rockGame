@@ -186,7 +186,10 @@ Client.prototype.applyUpdate = function (reader) {
         this.ROCK_LIST[rock.id] = rock;
     }
 
-    var playerLength = reader.readUInt8();
+    var playerLength = reader.readUInt8(); //add players
+    if (playerLength > 0) {
+        console.log("ATTEMPTING ADD NEW PLAYER");
+    }
     for (i = 0; i < playerLength; i++) {
         player = new Entity.Player(reader, this);
         if (player.id === this.SELF_ID) {
@@ -221,6 +224,13 @@ Client.prototype.applyUpdate = function (reader) {
         if (player) {
             player.update(reader);
         }
+        else {
+            console.log("NO PLAYER ADDED: " + id);
+            var fakePlayer = new Entity.Player(null, this);
+            fakePlayer.update(reader);
+
+            this.PLAYER_LIST[id] = fakePlayer;
+        }
     }
 
     var rock3Length = reader.readUInt16(); //delete rocks
@@ -235,6 +245,8 @@ Client.prototype.applyUpdate = function (reader) {
     for (i = 0; i < player3Length; i++) {
         id = reader.readUInt32();
         delete this.PLAYER_LIST[id];
+
+        console.log("DELETED PLAYER: " + id);
     }
 };
 
@@ -469,8 +481,9 @@ Client.prototype.updateStep = function () {
         //console.log("STEP RANGE TOO SMALL: SERVER TOO SLOW");
         return;
     } //too fast
-    if (this.lastStep - this.currStep > 5 + this.currPing / 50) {
-        console.log("STEP RANGE TOO LARGE: CLIENT IS TOO SLOW FOR STEP: " + this.currStep);
+
+    while (this.lastStep - this.currStep > 5 + this.currPing / 50) {
+        //console.log("STEP RANGE TOO LARGE: CLIENT IS TOO SLOW FOR STEP: " + this.currStep);
         update = this.findUpdatePacket(this.currStep);
         if (!update) {
             console.log("UPDATE NOT FOUND!!!!");
@@ -485,8 +498,6 @@ Client.prototype.updateStep = function () {
 
         this.applyUpdate(update.reader);
         this.currStep += 1;
-        this.updateStep();
-        return;
     } //too slow
 
     update = this.findUpdatePacket(this.currStep);

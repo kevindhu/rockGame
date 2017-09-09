@@ -1,5 +1,12 @@
 function Player(reader, client) {
+    if (!reader) {
+        console.log("MAKING NEW FAKE PLAYER");
+        this.client = client;
+        return; //for fake rock purposes
+    }
+
     this.id = reader.readUInt32(); //player id
+    console.log("NEW PLAYER ADDED: " + this.id);
     this.x = reader.readUInt32() / 100; //real x
     this.y = reader.readUInt32() / 100; //real y
 
@@ -138,7 +145,6 @@ Player.prototype.show = function () {
     }
 
     var ctx = this.client.mainCtx;
-    var selfId = this.client.SELF_ID;
     var fillAlpha;
     var strokeAlpha;
     var i;
@@ -178,6 +184,9 @@ Player.prototype.show = function () {
         ctx.fill();
         ctx.stroke();
     }
+    else {
+        ctx.fillRect(0, 0, 30, 30);
+    }
     ctx.fill();
     ctx.stroke();
 
@@ -194,23 +203,6 @@ Player.prototype.show = function () {
 
 
     ctx.closePath();
-
-
-    if (1 === 3) {
-        var radius = this.radius;
-        ctx.beginPath();
-        ctx.moveTo(this.x + radius, this.y);
-        var theta, x, y;
-        for (i = Math.PI / 4; i <= 2 * Math.PI - Math.PI / 4; i += Math.PI / 4) {
-            theta = i;
-            x = radius * Math.cos(theta);
-            y = radius * Math.sin(theta);
-            ctx.lineTo(this.x + x, this.y + y);
-        }
-        ctx.lineTo(this.x + radius, this.y + 3);
-        ctx.stroke();
-        ctx.fill();
-    }
 
 
     ctx.fillStyle = "#ff9d60";

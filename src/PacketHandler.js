@@ -120,6 +120,8 @@ PacketHandler.prototype.b_createChunkPacket = function (chunk) {
     var PLAYER_LIST = this.gameServer.CHUNKS[chunk].PLAYER_LIST;
     var ROCK_LIST = this.gameServer.CHUNKS[chunk].ROCK_LIST;
 
+    console.log(PLAYER_LIST);
+
     var populateBit = function (list, writer, call) {
         for (var i in list) {
             var entity = list[i];

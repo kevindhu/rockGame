@@ -21,8 +21,8 @@ function createBox(world, user, x, y, width, height) {
         'angularDamping': 0.0,
 
         'gravityScale': 1.0,
-        'type': B2.b2Body.b2_dynamicBody,
-        'fixedRotation': false,
+        'type': B2.b2Body.b2_staticBody,
+        'fixedRotation': true,
         'userData': user
     };
 

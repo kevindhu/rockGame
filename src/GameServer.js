@@ -51,6 +51,31 @@ GameServer.prototype.initTiles = function () {
         }
     }
 };
+
+
+GameServer.prototype.initWalls = function () {
+    var border = entityConfig.BORDER_WIDTH;
+    var width = entityConfig.WIDTH;
+
+    B2Common.createBox(this.box2d_world, this,
+        border / 2, width / 2,
+        border, width);
+
+    B2Common.createBox(this.box2d_world, this,
+        width - border / 2, width / 2,
+        border, width);
+
+
+    B2Common.createBox(this.box2d_world, this,
+        width / 2, border / 2,
+        width - 2 * border, border);
+
+    B2Common.createBox(this.box2d_world, this,
+        width / 2, width - border / 2,
+        width - 2 * border, border);
+};
+
+
 GameServer.prototype.initRocks = function () {
     var i;
     for (i = 0; i < entityConfig.ROCKS; i++) {
@@ -176,6 +201,7 @@ GameServer.prototype.start = function () {
     this.initB2();
     this.setupCollisionHandler();
     this.initTiles();
+    this.initWalls();
     this.initRocks();
 
     var io = require('socket.io')(server, {});
