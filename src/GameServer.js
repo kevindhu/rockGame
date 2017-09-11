@@ -149,7 +149,7 @@ GameServer.prototype.update = function () {
     this.step += 1;
 
     if (this.timeStamp - prevTimeStamp > 50) {
-        console.log(this.timeStamp - prevTimeStamp);
+        //console.log(this.timeStamp - prevTimeStamp);
     }
 
     if (this.timeStamp % 50 === 0) {
@@ -242,6 +242,17 @@ GameServer.prototype.start = function () {
             player = this.createPlayer(socket, data);
             socket.player = player;
             this.packetHandler.addChatPackets("SERVER", player.name + " has connected!");
+        }.bind(this));
+
+
+        socket.on('getPlayer', function (data) {
+            var newPlayer = this.PLAYER_LIST[data.id];
+            this.packetHandler.b_addPlayerPackets(newPlayer);
+        }.bind(this));
+
+        socket.on('getRock', function (data) {
+            var rock = this.ROCK_LIST[data.id];
+            this.packetHandler.b_addRockPackets(rock);
         }.bind(this));
 
         socket.on('chatMessage', function (data) {

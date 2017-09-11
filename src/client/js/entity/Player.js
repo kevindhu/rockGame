@@ -6,12 +6,10 @@ function Player(reader, client) {
     }
 
     this.id = reader.readUInt32(); //player id
-    console.log("NEW PLAYER ADDED: " + this.id);
     this.x = reader.readUInt32() / 100; //real x
     this.y = reader.readUInt32() / 100; //real y
 
     this.radius = reader.readUInt16(); //radius
-    console.log("NEW PLAYER RADIUS: " + this.radius);
     this.name = reader.readUInt32(); //name
 
     this.vertices = [];            //vertices
@@ -21,7 +19,6 @@ function Player(reader, client) {
         this.vertices[i][0] = reader.readInt16() / 1000;
         this.vertices[i][1] = reader.readInt16() / 1000;
     }
-    console.log("PLAYER VERTICES COUNT: " + count);
 
     this.health = reader.readUInt16(); //health
     this.maxHealth = reader.readUInt16(); //maxHealth
@@ -48,8 +45,6 @@ function Player(reader, client) {
         this.client.SELF_PLAYER = this;
     }
 
-    this.collisionTimer = 0;
-
     this.mover = {
         x: 0,
         y: 0
@@ -69,7 +64,7 @@ Player.prototype.update = function (reader) {
 
     var  radius = reader.readUInt16(); //radius
     if (radius !== this.radius) {
-        console.log("NEW UPDATE PLAYER RADIUS: " + this.radius);
+        console.log("UPDATED PLAYER RADIUS: " + this.radius);
         this.radius = radius;
     }
 

@@ -357,17 +357,17 @@ PacketHandler.prototype.sendPackets = function () {
         if (socket.initialized) {
             var player = socket.player;
 
-            //socket.emit('updateEntities', this.masterPacket); //global updates
+            socket.emit('updateEntities', this.masterPacket); //global updates
 
             var packets = [];
             var packet;
             if (player.chunkAdd) {
                 for (id in player.chunkAdd) {
-                    //console.log("NEW CHUNK " + id);
                     packet = this.b_createChunkPacket(id);
                     if (packet) {
                         packets.push(packet);
                     }
+                    socket.emit('updateEntities', this.createChunkPacket(id));
                 }
                 player.chunkAdd = false;
             }

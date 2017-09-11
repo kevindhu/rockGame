@@ -153,7 +153,7 @@ function createRandomPolygon(world, user, vertices, x, y, texture) {
         'restitution': 0.5,
 
         'linearDamping': 0.2,
-        'angularDamping': 0.0,
+        'angularDamping': 1.0,
 
         'gravityScale': 1.0,
         'type': B2.b2Body.b2_dynamicBody,

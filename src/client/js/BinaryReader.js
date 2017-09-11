@@ -1,7 +1,7 @@
 function BinaryReader(data) {
     this._offset = 0;
     this._buffer = new DataView(data);
-    console.log(data.byteLength);
+    //console.log(data.byteLength);
 }
 
 module.exports = BinaryReader;

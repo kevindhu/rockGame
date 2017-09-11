@@ -413,8 +413,9 @@ Rock.prototype.split = function () {
     clone2.body.SetLinearVelocity(v2);
 
 
-    clone1.body.SetAngularVelocity(-0.5);
-    clone2.body.SetAngularVelocity(-0.5);
+    var ang = getRandom(-0.2,0.2);
+    clone1.body.SetAngularVelocity(ang);
+    clone2.body.SetAngularVelocity(ang);
 
     var dmg = 0 - this.health;
     clone1.decreaseHealth(this, dmg / 2);

@@ -212,6 +212,10 @@ Client.prototype.applyUpdate = function (reader) {
             fakeRock.update(reader);
 
             this.ROCK_LIST[id] = fakeRock;
+
+            this.socket.emit("getRock", {
+                id: id
+            });
         }
     }
 
@@ -225,11 +229,17 @@ Client.prototype.applyUpdate = function (reader) {
             player.update(reader);
         }
         else {
-            console.log("NO PLAYER ADDED: " + id);
+            //console.log("NO PLAYER ADDED: " + id);
             var fakePlayer = new Entity.Player(null, this);
             fakePlayer.update(reader);
 
             this.PLAYER_LIST[id] = fakePlayer;
+
+            this.socket.emit("getPlayer", {
+                id: id
+            });
+
+            console.log("EMITTING GETPLAYER");
         }
     }
 
@@ -428,10 +438,10 @@ Client.prototype.drawScene = function (data) {
 
 
     translateScene();
-    this.mainCtx.clearRect(0, 0, 30000, 30000);
+    this.mainCtx.clearRect(0, 0, 50000, 50000);
 
     this.mainCtx.fillStyle = "#1d1f21";
-    this.mainCtx.fillRect(0, 0, 30000, 30000);
+    this.mainCtx.fillRect(0, 0, 50000, 50000);
 
 
     for (var i = 0; i < entityList.length; i++) {
