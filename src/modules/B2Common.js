@@ -135,7 +135,7 @@ function createRandomPolygon(world, user, vertices, x, y, texture) {
     var density = 0;
     switch (texture) {
         case "bronze":
-            density = 1;
+            density = 0.1;
             break;
         case "silver":
             density = 4;
@@ -153,7 +153,7 @@ function createRandomPolygon(world, user, vertices, x, y, texture) {
         'restitution': 0.5,
 
         'linearDamping': 0.2,
-        'angularDamping': 1.0,
+        'angularDamping': 0.0,
 
         'gravityScale': 1.0,
         'type': B2.b2Body.b2_dynamicBody,

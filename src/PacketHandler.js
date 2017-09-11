@@ -78,10 +78,7 @@ PacketHandler.prototype.sendVerificationPackets = function (socket) {
 };
 
 PacketHandler.prototype.resetChunkPackets = function () {
-    for (var i = 0; i < entityConfig.CHUNKS; i++) {
-        this.CHUNK_PACKETS[i] = [];
-        this.B_CHUNK_PACKETS[i] = new Packet(this.gameServer);
-    }
+    this.B_CHUNK_PACKETS = {};
     this.masterPacket = [];
 };
 
@@ -119,8 +116,6 @@ PacketHandler.prototype.createChunkPacket = function (chunk, id) {
 PacketHandler.prototype.b_createChunkPacket = function (chunk) {
     var PLAYER_LIST = this.gameServer.CHUNKS[chunk].PLAYER_LIST;
     var ROCK_LIST = this.gameServer.CHUNKS[chunk].ROCK_LIST;
-
-    console.log(PLAYER_LIST);
 
     var populateBit = function (list, writer, call) {
         for (var i in list) {
@@ -160,7 +155,13 @@ PacketHandler.prototype.b_deleteChunkPacket = function (chunk) {
 PacketHandler.prototype.b_addPlayerPackets = function (player, writer) {
     var info = player.handler.addInfo();
 
-    writer = writer ? writer : this.B_CHUNK_PACKETS[player.chunk].addPlayers;
+    if (!writer) {
+        if (!this.B_CHUNK_PACKETS[player.chunk]) {
+            this.B_CHUNK_PACKETS[player.chunk] = new Packet(this.gameServer);
+        }
+        writer = this.B_CHUNK_PACKETS[player.chunk].addPlayers;
+    }
+
     writer.writeBytes(info);
     writer.length++;
 };
@@ -169,7 +170,14 @@ PacketHandler.prototype.b_addPlayerPackets = function (player, writer) {
 PacketHandler.prototype.b_addRockPackets = function (rock, writer) {
     var info = rock.handler.addInfo();
 
-    writer = writer ? writer : this.B_CHUNK_PACKETS[rock.chunk].addRocks;
+    if (!writer) {
+        if (!this.B_CHUNK_PACKETS[rock.chunk]) {
+            this.B_CHUNK_PACKETS[rock.chunk] = new Packet(this.gameServer);
+        }
+        writer = this.B_CHUNK_PACKETS[rock.chunk].addRocks;
+    }
+
+
     writer.writeBytes(info);
     writer.length++;
 };
@@ -177,7 +185,13 @@ PacketHandler.prototype.b_addRockPackets = function (rock, writer) {
 
 PacketHandler.prototype.b_updateRockPackets = function (rock) {
     var info = rock.handler.updateInfo();
+
+
+    if (!this.B_CHUNK_PACKETS[rock.chunk]) {
+        this.B_CHUNK_PACKETS[rock.chunk] = new Packet(this.gameServer);
+    }
     var writer = this.B_CHUNK_PACKETS[rock.chunk].updateRocks;
+
 
     writer.writeBytes(info);
     writer.length++;
@@ -185,6 +199,11 @@ PacketHandler.prototype.b_updateRockPackets = function (rock) {
 
 PacketHandler.prototype.b_updatePlayerPackets = function (player) {
     var info = player.handler.updateInfo();
+
+
+    if (!this.B_CHUNK_PACKETS[player.chunk]) {
+        this.B_CHUNK_PACKETS[player.chunk] = new Packet(this.gameServer);
+    }
     var writer = this.B_CHUNK_PACKETS[player.chunk].updatePlayers;
 
     writer.writeBytes(info);
@@ -194,7 +213,13 @@ PacketHandler.prototype.b_updatePlayerPackets = function (player) {
 
 PacketHandler.prototype.b_deletePlayerPackets = function (player, writer) {
     var info = player.handler.deleteInfo();
-    writer = writer ? writer : this.B_CHUNK_PACKETS[player.chunk].deleteRocks;
+
+    if (!writer) {
+        if (!this.B_CHUNK_PACKETS[player.chunk]) {
+            this.B_CHUNK_PACKETS[player.chunk] = new Packet(this.gameServer);
+        }
+        writer = this.B_CHUNK_PACKETS[player.chunk].deletePlayers;
+    }
 
     writer.writeBytes(info);
     writer.length++;
@@ -202,7 +227,14 @@ PacketHandler.prototype.b_deletePlayerPackets = function (player, writer) {
 
 PacketHandler.prototype.b_deleteRockPackets = function (rock, writer) {
     var info = rock.handler.deleteInfo();
-    writer = writer ? writer : this.B_CHUNK_PACKETS[rock.chunk].deleteRocks;
+
+
+    if (!writer) {
+        if (!this.B_CHUNK_PACKETS[rock.chunk]) {
+            this.B_CHUNK_PACKETS[rock.chunk] = new Packet(this.gameServer);
+        }
+        writer = this.B_CHUNK_PACKETS[rock.chunk].deleteRocks;
+    }
 
     writer.writeBytes(info);
     writer.length++;
@@ -331,16 +363,20 @@ PacketHandler.prototype.sendPackets = function () {
             var packet;
             if (player.chunkAdd) {
                 for (id in player.chunkAdd) {
-                    console.log("NEW CHUNK " + id);
+                    //console.log("NEW CHUNK " + id);
                     packet = this.b_createChunkPacket(id);
-                    packets.push(packet);
+                    if (packet) {
+                        packets.push(packet);
+                    }
                 }
                 player.chunkAdd = false;
             }
             if (player.chunkDelete) {
                 for (id in player.chunkDelete) {
                     packet = this.b_deleteChunkPacket(id);
-                    packets.push(packet);
+                    if (packet) {
+                        packets.push(packet);
+                    }
                 }
                 player.chunkDelete = false;
             }
@@ -348,7 +384,10 @@ PacketHandler.prototype.sendPackets = function () {
             var chunks = player.findNeighboringChunks();
             for (id in chunks) {
                 packet = this.B_CHUNK_PACKETS[id];
-                packets.push(packet);
+                if (packet) {
+                    packets.push(packet);
+                }
+
             }
             socket.emit('updateBinary', this.buildAllPackets(packets));
         }
@@ -376,8 +415,6 @@ PacketHandler.prototype.buildAllPackets = function (packets) {
     }
     writer.writeUInt16(totalLength);
     writer.writeBytes(tempWriter.toBuffer());
-
-    //console.log("ADD ROCKS: " + writer.allocLength);
 
 
     //addPlayers

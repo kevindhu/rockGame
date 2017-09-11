@@ -50,12 +50,6 @@ Rock.prototype.init = function () {
 };
 
 Rock.prototype.setB2 = function () {
-    var SCALE = this.SCALE;
-    //this.body = B2Common.createBox(this.gameServer.box2d_world, this, this.x, this.y, 0.4, 0.4);
-    var multiplier = function (x) {
-        return x * SCALE;
-    };
-
     if (!this.vertices) {
         //make default vertices
         var sides = this.sides;
@@ -74,10 +68,24 @@ Rock.prototype.setB2 = function () {
         this.vertices = vertices;
     }
 
+    this.calculateTrueScale();
+
 
     this.body = B2Common.createRandomPolygon(this.gameServer.box2d_world, this, this.vertices, this.x, this.y, this.texture);
     this.body.SetAngle(this.theta);
     this.getRandomVelocity();
+};
+
+
+Rock.prototype.calculateTrueScale = function () {
+    var total = 0;
+    for (var i = 0; i < this.vertices.length; i++) {
+        var vertex = this.vertices[i];
+        total += vertex[0] * vertex[0] + vertex[1] * vertex[1];
+    }
+    this.SCALE = Math.sqrt(total / this.vertices.length);
+
+    console.log(this.SCALE);
 };
 
 Rock.prototype.getRandomTexture = function () {
@@ -159,17 +167,18 @@ Rock.prototype.setCentroid = function () {
 
 
 Rock.prototype.tick = function () {
-    if (this.dead || overBoundary(this.body.GetPosition().x) || overBoundary(this.body.GetPosition().y)) {
+    if (this.dead || this.origin && (overBoundary(this.origin.x) || overBoundary(this.origin.x))) {
         this.onDelete();
         return;
     }
     this.move();
-    this.checkSpeed();
+    //this.checkSpeed();
+
 
     if (this.health <= 0 && !this.splitting) {
         this.splitting = true;
         this.splitTimer = 1;
-    } //check split
+    }
     if (this.splitting) {
         if (this.splitTimer > 0) {
             this.splitTimer -= 1;
@@ -177,20 +186,6 @@ Rock.prototype.tick = function () {
         else {
             this.split();
             return;
-        }
-    }
-
-    if (this.startChange) {         //change back to default ownership
-        this.startChange = false;
-        this.changing = true;
-        this.changeTimer = 20;
-    } //change neutrality
-    if (this.changing) {
-        if (this.changeTimer > 0) {
-            this.changeTimer -= 1;
-        }
-        else {
-            this.removeNeutral();
         }
     }
 
@@ -348,7 +343,8 @@ Rock.prototype.split = function () {
 
     var middleVertex = new B2.b2Vec2();
     var middle = Math.floor(count / 2);
-    middleVertex.Set((vertices[middle - 1].x + vertices[middle].x) / 2 + getRandom(-0.2, 0.2), (vertices[middle - 1].y + vertices[middle].y) / 2 + getRandom(-0.2, 0.2));
+    var divider = 2;
+    middleVertex.Set((vertices[middle - 1].x + vertices[middle].x) / divider, (vertices[middle - 1].y + vertices[middle].y) / divider);
 
     var lastVertex = new B2.b2Vec2();
     lastVertex.Set((vertices[count - 1].x + vertices[0].x) / 2, (vertices[count - 1].y + vertices[0].y) / 2);
@@ -359,7 +355,7 @@ Rock.prototype.split = function () {
     var i;
 
 
-    if (getRandom(0, 3) < 1 && count > 3) { //one big, one small
+    if (getRandom(0, 3) < 1 && count > 3 && 1 === 2) { //one big, one small, NOT USED
         for (i = 0; i < middle; i++) {
             vertices1.push([vertices[i].x, vertices[i].y]);
         }
@@ -408,13 +404,17 @@ Rock.prototype.split = function () {
     var v1 = clone1.body.GetLinearVelocity();
     var v2 = clone2.body.GetLinearVelocity();
 
-    v1.x = normalVel * Math.cos(theta + 0.1) / 3;
-    v1.y = normalVel * Math.sin(theta + 0.1) / 3;
-    v2.x = normalVel * Math.cos(theta - 0.1) / 3;
-    v2.y = normalVel * Math.sin(theta - 0.1) / 3;
+    v1.x = normalVel * Math.cos(theta + 0.1) / 2;
+    v1.y = normalVel * Math.sin(theta + 0.1) / 2;
+    v2.x = normalVel * Math.cos(theta - 0.1) / 2;
+    v2.y = normalVel * Math.sin(theta - 0.1) / 2;
 
     clone1.body.SetLinearVelocity(v1);
     clone2.body.SetLinearVelocity(v2);
+
+
+    clone1.body.SetAngularVelocity(-0.5);
+    clone2.body.SetAngularVelocity(-0.5);
 
     var dmg = 0 - this.health;
     clone1.decreaseHealth(this, dmg / 2);

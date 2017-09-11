@@ -65,7 +65,6 @@ GameServer.prototype.initWalls = function () {
         width - border / 2, width / 2,
         border, width);
 
-
     B2Common.createBox(this.box2d_world, this,
         width / 2, border / 2,
         width - 2 * border, border);
@@ -143,8 +142,15 @@ GameServer.prototype.spawnRocks = function () {
 };
 
 GameServer.prototype.update = function () {
+
+    var prevTimeStamp = this.timeStamp;
+
     this.timeStamp = Date.now();
     this.step += 1;
+
+    if (this.timeStamp - prevTimeStamp > 50) {
+        console.log(this.timeStamp - prevTimeStamp);
+    }
 
     if (this.timeStamp % 50 === 0) {
         this.packetHandler.sendPing(this.timeStamp);
