@@ -479,9 +479,9 @@ Client.prototype.updateStep = function () {
     var update;
 
     if (!stepRange) {
+        //console.log("STEP RANGE TOO SMALL: SERVER TOO SLOW");
         return;
     }
-    //console.log(this.updates[0]);
 
     if (this.currStep < this.initialStep) {
         this.currStep += 1;
@@ -490,10 +490,12 @@ Client.prototype.updateStep = function () {
     if (this.currStep > this.lastStep) {
         //console.log("STEP RANGE TOO SMALL: SERVER TOO SLOW");
         return;
-    } //too fast
+    }
 
-    while (this.lastStep - this.currStep > 5 + this.currPing / 50) {
-        //console.log("STEP RANGE TOO LARGE: CLIENT IS TOO SLOW FOR STEP: " + this.currStep);
+    console.log(this.lastStep - this.currStep);
+
+    while (this.lastStep - this.currStep > 3 + this.currPing / 50) {
+        console.log("STEP RANGE TOO LARGE: CLIENT IS TOO SLOW FOR STEP: " + this.currStep);
         update = this.findUpdatePacket(this.currStep);
         if (!update) {
             console.log("UPDATE NOT FOUND!!!!");
@@ -549,7 +551,7 @@ Client.prototype.findUpdatePacket = function (step) {
 
 
 Client.prototype.start = function () {
-    setInterval(this.clientUpdate.bind(this), 1000 / 25);
+    setInterval(this.clientUpdate.bind(this), 1000 / 23);
 };
 
 function lerp(a, b, ratio) {

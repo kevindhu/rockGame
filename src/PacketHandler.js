@@ -333,7 +333,6 @@ PacketHandler.prototype.deleteRockPackets = function (rock, chunk) {
 
 
 PacketHandler.prototype.sendPing = function (timestamp) {
-    var id;
     for (var index in this.gameServer.SOCKET_LIST) {
         var socket = this.gameServer.SOCKET_LIST[index];
         if (socket.player) {
@@ -357,7 +356,7 @@ PacketHandler.prototype.sendPackets = function () {
         if (socket.initialized) {
             var player = socket.player;
 
-            socket.emit('updateEntities', this.masterPacket); //global updates
+            //socket.emit('updateEntities', this.masterPacket); //global updates
 
             var packets = [];
             var packet;
@@ -367,7 +366,7 @@ PacketHandler.prototype.sendPackets = function () {
                     if (packet) {
                         packets.push(packet);
                     }
-                    socket.emit('updateEntities', this.createChunkPacket(id));
+                    //socket.emit('updateEntities', this.createChunkPacket(id));
                 }
                 player.chunkAdd = false;
             }

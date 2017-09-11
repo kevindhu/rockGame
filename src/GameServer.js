@@ -149,7 +149,7 @@ GameServer.prototype.update = function () {
     this.step += 1;
 
     if (this.timeStamp - prevTimeStamp > 50) {
-        //console.log(this.timeStamp - prevTimeStamp);
+        console.log(this.timeStamp - prevTimeStamp);
     }
 
     if (this.timeStamp % 50 === 0) {
