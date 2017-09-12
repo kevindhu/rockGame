@@ -24,8 +24,7 @@ PlayerHandler.prototype.addInfo = function () {
 
     writer.writeUInt8(player.name.length >>> 0);
     for (var i = 0; i < player.name.length; i++) {
-        var val = player.name.charCodeAt(i); //- 97 + 1;
-        console.log(val);
+        var val = player.name.charCodeAt(i);
         writer.writeUInt8(val >>> 0);              //name
     }
 

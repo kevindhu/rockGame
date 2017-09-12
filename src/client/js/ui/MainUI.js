@@ -46,12 +46,14 @@ MainUI.prototype.updateLeaderBoard = function () {
     leaderboard.innerHTML = "";
     for (var i = PLAYER_ARRAY.length - 1; i >= 0; i--) {
         var player = this.client.PLAYER_LIST[PLAYER_ARRAY[i]];
+
+        PLAYER_ARRAY.splice(i, 1);
+
         var entry = document.createElement('li');
         entry.appendChild(document.createTextNode(player.name + " - " + player.radius));
         leaderboard.appendChild(entry);
     }
 };
-
 
 
 module.exports = MainUI;

@@ -83,6 +83,7 @@ Rock.prototype.show = function () {
     this.updateTimer -= 1;
 
     if (this.updateTimer <= 0) {
+        console.log("DELETING ROCK " + this.id);
         delete this.client.ROCK_LIST[this.id];
         return;
     }

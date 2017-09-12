@@ -211,7 +211,7 @@ Player.prototype.show = function () {
 
     if (this.health && this.maxHealth && this.health > 0) { //health bar
         if (this.health > this.maxHealth) {
-            console.log(this.health, this.maxHealth);
+            console.log("ROCK HAS TOO MUCH HEALTH: " + this.health, this.maxHealth);
         }
         ctx.lineWidth = 10;
         ctx.beginPath();

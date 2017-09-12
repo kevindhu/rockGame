@@ -210,7 +210,7 @@ Client.prototype.applyUpdate = function (reader) {
             rock.update(reader);
         }
         else {
-            console.log("FUCK YOU MATE " + id);
+            console.log("MAKING NEW FAKE ROCK " + id);
 
             var fakeRock = new Entity.Rock(null, this);
             fakeRock.update(reader);
@@ -252,7 +252,7 @@ Client.prototype.applyUpdate = function (reader) {
         id = reader.readUInt32();
         delete this.ROCK_LIST[id];
 
-        //console.log("DELETED ROCK: " + id);
+        //console.log("DELETED ROCK NORMALLY: " + id);
     }
 
     var player3Length = reader.readUInt8();
@@ -305,12 +305,6 @@ Client.prototype.handlePacket = function (data) {
             case "add":
                 this.addEntities(packet);
                 break;
-            case "delete":
-                this.deleteEntities(packet);
-                break;
-            case "update":
-                this.updateEntities(packet);
-                break;
         }
     }
 };
@@ -330,19 +324,7 @@ Client.prototype.addEntities = function (packet) {
     switch (packet.class) {
         case "tileInfo":
             addEntity(packet, this.TILE_LIST, Entity.Tile);
-            break;
-        case "playerInfo":
-            //addEntity(packet, this.PLAYER_LIST, Entity.Player, this.PLAYER_ARRAY);
-            break;
-        case "animationInfo":
-            if (packet.id === this.SELF_ID) {
-                addEntity(packet, this.ANIMATION_LIST, Entity.Animation);
-            }
-            break;
-        case "UIInfo":
-            if (this.SELF_ID === packet.playerId) {
-                this.mainUI.open(packet);
-            }
+            console.log("ADDED TILE");
             break;
         case "selfId":
             if (!this.SELF_ID) {
@@ -356,62 +338,6 @@ Client.prototype.addEntities = function (packet) {
     }
 };
 
-Client.prototype.updateEntities = function (packet) {
-    function updateEntity(packet, list) {
-        if (!packet) {
-            return;
-        }
-        var entity = list[packet.id];
-        if (!entity) {
-            return;
-        }
-        entity.update(packet);
-    }
-
-    switch (packet.class) {
-        case "playerInfo":
-            //updateEntity(packet, this.PLAYER_LIST);
-            break;
-        case "tileInfo":
-            updateEntity(packet, this.TILE_LIST);
-            break;
-        case "UIInfo":
-            if (this.SELF_ID === packet.playerId) {
-                this.mainUI.update(packet);
-            }
-            break;
-    }
-};
-
-Client.prototype.deleteEntities = function (packet) {
-    var deleteEntity = function (packet, list, array) {
-        if (!packet) {
-            return;
-        }
-        if (array) {
-            var index = array.indexOf(packet.id);
-            array.splice(index, 1);
-        }
-        delete list[packet.id];
-    };
-
-    switch (packet.class) {
-        case "tileInfo":
-            deleteEntity(packet, this.TILE_LIST);
-            break;
-        case "playerInfo":
-            //deleteEntity(packet, this.PLAYER_LIST, this.PLAYER_ARRAY);
-            break;
-        case "animationInfo":
-            deleteEntity(packet, this.ANIMATION_LIST);
-            break;
-        case "UIInfo":
-            if (this.SELF_ID === packet.id) {
-                this.mainUI.close(packet.action);
-            }
-            break;
-    }
-};
 
 Client.prototype.drawScene = function (data) {
     this.mainUI.updateLeaderBoard();
@@ -501,7 +427,7 @@ Client.prototype.updateStep = function () {
 
     console.log(this.lastStep - this.currStep);
 
-    while (this.lastStep - this.currStep > 3 + this.currPing / 50) {
+    while (this.lastStep - this.currStep > 5 + this.currPing / 50) {
         console.log("STEP RANGE TOO LARGE: CLIENT IS TOO SLOW FOR STEP: " + this.currStep);
         update = this.findUpdatePacket(this.currStep);
         if (!update) {
@@ -558,7 +484,7 @@ Client.prototype.findUpdatePacket = function (step) {
 
 
 Client.prototype.start = function () {
-    setInterval(this.clientUpdate.bind(this), 1000 / 23);
+    setInterval(this.clientUpdate.bind(this), 1000 / 27);
 };
 
 function lerp(a, b, ratio) {

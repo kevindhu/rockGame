@@ -57,21 +57,18 @@ GameServer.prototype.initWalls = function () {
     var border = entityConfig.BORDER_WIDTH;
     var width = entityConfig.WIDTH;
 
-    B2Common.createBox(this.box2d_world, this,
-        border / 2, width / 2,
-        border, width);
 
-    B2Common.createBox(this.box2d_world, this,
-        width - border / 2, width / 2,
-        border, width);
+    var wall1 = new Entity.Wall(border / 2, width / 2,
+        border, width, this);
 
-    B2Common.createBox(this.box2d_world, this,
-        width / 2, border / 2,
-        width - 2 * border, border);
+    var wall2 = new Entity.Wall(width - border / 2, width / 2,
+        border, width, this);
 
-    B2Common.createBox(this.box2d_world, this,
-        width / 2, width - border / 2,
-        width - 2 * border, border);
+    var wall3 = new Entity.Wall(width / 2, border / 2,
+        width - 2 * border, border, this);
+
+    var wall4 = new Entity.Wall(width / 2, width - border / 2,
+        width - 2 * border, border, this);
 };
 
 
@@ -149,7 +146,7 @@ GameServer.prototype.update = function () {
     this.step += 1;
 
     if (this.timeStamp - prevTimeStamp > 50) {
-        //console.log(this.timeStamp - prevTimeStamp);
+        console.log(this.timeStamp - prevTimeStamp);
     }
 
     if (this.timeStamp % 50 === 0) {
@@ -327,7 +324,7 @@ GameServer.prototype.start = function () {
             delete this.SOCKET_LIST[socket.id];
         }.bind(this));
     }.bind(this));
-    setInterval(this.update.bind(this), 1000 / 25);
+    setInterval(this.update.bind(this), 1000 / 30);
 };
 
 GameServer.prototype.createPlayer = function (socket, info) {

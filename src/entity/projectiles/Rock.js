@@ -336,22 +336,30 @@ Rock.prototype.split = function () {
         return;
     }
 
+    var buf = 2;
+
     var poly = this.body.GetFixtureList().GetShape();
     var vertices = poly.GetVertices();
     var count = poly.GetVertexCount();
 
 
-    var middleVertex = new B2.b2Vec2();
-    var middle = Math.floor(count / 2);
-
+    var middle = Math.floor(count / 2) + buf;
     var factor = getRandom(0.3, 0.7);
+
+    var middleVertex = new B2.b2Vec2();
     middleVertex.Set(
-        vertices[middle - 1].x * factor + vertices[middle].x * (1 - factor),
-        vertices[middle - 1].y * factor + vertices[middle].y * (1 - factor)
+        vertices[(middle - 1) % count].x * factor + vertices[middle % count].x * (1 - factor),
+        vertices[(middle - 1) % count].y * factor + vertices[middle % count].y * (1 - factor)
     );
 
+
+    var factor2 = getRandom(0.3, 0.7);
+
     var lastVertex = new B2.b2Vec2();
-    lastVertex.Set((vertices[count - 1].x + vertices[0].x) / 2, (vertices[count - 1].y + vertices[0].y) / 2);
+    lastVertex.Set(
+        vertices[(count + buf - 1) % count].x * factor2 + vertices[buf % count].x * (1 - factor2),
+        vertices[(count + buf - 1) % count].y * factor2 + vertices[buf % count].y * (1 - factor2)
+    );
 
 
     var vertices1 = [];
@@ -359,33 +367,20 @@ Rock.prototype.split = function () {
     var i;
 
 
-    if (getRandom(0, 3) < 1 && count > 3 && 1 === 2) { //one big, one small, NOT USED
-        for (i = 0; i < middle; i++) {
-            vertices1.push([vertices[i].x, vertices[i].y]);
-        }
-        vertices1.push([middleVertex.x, middleVertex.y]);
-
-
-        vertices2.push([middleVertex.x, middleVertex.y]);
-        for (i = middle; i < count; i++) {
-            vertices2.push([vertices[i].x, vertices[i].y]);
-        }
-        vertices2.push([vertices[0].x, vertices[0].y]);
+    //default
+    vertices1.push([lastVertex.x, lastVertex.y]);
+    for (i = buf; i < middle; i++) {
+        vertices1.push([vertices[i % count].x, vertices[i % count].y]);
     }
-    else { //default
-        vertices1.push([lastVertex.x, lastVertex.y]);
-        for (i = 0; i < middle; i++) {
-            vertices1.push([vertices[i].x, vertices[i].y]);
-        }
-        vertices1.push([middleVertex.x, middleVertex.y]);
+    vertices1.push([middleVertex.x, middleVertex.y]);
 
 
-        vertices2.push([middleVertex.x, middleVertex.y]);
-        for (i = middle; i < count; i++) {
-            vertices2.push([vertices[i].x, vertices[i].y]);
-        }
-        vertices2.push([lastVertex.x, lastVertex.y]);
+
+    vertices2.push([middleVertex.x, middleVertex.y]);
+    for (i = middle; i < count + buf; i++) {
+        vertices2.push([vertices[i % count].x, vertices[i % count].y]);
     }
+    vertices2.push([lastVertex.x, lastVertex.y]);
 
 
     var x = Math.floor(this.body.GetPosition().x);
