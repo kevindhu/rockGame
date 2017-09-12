@@ -196,6 +196,10 @@ Client.prototype.applyUpdate = function (reader) {
             this.SELF_PLAYER = player;
         }
         this.PLAYER_LIST[player.id] = player;
+
+        if (this.PLAYER_ARRAY.indexOf(player.id) === -1) {
+            this.PLAYER_ARRAY.push(player.id);
+        }
     }
 
     var rock2Length = reader.readUInt16(); //update rocks
@@ -254,9 +258,12 @@ Client.prototype.applyUpdate = function (reader) {
     var player3Length = reader.readUInt8();
     for (i = 0; i < player3Length; i++) {
         id = reader.readUInt32();
-        delete this.PLAYER_LIST[id];
 
-        console.log("DELETED PLAYER: " + id);
+        console.log("DELETING PLAYER: " + id);
+
+        delete this.PLAYER_LIST[id];
+        var index = this.PLAYER_ARRAY.indexOf(id);
+        this.PLAYER_ARRAY.splice(index, 1);
     }
 };
 

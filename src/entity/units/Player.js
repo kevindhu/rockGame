@@ -319,8 +319,8 @@ Player.prototype.boostVelocity = function () {
     this.vulnerable = true;
     this.vulnerableTimer = 20;
     var v = this.body.GetLinearVelocity();
-    v.x *= 7;
-    v.y *= 7;
+    v.x *= 20;
+    v.y *= 20;
 
     this.body.SetLinearVelocity(v);
 };

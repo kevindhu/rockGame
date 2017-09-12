@@ -22,12 +22,14 @@ PlayerHandler.prototype.addInfo = function () {
 
     writer.writeUInt16(player.radius >>> 0);             //radius
 
-    var nameNum = "";
+    writer.writeUInt8(player.name.length >>> 0);
     for (var i = 0; i < player.name.length; i++) {
-        const val = player.name.toLowerCase().charCodeAt(i) - 97 + 1;
-        nameNum = nameNum + "" + val;
+        var val = player.name.charCodeAt(i); //- 97 + 1;
+        console.log(val);
+        writer.writeUInt8(val >>> 0);              //name
     }
-    writer.writeUInt32(parseInt(nameNum) >>> 0);              //name
+
+
 
     writer.writeUInt8(player.vertices.length >>> 0); //vertices
     for (var i = 0; i < player.vertices.length; i++) {
@@ -66,13 +68,6 @@ PlayerHandler.prototype.updateInfo = function () {
     writer.writeUInt32(y * 10000 >> 0);                // y
 
     writer.writeUInt16(player.radius >>> 0);             //radius
-
-    var nameNum = "";
-    for (var i = 0; i < player.name.length; i++) {
-        const val = player.name.toLowerCase().charCodeAt(i) - 97 + 1;
-        nameNum = nameNum + "" + val;
-    }
-    writer.writeUInt32(parseInt(nameNum) >>> 0);              //name
 
     writer.writeUInt16(player.health >>> 0);              //health
     writer.writeUInt16(player.maxHealth >>> 0);           //maxHealth

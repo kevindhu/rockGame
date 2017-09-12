@@ -10,7 +10,15 @@ function Player(reader, client) {
     this.y = reader.readUInt32() / 100; //real y
 
     this.radius = reader.readUInt16(); //radius
-    this.name = reader.readUInt32(); //name
+
+    var nameLength = reader.readUInt8();
+    var name = "";
+
+    for (var i = 0; i < nameLength; i++) {
+        var char = String.fromCharCode(reader.readUInt8());
+        name += char;
+    }
+    this.name = name;
 
     this.vertices = [];            //vertices
     var count = reader.readUInt8();
@@ -62,14 +70,11 @@ Player.prototype.update = function (reader) {
     this.x = reader.readUInt32() / 100; //real x
     this.y = reader.readUInt32() / 100; //real y
 
-    var  radius = reader.readUInt16(); //radius
+    var radius = reader.readUInt16(); //radius
     if (radius !== this.radius) {
         console.log("UPDATED PLAYER RADIUS: " + this.radius);
         this.radius = radius;
     }
-
-
-    this.name = reader.readInt32(); //name
 
     this.health = reader.readUInt16(); //health
     this.maxHealth = reader.readUInt16(); //maxHealth

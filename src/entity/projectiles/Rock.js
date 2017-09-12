@@ -343,8 +343,12 @@ Rock.prototype.split = function () {
 
     var middleVertex = new B2.b2Vec2();
     var middle = Math.floor(count / 2);
-    var divider = 2;
-    middleVertex.Set((vertices[middle - 1].x + vertices[middle].x) / divider, (vertices[middle - 1].y + vertices[middle].y) / divider);
+
+    var factor = getRandom(0.3, 0.7);
+    middleVertex.Set(
+        vertices[middle - 1].x * factor + vertices[middle].x * (1 - factor),
+        vertices[middle - 1].y * factor + vertices[middle].y * (1 - factor)
+    );
 
     var lastVertex = new B2.b2Vec2();
     lastVertex.Set((vertices[count - 1].x + vertices[0].x) / 2, (vertices[count - 1].y + vertices[0].y) / 2);
@@ -413,13 +417,13 @@ Rock.prototype.split = function () {
     clone2.body.SetLinearVelocity(v2);
 
 
-    var ang = getRandom(-0.2,0.2);
+    var ang = getRandom(-0.2, 0.2);
     clone1.body.SetAngularVelocity(ang);
     clone2.body.SetAngularVelocity(ang);
 
     var dmg = 0 - this.health;
-    clone1.decreaseHealth(this, dmg / 2);
-    clone2.decreaseHealth(this, dmg / 2);
+    clone1.decreaseHealth(this, dmg / getRandom(2, 6));
+    clone2.decreaseHealth(this, dmg / getRandom(2, 6));
 
     this.onDelete();
 
