@@ -134,7 +134,7 @@ Player.prototype.tick = function () {
     }
 
 
-    this.increaseHealth(0.3);
+    this.increaseHealth(1);
 
     this.chunkTimer -= 1;
     if (this.chunkTimer <= 0) {
@@ -171,7 +171,7 @@ Player.prototype.resetLevels = function () {
     this.AREA = 10000;
     this.radius = Math.sqrt(this.AREA);
     this.grabRadius = 2 * this.radius;
-    this.velBuffer = 3 * this.radius / 100;
+    this.velBuffer = this.radius / 1000;
 
 };
 
@@ -337,9 +337,9 @@ Player.prototype.consumeRock = function (rock) {
     this.maxHealth += 20;
     this.power += 1;
 
-    this.increaseHealth(10);
+    this.increaseHealth(rock.AREA * 10);
 
-    this.velBuffer = 3 * this.radius / 100;
+    this.velBuffer = this.radius / 1000;
 
     this.resettingBody = true;
     rock.dead = true;
@@ -370,22 +370,22 @@ Player.prototype.move = function (x, y) {
     }
 
     var pos = this.body.GetPosition();
-    pos.x += 1.5 * x / normalVel / this.velBuffer;
-    pos.y += 1.5 * y / normalVel / this.velBuffer;
+    pos.x += x / normalVel / (this.velBuffer + 1.5);
+    pos.y += y / normalVel / (this.velBuffer + 1.5);
 
     this.body.SetPosition(pos);
 
 };
 
 Player.prototype.reset = function () {
-    this.dropAllRocks();
     this.split();
-    this.resetLevels();
 
     this.x = entityConfig.WIDTH / 2;
     this.y = entityConfig.WIDTH / 2;
 
+    this.resetLevels();
     this.resetBody();
+    this.dropAllRocks();
 };
 
 Player.prototype.dropAllRocks = function () {

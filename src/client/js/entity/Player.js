@@ -70,11 +70,7 @@ Player.prototype.update = function (reader) {
     this.x = reader.readUInt32() / 100; //real x
     this.y = reader.readUInt32() / 100; //real y
 
-    var radius = reader.readUInt16(); //radius
-    if (radius !== this.radius) {
-        console.log("UPDATED PLAYER RADIUS: " + this.radius);
-        this.radius = radius;
-    }
+    this.realRadius = reader.readUInt16(); //radius
 
     this.health = reader.readUInt16(); //health
     this.maxHealth = reader.readUInt16(); //maxHealth
@@ -139,6 +135,11 @@ Player.prototype.move = function (x, y) {
 
 
 Player.prototype.show = function () {
+    if (!this.radius) {
+        this.radius = 1;
+    }
+    console.log(this.radius);
+    this.radius = lerp(this.radius, this.realRadius, 0.2);
     this.updateTimer -= 1;
     if (this.updateTimer <= 0) {
         delete this.client.PLAYER_LIST[this.id];
@@ -222,13 +223,13 @@ Player.prototype.show = function () {
         ctx.lineWidth = 10;
         ctx.beginPath();
         ctx.strokeStyle = "black";
-        ctx.rect(this.x, this.y, 100, 20);
+        ctx.rect(this.x - 400, this.y + 200, 800, 100);
         ctx.stroke();
         ctx.closePath();
 
         ctx.beginPath();
         ctx.fillStyle = "green";
-        ctx.rect(this.x, this.y, 100 * this.health / this.maxHealth, 20);
+        ctx.rect(this.x - 400, this.y + 200, 800 * this.health / this.maxHealth, 100);
         ctx.fill();
         ctx.closePath();
     } //display health bar

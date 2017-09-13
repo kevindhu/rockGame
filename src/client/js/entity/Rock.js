@@ -51,7 +51,7 @@ function Rock(reader, client) {
 
 
 Rock.prototype.update = function (reader) {
-    this.updateTimer = 50;
+    this.updateTimer = 20;
 
     this.owner = reader.readUInt32();
     this.x = reader.readUInt32() / 100;

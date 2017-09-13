@@ -49,7 +49,7 @@ MainUI.prototype.updateLeaderBoard = function () {
 
         if (player) {
             var entry = document.createElement('li');
-            entry.appendChild(document.createTextNode(player.name + " - " + player.radius));
+            entry.appendChild(document.createTextNode(player.name + " - " + Math.floor(player.radius)));
             leaderboard.appendChild(entry);
         }
     }
