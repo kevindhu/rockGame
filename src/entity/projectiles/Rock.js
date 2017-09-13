@@ -6,7 +6,7 @@ var entityConfig = require('../entityConfig');
 var RockHandler = require('./RockHandler');
 var lerp = require('lerp');
 
-function Rock(x, y, SCALE, gameServer, body, vertices, texture) {
+function Rock(x, y, SCALE, gameServer, body, vertices, texture, theta) {
     this.gameServer = gameServer;
     this.packetHandler = gameServer.packetHandler;
 
@@ -20,7 +20,7 @@ function Rock(x, y, SCALE, gameServer, body, vertices, texture) {
     this.x = x;
     this.y = y;
     this.SCALE = SCALE;
-    this.theta = getRandom(0, 3);
+    this.theta = theta ? theta : getRandom(0, 3);
 
     this.texture = texture ? texture : this.getRandomTexture();
     this.getFeed();
@@ -33,14 +33,18 @@ function Rock(x, y, SCALE, gameServer, body, vertices, texture) {
 
     this.owner = null;
     this.body = body;
+
     this.init();
 }
 
 Rock.prototype.init = function () {
+    this.setVertices();
+    this.setCentroid();
+    this.calculateArea();
+
     if (!this.body) {
         this.setB2();
     }
-    this.setCentroid();
 
     this.chunk = EntityFunctions.findChunk(this.gameServer, this);
 
@@ -50,42 +54,23 @@ Rock.prototype.init = function () {
 };
 
 Rock.prototype.setB2 = function () {
-    if (!this.vertices) {
-        //make default vertices
-        var sides = this.sides;
-        var vertices = [];
-
-        var theta = 0;
-        var delta = 2 * Math.PI / sides;
-        for (var i = 0; i < sides; i++) {
-            theta = i * delta + getRandom(-0.2, 0.2);
-            var x = Math.cos(theta) * this.SCALE;
-            var y = Math.sin(theta) * this.SCALE;
-
-            vertices[i] = [x, y];
-        }
-
-        this.vertices = vertices;
-    }
-
-    this.calculateTrueScale();
-
-
     this.body = B2Common.createRandomPolygon(this.gameServer.box2d_world, this, this.vertices, this.x, this.y, this.texture);
     this.body.SetAngle(this.theta);
     this.getRandomVelocity();
 };
 
 
-Rock.prototype.calculateTrueScale = function () {
+Rock.prototype.calculateArea = function () {
     var total = 0;
+
     for (var i = 0; i < this.vertices.length; i++) {
         var vertex = this.vertices[i];
-        total += vertex[0] * vertex[0] + vertex[1] * vertex[1];
-    }
-    this.SCALE = Math.sqrt(total / this.vertices.length);
+        var x = vertex[0] - this.centroid[0];
+        var y = vertex[1] - this.centroid[1];
 
-    console.log(this.SCALE);
+        total += x * x + y * y;
+    }
+    this.AREA = Math.sqrt(total) / this.vertices.length;
 };
 
 Rock.prototype.getRandomTexture = function () {
@@ -160,6 +145,27 @@ Rock.prototype.setDefaultHealth = function () {
     this.health = this.maxHealth;
 };
 
+
+Rock.prototype.setVertices = function () {
+    if (!this.vertices) {
+        //make default vertices
+        var sides = this.sides;
+        var vertices = [];
+
+        var theta = 0;
+        var delta = 2 * Math.PI / sides;
+        for (var i = 0; i < sides; i++) {
+            theta = i * delta + getRandom(-0.2, 0.2);
+            var x = Math.cos(theta) * this.SCALE;
+            var y = Math.sin(theta) * this.SCALE;
+
+            vertices[i] = [x, y];
+        }
+
+        this.vertices = vertices;
+    }
+};
+
 Rock.prototype.setCentroid = function () {
     this.centroid = B2Common.findCentroid(this.vertices);
     this.centroidLength = normal(this.centroid[0], this.centroid[1]);
@@ -167,13 +173,14 @@ Rock.prototype.setCentroid = function () {
 
 
 Rock.prototype.tick = function () {
-    if (this.dead || this.origin && (overBoundary(this.origin.x) || overBoundary(this.origin.x))) {
+    if (!this.body || this.body === "temp") {
+        return;
+    }
+    if (this.dead) {
         this.onDelete();
         return;
     }
     this.move();
-    //this.checkSpeed();
-
 
     if (this.health <= 0 && !this.splitting) {
         this.splitting = true;
@@ -193,20 +200,6 @@ Rock.prototype.tick = function () {
 };
 
 
-Rock.prototype.checkSpeed = function () {
-    var v = this.body.GetLinearVelocity();
-    var normalVel = normal(v.x, v.y);
-
-
-    if (this.fast && normalVel < 10) {
-        this.fast = false;
-    }
-    else if (!this.fast && normalVel > 10) {
-        this.fast = true;
-    }
-};
-
-
 Rock.prototype.move = function () {
     if (this.owner) {
         this.getOrigin();
@@ -220,8 +213,8 @@ Rock.prototype.move = function () {
             //do nothing
         }
         else {
-            v.x = 2 * (playerPosition.x - this.origin.x);
-            v.y = 2 * (playerPosition.y - this.origin.y);
+            v.x = 0.7 * (playerPosition.x - this.origin.x);
+            v.y = 0.7 * (playerPosition.y - this.origin.y);
         }
 
         this.body.SetLinearVelocity(v);
@@ -330,9 +323,9 @@ Rock.prototype.getOrigin = function () {
 
 
 Rock.prototype.split = function () {
-    if (this.SCALE < 0.1) {
+    if (this.AREA < 0.3) {
         this.gameServer.box2d_world.DestroyBody(this.body);
-        this.onDelete();
+        this.dead = true;
         return;
     }
 
@@ -375,7 +368,6 @@ Rock.prototype.split = function () {
     vertices1.push([middleVertex.x, middleVertex.y]);
 
 
-
     vertices2.push([middleVertex.x, middleVertex.y]);
     for (i = middle; i < count + buf; i++) {
         vertices2.push([vertices[i % count].x, vertices[i % count].y]);
@@ -385,11 +377,15 @@ Rock.prototype.split = function () {
 
     var x = Math.floor(this.body.GetPosition().x);
     var y = Math.floor(this.body.GetPosition().y);
-    var bodies = B2Common.createPolygonSplit(this.gameServer.box2d_world, this.body, vertices1, vertices2);
 
 
-    var clone1 = new Rock(x, y, this.SCALE * 3 / 5, this.gameServer, bodies[0], vertices1, this.texture);
-    var clone2 = new Rock(x, y, this.SCALE * 3 / 5, this.gameServer, bodies[1], vertices2, this.texture);
+
+
+    //var bodies = B2Common.createPolygonSplit(this.gameServer.box2d_world, this.body, vertices1, vertices2);
+
+    var clone1 = new Rock(x, y, this.SCALE * 3 / 5, this.gameServer, null, vertices1, this.texture, this.body.GetAngle());
+    var clone2 = new Rock(x, y, this.SCALE * 3 / 5, this.gameServer, null, vertices2, this.texture, this.body.GetAngle());
+
 
     clone1.body.GetFixtureList().SetUserData(clone1);
     clone2.body.GetFixtureList().SetUserData(clone2);

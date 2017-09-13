@@ -146,11 +146,11 @@ GameServer.prototype.update = function () {
     this.step += 1;
 
     if (this.timeStamp - prevTimeStamp > 50) {
-        console.log(this.timeStamp - prevTimeStamp);
+        //console.log("TOO LAGGY: " + this.timeStamp - prevTimeStamp);
     }
 
     if (this.timeStamp % 50 === 0) {
-        this.packetHandler.sendPing(this.timeStamp);
+        //this.packetHandler.sendPing(this.timeStamp);
     }
 
     this.updateBox2d();
@@ -244,12 +244,16 @@ GameServer.prototype.start = function () {
 
         socket.on('getPlayer', function (data) {
             var newPlayer = this.PLAYER_LIST[data.id];
-            this.packetHandler.b_addPlayerPackets(newPlayer);
+            if (newPlayer) {
+                this.packetHandler.b_addPlayerPackets(newPlayer);
+            }
         }.bind(this));
 
         socket.on('getRock', function (data) {
             var rock = this.ROCK_LIST[data.id];
-            this.packetHandler.b_addRockPackets(rock);
+            if (rock) {
+                this.packetHandler.b_addRockPackets(rock);
+            }
         }.bind(this));
 
         socket.on('chatMessage', function (data) {
@@ -324,7 +328,7 @@ GameServer.prototype.start = function () {
             delete this.SOCKET_LIST[socket.id];
         }.bind(this));
     }.bind(this));
-    setInterval(this.update.bind(this), 1000 / 30);
+    setInterval(this.update.bind(this), 1000 / 25);
 };
 
 GameServer.prototype.createPlayer = function (socket, info) {
@@ -335,7 +339,7 @@ GameServer.prototype.createPlayer = function (socket, info) {
 GameServer.prototype.setupCollisionHandler = function () {
     var tryAddRock = function (a, b) {
         if (a instanceof Entity.Rock && b instanceof Entity.PlayerSensor) {
-            if (a.SCALE < 0.4 && !a.owner && !a.fast) {
+            if (a.AREA < 1 && !a.owner && !a.fast) {
                 b.parent.addRock(a);
             }
         }

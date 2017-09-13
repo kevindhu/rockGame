@@ -240,7 +240,6 @@ function createPolygonSplit(world, body, v1, v2) {
     var pol2 = new B2.b2PolygonShape();
     pol2.SetAsArray(b2V2, b2V2.length);
 
-
     world.DestroyBody(body);
 
     fix_def.shape = pol1;
@@ -266,7 +265,7 @@ function createCircleSensor(body, user, radius) {
     fix_def.isSensor = true;
     fix_def.userData = user;
 
-    body.CreateFixture(fix_def);
+    return body.CreateFixture(fix_def);
 }
 
 

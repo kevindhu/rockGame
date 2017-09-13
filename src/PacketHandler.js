@@ -84,8 +84,6 @@ PacketHandler.prototype.resetChunkPackets = function () {
 
 
 PacketHandler.prototype.sendChunkInitPackets = function (socket, chunk) {
-    console.log("STEP: " + this.gameServer.step + " CHUNK: " + chunk);
-
     socket.emit('updateEntities', this.createChunkPacket(chunk, socket.id));
     socket.emit('updateBinary', this.b_createChunkPacket(chunk).build());
 };

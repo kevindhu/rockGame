@@ -6,10 +6,15 @@ function PlayerSensor(parent, range) {
     this.id = Math.random();
     this.parent = parent;
 
-    B2Common.createCircleSensor(parent.body, this, range);
+    this.fixture = B2Common.createCircleSensor(this.parent.body, this, range);
 }
 
 
+
+PlayerSensor.prototype.onDelete = function () {
+    this.parent.body.DestroyFixture(this.fixture);
+    this.fixture = null;
+};
 
 
 

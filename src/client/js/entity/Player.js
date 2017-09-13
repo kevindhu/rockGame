@@ -194,7 +194,13 @@ Player.prototype.show = function () {
 
 
     if (!this.vulnerable) {
-        ctx.fillStyle = "rgba(0, 255, 0, 0.3)";
+        if (this.health > this.maxHealth / 2) {
+            ctx.fillStyle = "rgba(0, 255, 0, 0.3)";
+        }
+        else {
+            ctx.fillStyle = "rgba(255, 0, 0, 0.3)";
+        }
+
         ctx.arc(0, 0, this.radius * 2, 0, 2 * Math.PI);
         ctx.fill();
     }

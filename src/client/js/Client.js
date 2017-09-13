@@ -157,7 +157,6 @@ Client.prototype.initLists = function () {
     this.ROCK_LIST = {};
     this.ASTEROID_LIST = {};
     this.ANIMATION_LIST = {};
-
     this.PLAYER_ARRAY = [];
 };
 Client.prototype.initViewers = function () {
@@ -484,7 +483,7 @@ Client.prototype.findUpdatePacket = function (step) {
 
 
 Client.prototype.start = function () {
-    setInterval(this.clientUpdate.bind(this), 1000 / 27);
+    setInterval(this.clientUpdate.bind(this), 1000 / 24);
 };
 
 function lerp(a, b, ratio) {

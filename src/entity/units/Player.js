@@ -30,7 +30,6 @@ function Player(id, name, gameServer) {
         y: 0
     };
 
-    this.power = 1;
     this.chunkTimer = 0;
     this.rocks = [];
 
@@ -54,7 +53,7 @@ Player.prototype.initB2 = function () {
     this.body = B2Common.createDisk(this.gameServer.box2d_world, this, this.x, this.y, this.radius / 50);
 
 
-    this.sensor = new PlayerSensor(this, this.radius/100 * 3);
+    this.sensor = new PlayerSensor(this, this.radius / 100 * this.grabRadius);
 };
 
 Player.prototype.setVertices = function () {
@@ -167,14 +166,13 @@ Player.prototype.resetLevels = function () {
     this.maxHealth = 200;
     this.health = this.maxHealth;
 
-    this.level = 0;
-    this.range = 1000;
-    this.radius = 100;
-    this.velBuffer = 3;
+    this.power = 1;
 
-    this.rockMaxLength = 10;
-    this.food = 0;
-    this.maxFood = 2;
+    this.AREA = 10000;
+    this.radius = Math.sqrt(this.AREA);
+    this.grabRadius = 2 * this.radius;
+    this.velBuffer = 3 * this.radius / 100;
+
 };
 
 Player.prototype.decreaseHealth = function (entity, amount) {
@@ -189,7 +187,7 @@ Player.prototype.decreaseHealth = function (entity, amount) {
 
     this.health -= amount / 4;
     if (this.health <= 0) {
-        this.onDeath();
+        this.dead = true;
     }
 };
 
@@ -332,46 +330,19 @@ Player.prototype.addRock = function (rock) {
 };
 
 Player.prototype.consumeRock = function (rock) {
-    this.eat(10);
-    rock.dead = true;
-};
+    this.AREA += rock.AREA * rock.AREA * 10000;
+    this.radius = Math.sqrt(this.AREA);
+    this.grabRadius = 2 * this.radius;
 
-Player.prototype.eat = function (amount) {
-    if (amount > 0) {
-        this.food++;
-        this.increaseHealth(amount);
-    }
-    if (this.food > this.maxFood) {
-        this.levelUp();
-    }
-};
-
-Player.prototype.levelUp = function () {
-    //increase health
-    //decrease speed
-    //update character model
-    //reset food and maxFood
-    //level up length of asteroids
-    //level up animation
-
-    this.level++;
-    this.radius += 10;
     this.maxHealth += 20;
+    this.power += 1;
 
-    this.updateVelBuffer(0.1);
+    this.increaseHealth(10);
 
-
-    this.grabRadius += 1; //the range of rocks that will come to you for eating
-    this.power += 1; //power determines your damages
-
-
-    this.food = 0;
-    this.maxFood++;
+    this.velBuffer = 3 * this.radius / 100;
 
     this.resettingBody = true;
-
-
-    //console.log("LEVEL UP: " + this.level);
+    rock.dead = true;
 };
 
 
@@ -406,17 +377,8 @@ Player.prototype.move = function (x, y) {
 
 };
 
-
-Player.prototype.updateVelBuffer = function (amount) {
-    this.velBuffer += amount;
-};
-
-
-Player.prototype.onDeath = function () {
-    this.dead = true;
-};
-
 Player.prototype.reset = function () {
+    this.dropAllRocks();
     this.split();
     this.resetLevels();
 
@@ -424,6 +386,13 @@ Player.prototype.reset = function () {
     this.y = entityConfig.WIDTH / 2;
 
     this.resetBody();
+};
+
+Player.prototype.dropAllRocks = function () {
+    for (var i = this.rocks.length - 1; i>= 0; i--) {
+        var rock = this.rocks[i];
+        rock.removeOwner();
+    }
 };
 
 
