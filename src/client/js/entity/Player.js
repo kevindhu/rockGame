@@ -138,7 +138,6 @@ Player.prototype.show = function () {
     if (!this.radius) {
         this.radius = 1;
     }
-    console.log(this.radius);
     this.radius = lerp(this.radius, this.realRadius, 0.2);
     this.updateTimer -= 1;
     if (this.updateTimer <= 0) {
@@ -218,7 +217,7 @@ Player.prototype.show = function () {
 
     if (this.health && this.maxHealth && this.health > 0) { //health bar
         if (this.health > this.maxHealth) {
-            console.log("ROCK HAS TOO MUCH HEALTH: " + this.health, this.maxHealth);
+            console.log("PLAYER HAS TOO MUCH HEALTH: " + this.health, this.maxHealth);
         }
         ctx.lineWidth = 10;
         ctx.beginPath();

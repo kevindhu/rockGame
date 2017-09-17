@@ -44,6 +44,7 @@ Rock.prototype.init = function () {
 
     if (!this.body) {
         this.setB2();
+        this.updateBody();
     }
 
     this.chunk = EntityFunctions.findChunk(this.gameServer, this);
@@ -173,20 +174,29 @@ Rock.prototype.setCentroid = function () {
 
 
 Rock.prototype.tick = function () {
-    if (!this.body || this.body === "temp") {
+    if (this.body === "temp") {
         return;
     }
     if (this.dead) {
         this.onDelete();
         return;
     }
-    this.move();
+
+
+    if (this.deletingBody) {
+        this.deletingBody = false;
+        this.x = this.body.GetPosition().x;
+        this.y = this.body.GetPosition().y;
+        this.deleteBody();
+        return;
+    }
+
 
     if (this.health <= 0 && !this.splitting) {
         this.splitting = true;
         this.splitTimer = 1;
     }
-    if (this.splitting) {
+    if (this.splitting && this.body) {
         if (this.splitTimer > 0) {
             this.splitTimer -= 1;
         }
@@ -196,28 +206,43 @@ Rock.prototype.tick = function () {
         }
     }
 
+
+    this.updateBody();
+    this.move();
+
     this.packetHandler.b_updateRockPackets(this);
 };
 
+Rock.prototype.updateBody = function () {
+    if (!this.body) {
+        return;
+    }
+    this.x = this.body.GetPosition().x;
+    this.y = this.body.GetPosition().y;
+    this.theta = this.body.GetAngle();
+};
+
+
+Rock.prototype.deleteBody = function () {
+    this.gameServer.box2d_world.DestroyBody(this.body);
+    this.body = null;
+};
 
 Rock.prototype.move = function () {
     if (this.owner) {
-        this.getOrigin();
         var playerPosition = this.owner.body.GetPosition();
-        var v = this.body.GetLinearVelocity();
-        this.getTheta(playerPosition, this.origin);
+        this.getOrigin();
+        //this.getTheta(playerPosition, this.origin);
 
 
-        if (inBounds(this.origin.x, playerPosition.x, 0.3) &&
-            inBounds(this.origin.y, playerPosition.y, 0.3)) {
-            //do nothing
+        if (inBounds(this.origin.x, playerPosition.x, 3) &&
+            inBounds(this.origin.y, playerPosition.y, 3)) {
+            this.owner.consumeRock(this);
         }
         else {
-            v.x = 0.7 * (playerPosition.x - this.origin.x);
-            v.y = 0.7 * (playerPosition.y - this.origin.y);
+            this.x += 0.1 * (playerPosition.x - this.origin.x);
+            this.y += 0.1 * (playerPosition.y - this.origin.y);
         }
-
-        this.body.SetLinearVelocity(v);
     }
 };
 
@@ -227,7 +252,9 @@ Rock.prototype.onDelete = function () {
     if (this.owner) {
         this.removeOwner();
     }
-    this.gameServer.box2d_world.DestroyBody(this.body);
+    else {
+        this.gameServer.box2d_world.DestroyBody(this.body);
+    }
 
     this.packetHandler.b_deleteRockPackets(this);
     delete this.gameServer.CHUNKS[this.chunk].ROCK_LIST[this.id];
@@ -245,6 +272,7 @@ Rock.prototype.addOwner = function (owner) {
         this.removeOwner();
     }
     this.owner = owner;
+    this.deletingBody = true;
 };
 
 Rock.prototype.removeOwner = function () {
@@ -252,7 +280,7 @@ Rock.prototype.removeOwner = function () {
         return;
     }
     this.owner.removeRock(this);
-    this.owner = null;
+    this.dead = true;
 };
 
 Rock.prototype.getTheta = function (target, origin) {
@@ -288,32 +316,11 @@ Rock.prototype.shoot = function (owner, targetX, targetY) {
     this.addShooting(owner, targetX, targetY);
 };
 
-
-Rock.prototype.addShooting = function (owner, targetX, targetY) {
-    playerPosition = null;
-    this.setNeutral(100);
-    this.shootTimer = 60;
-
-    var targetPt = {
-        x: targetX,
-        y: targetY
-    };
-
-    this.getOrigin();
-
-    this.getTheta(targetPt, this.origin);
-
-    var v = this.body.GetLinearVelocity();
-    v.x = 20 * Math.cos(this.theta);
-    v.y = 20 * Math.sin(this.theta);
-    this.body.SetLinearVelocity(v);
-};
-
 Rock.prototype.getOrigin = function () {
-    var x = this.body.GetPosition().x;
-    var y = this.body.GetPosition().y;
+    var x = this.x;
+    var y = this.y;
 
-    var angle = Math.atan2(this.centroid[1], this.centroid[0]) % (2 * Math.PI) + this.body.GetAngle();
+    var angle = Math.atan2(this.centroid[1], this.centroid[0]) % (2 * Math.PI) + this.theta;
     this.origin = {
         x: x + this.centroidLength * Math.cos(angle),
         y: y + this.centroidLength * Math.sin(angle)
@@ -323,7 +330,7 @@ Rock.prototype.getOrigin = function () {
 
 
 Rock.prototype.split = function () {
-    if (this.AREA < 0.3) {
+    if (this.AREA < 0.7) {
         this.gameServer.box2d_world.DestroyBody(this.body);
         this.dead = true;
         return;
@@ -379,8 +386,6 @@ Rock.prototype.split = function () {
     var y = Math.floor(this.body.GetPosition().y);
 
 
-
-
     //var bodies = B2Common.createPolygonSplit(this.gameServer.box2d_world, this.body, vertices1, vertices2);
 
     var clone1 = new Rock(x, y, this.SCALE * 3 / 5, this.gameServer, null, vertices1, this.texture, this.body.GetAngle());
@@ -413,8 +418,8 @@ Rock.prototype.split = function () {
     clone2.body.SetAngularVelocity(ang);
 
     var dmg = 0 - this.health;
-    clone1.decreaseHealth(this, dmg / getRandom(2, 6));
-    clone2.decreaseHealth(this, dmg / getRandom(2, 6));
+    clone1.decreaseHealth(this, dmg / getRandom(10, 15));
+    clone2.decreaseHealth(this, dmg / getRandom(10, 15));
 
     this.onDelete();
 

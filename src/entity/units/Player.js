@@ -192,7 +192,7 @@ Player.prototype.decreaseHealth = function (entity, amount) {
 };
 
 Player.prototype.increaseHealth = function (amount) {
-    if (this.health <= this.maxHealth) {
+    if (this.health < this.maxHealth) {
         this.health += amount;
     }
 };
@@ -269,8 +269,8 @@ Player.prototype.shootSelf = function (x, y) {
     this.getTheta(target, origin);
 
     var v = this.body.GetLinearVelocity();
-    v.x = 30 * Math.cos(this.theta);
-    v.y = 30 * Math.sin(this.theta);
+    v.x = 60 * Math.cos(this.theta);
+    v.y = 60 * Math.sin(this.theta);
     this.body.SetLinearVelocity(v);
 
     this.shooting = true;
@@ -352,6 +352,10 @@ Player.prototype.resetBody = function () {
 };
 
 Player.prototype.move = function (x, y) {
+    if (this.shooting) {
+        //return;
+    }
+
     var target = {
         x: this.x + x,
         y: this.y + y
@@ -369,12 +373,16 @@ Player.prototype.move = function (x, y) {
         normalVel = 1;
     }
 
-    var pos = this.body.GetPosition();
-    pos.x += x / normalVel / (this.velBuffer + 1.5);
-    pos.y += y / normalVel / (this.velBuffer + 1.5);
+    var vel = this.body.GetLinearVelocity();
+    //var pos = this.body.GetPosition();
 
-    this.body.SetPosition(pos);
 
+    vel.x = lerp(vel.x, 40 * x / normalVel / (this.velBuffer + 1.5), 0.1);
+    vel.y = lerp(vel.y, 40 * y / normalVel / (this.velBuffer + 1.5), 0.1);
+
+    //this.body.SetPosition(pos);
+
+    this.body.SetLinearVelocity(vel);
 };
 
 Player.prototype.reset = function () {

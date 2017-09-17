@@ -424,8 +424,6 @@ Client.prototype.updateStep = function () {
         return;
     }
 
-    console.log(this.lastStep - this.currStep);
-
     while (this.lastStep - this.currStep > 5 + this.currPing / 50) {
         console.log("STEP RANGE TOO LARGE: CLIENT IS TOO SLOW FOR STEP: " + this.currStep);
         update = this.findUpdatePacket(this.currStep);

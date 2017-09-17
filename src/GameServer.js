@@ -345,16 +345,6 @@ GameServer.prototype.setupCollisionHandler = function () {
         }
     };
 
-
-    var tryEatRock = function (a, b, contact) {
-        if (a instanceof Entity.Rock && b instanceof Entity.Player) {
-            if (b.containsRock(a)) {
-                contact.SetEnabled(false);
-                b.consumeRock(a);
-            }
-        }
-    };
-
     var doImpact = function (a, b) {
         var aVel = a.body.GetLinearVelocity();
         var bVel = b.body.GetLinearVelocity();
@@ -422,9 +412,6 @@ GameServer.prototype.setupCollisionHandler = function () {
 
         tryAddRock(a, b);
         tryAddRock(b, a);
-
-        tryEatRock(a, b, contact);
-        tryEatRock(b, a, contact);
     }.bind(this);
 
     B2.b2ContactListener.prototype.PreSolve = function (contact) {
