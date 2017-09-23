@@ -328,7 +328,7 @@ GameServer.prototype.start = function () {
             delete this.SOCKET_LIST[socket.id];
         }.bind(this));
     }.bind(this));
-    setInterval(this.update.bind(this), 1000 / 25);
+    setInterval(this.update.bind(this), 1000 / 30);
 };
 
 GameServer.prototype.createPlayer = function (socket, info) {
@@ -352,8 +352,8 @@ GameServer.prototype.setupCollisionHandler = function () {
             aVel.y - bVel.y);
 
         if (impact > 10) {
-            a.decreaseHealth(a, impact);
-            b.decreaseHealth(b, impact);
+            a.decreaseHealth(b, impact);
+            b.decreaseHealth(a, impact);
         }
     };
 

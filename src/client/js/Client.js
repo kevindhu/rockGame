@@ -481,7 +481,7 @@ Client.prototype.findUpdatePacket = function (step) {
 
 
 Client.prototype.start = function () {
-    setInterval(this.clientUpdate.bind(this), 1000 / 24);
+    setInterval(this.clientUpdate.bind(this), 1000 / 28);
 };
 
 function lerp(a, b, ratio) {

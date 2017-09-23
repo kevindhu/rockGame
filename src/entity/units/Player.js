@@ -72,9 +72,9 @@ Player.prototype.setVertices = function () {
 
 
 Player.prototype.onDelete = function () {
+    this.gameServer.box2d_world.DestroyBody(this.body);
     delete this.gameServer.PLAYER_LIST[this.id];
     delete this.gameServer.CHUNKS[this.chunk].PLAYER_LIST[this.id];
-    //this.packetHandler.deletePlayerPackets(this);
     this.packetHandler.b_deletePlayerPackets(this);
 };
 
@@ -102,7 +102,7 @@ Player.prototype.tick = function () {
     }
     if (this.resettingBody) {
         this.resettingBody = false;
-        this.resetBody();
+        //this.resetBody();
     }
 
     if (this.boosting) {
@@ -123,7 +123,7 @@ Player.prototype.tick = function () {
         this.shootTimer -= 1;
         if (this.shootTimer <= 0) {
             this.shooting = false;
-            this.stallVelocity();
+            //this.stallVelocity();
         }
     }
     if (this.vulnerable) {
@@ -245,6 +245,7 @@ Player.prototype.getTheta = function (target, origin) {
 };
 
 
+
 Player.prototype.shootSelfDefault = function () {
     this.shootSelf(this.x + this.realMover.x, this.y + this.realMover.y);
 };
@@ -330,16 +331,16 @@ Player.prototype.addRock = function (rock) {
 };
 
 Player.prototype.consumeRock = function (rock) {
-    this.AREA += rock.AREA * rock.AREA * 10000;
+    this.AREA += rock.AREA * 100;
     this.radius = Math.sqrt(this.AREA);
     this.grabRadius = 2 * this.radius;
 
-    this.maxHealth += 20;
+    this.maxHealth += 5;
     this.power += 1;
 
     this.increaseHealth(rock.AREA * 10);
 
-    this.velBuffer = this.radius / 1000;
+    //this.velBuffer = this.radius / 1000;
 
     this.resettingBody = true;
     rock.dead = true;
@@ -347,8 +348,12 @@ Player.prototype.consumeRock = function (rock) {
 
 
 Player.prototype.resetBody = function () {
+    var vel = this.body.GetLinearVelocity();
     this.gameServer.box2d_world.DestroyBody(this.body);
     this.initB2();
+    vel.x *= 3;
+    vel.y *= 3;
+    this.body.SetLinearVelocity(vel);
 };
 
 Player.prototype.move = function (x, y) {
@@ -377,8 +382,8 @@ Player.prototype.move = function (x, y) {
     //var pos = this.body.GetPosition();
 
 
-    vel.x = lerp(vel.x, 40 * x / normalVel / (this.velBuffer + 1.5), 0.1);
-    vel.y = lerp(vel.y, 40 * y / normalVel / (this.velBuffer + 1.5), 0.1);
+    vel.x = lerp(vel.x, 40 * x / normalVel / (this.velBuffer/10 + 1.5), 0.1);
+    vel.y = lerp(vel.y, 40 * y / normalVel / (this.velBuffer/10 + 1.5), 0.1);
 
     //this.body.SetPosition(pos);
 
