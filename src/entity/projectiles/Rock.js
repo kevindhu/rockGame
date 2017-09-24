@@ -15,8 +15,6 @@ function Rock(x, y, SCALE, gameServer, body, vertices, texture, theta) {
     this.gameServer.rockCount += 1;
     this.id = Math.abs(Math.floor(Math.random() * 10000000));
 
-    //console.log("NEW ROCK: " + this.id);
-
     this.x = x;
     this.y = y;
     this.SCALE = SCALE;
@@ -41,6 +39,7 @@ Rock.prototype.init = function () {
     this.setVertices();
     this.setCentroid();
     this.calculateArea();
+    this.setLifeTimer();
 
     if (!this.body) {
         this.setB2();
@@ -58,6 +57,11 @@ Rock.prototype.setB2 = function () {
     this.body = B2Common.createRandomPolygon(this.gameServer.box2d_world, this, this.vertices, this.x, this.y, this.texture);
     this.body.SetAngle(this.theta);
     this.getRandomVelocity();
+};
+
+
+Rock.prototype.setLifeTimer = function () {
+    this.lifeTimer = this.AREA * this.AREA * this.AREA * this.AREA;
 };
 
 
@@ -181,8 +185,10 @@ Rock.prototype.tick = function () {
         this.onDelete();
         return;
     }
-
-
+    if (this.lifeTimer <= 0) {
+        this.onDelete();
+        return;
+    }
     if (this.deletingBody) {
         this.deletingBody = false;
         this.x = this.body.GetPosition().x;
@@ -190,7 +196,7 @@ Rock.prototype.tick = function () {
         this.deleteBody();
         return;
     }
-
+    this.lifeTimer -= 1;
 
     if (this.health <= 0 && !this.splitting) {
         this.splitting = true;
@@ -308,6 +314,7 @@ Rock.prototype.decayVelocity = function () {
 
 
 Rock.prototype.decreaseHealth = function (entity, amount) {
+    this.setLifeTimer();
     this.health -= amount * entity.power;
 };
 
@@ -404,10 +411,11 @@ Rock.prototype.split = function () {
     var v1 = clone1.body.GetLinearVelocity();
     var v2 = clone2.body.GetLinearVelocity();
 
-    v1.x = normalVel * Math.cos(theta + 0.1) / 2;
-    v1.y = normalVel * Math.sin(theta + 0.1) / 2;
-    v2.x = normalVel * Math.cos(theta - 0.1) / 2;
-    v2.y = normalVel * Math.sin(theta - 0.1) / 2;
+    v1.x = normalVel * Math.cos(theta + 0.1);
+    v1.y = normalVel * Math.sin(theta + 0.1);
+
+    v2.x = normalVel * Math.cos(theta - 0.1);
+    v2.y = normalVel * Math.sin(theta - 0.1);
 
     clone1.body.SetLinearVelocity(v1);
     clone2.body.SetLinearVelocity(v2);

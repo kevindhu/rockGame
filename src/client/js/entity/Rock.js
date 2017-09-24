@@ -42,20 +42,24 @@ function Rock(reader, client) {
             break;
     }
     var delta = reader._offset - prev;
-    //console.log("DELTA: " + delta);
-
     this.updates = [];
-
+    this.updateTimer = 20;
     this.client = client;
 }
 
 
 Rock.prototype.update = function (reader) {
-    this.updateTimer = 20;
-
     this.owner = reader.readUInt32();
+
+    var x = this.x;
+    var y = this.y;
+
     this.x = reader.readUInt32() / 100;
     this.y = reader.readUInt32() / 100;
+
+    if (this.x !== x && this.y !== y) {
+        this.updateTimer = 20;
+    }
 
     this.health = reader.readInt16();
     this.maxHealth = reader.readInt16();
@@ -81,9 +85,8 @@ Rock.prototype.update = function (reader) {
 
 Rock.prototype.show = function () {
     this.updateTimer -= 1;
-
     if (this.updateTimer <= 0) {
-        console.log("DELETING ROCK " + this.id);
+        console.log("DELETING ROCK VIA TIMEOUT: " + this.id);
         delete this.client.ROCK_LIST[this.id];
         return;
     }

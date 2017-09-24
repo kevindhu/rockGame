@@ -351,7 +351,7 @@ GameServer.prototype.setupCollisionHandler = function () {
         var impact = normal(aVel.x - bVel.x,
             aVel.y - bVel.y);
 
-        if (impact > 10) {
+        if (impact > 20) {
             a.decreaseHealth(b, impact);
             b.decreaseHealth(a, impact);
         }
@@ -379,6 +379,7 @@ GameServer.prototype.setupCollisionHandler = function () {
                 contact.SetEnabled(false);
                 return;
             }
+            a.setLifeTimer();
             doImpact(a, b);
         }
     }.bind(this);

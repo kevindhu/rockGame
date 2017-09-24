@@ -78,7 +78,7 @@ Player.prototype.update = function (reader) {
     this.health = reader.readUInt16(); //health
     this.maxHealth = reader.readUInt16(); //maxHealth
 
-    this.theta = lerp(this.theta, reader.readInt16() / 100, 0.6); //theta
+    this.theta = reader.readInt16() / 100; //theta
     this.level = reader.readUInt8(); //level
 
     var flags = reader.readUInt16();

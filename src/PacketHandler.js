@@ -347,8 +347,6 @@ PacketHandler.prototype.sendPing = function (timestamp) {
 
 PacketHandler.prototype.sendPackets = function () {
     var id;
-
-
     for (var index in this.gameServer.SOCKET_LIST) {
         var socket = this.gameServer.SOCKET_LIST[index];
         if (socket.initialized) {

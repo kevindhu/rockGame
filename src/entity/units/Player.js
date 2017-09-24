@@ -53,7 +53,7 @@ Player.prototype.initB2 = function () {
     this.body = B2Common.createDisk(this.gameServer.box2d_world, this, this.x, this.y, this.radius / 50);
 
 
-    this.sensor = new PlayerSensor(this, this.radius / 100 * this.grabRadius);
+    this.sensor = new PlayerSensor(this, this.grabRadius/100);
 };
 
 Player.prototype.setVertices = function () {
@@ -134,7 +134,7 @@ Player.prototype.tick = function () {
     }
 
 
-    this.increaseHealth(1);
+    this.increaseHealth(0.3);
 
     this.chunkTimer -= 1;
     if (this.chunkTimer <= 0) {
@@ -163,16 +163,15 @@ Player.prototype.setMove = function (x, y) {
 };
 
 Player.prototype.resetLevels = function () {
-    this.maxHealth = 200;
+    this.maxHealth = 100;
     this.health = this.maxHealth;
 
     this.power = 1;
 
     this.AREA = 10000;
     this.radius = Math.sqrt(this.AREA);
-    this.grabRadius = 2 * this.radius;
+    this.grabRadius = 4 * this.radius;
     this.velBuffer = this.radius / 1000;
-
 };
 
 Player.prototype.decreaseHealth = function (entity, amount) {
@@ -270,8 +269,8 @@ Player.prototype.shootSelf = function (x, y) {
     this.getTheta(target, origin);
 
     var v = this.body.GetLinearVelocity();
-    v.x = 60 * Math.cos(this.theta);
-    v.y = 60 * Math.sin(this.theta);
+    v.x = 80 * Math.cos(this.theta);
+    v.y = 80 * Math.sin(this.theta);
     this.body.SetLinearVelocity(v);
 
     this.shooting = true;
@@ -331,9 +330,9 @@ Player.prototype.addRock = function (rock) {
 };
 
 Player.prototype.consumeRock = function (rock) {
-    this.AREA += rock.AREA * 100;
+    this.AREA += rock.AREA * rock.AREA * 100;
     this.radius = Math.sqrt(this.AREA);
-    this.grabRadius = 2 * this.radius;
+    this.grabRadius = 4 * this.radius;
 
     this.maxHealth += 5;
     this.power += 1;
@@ -381,9 +380,12 @@ Player.prototype.move = function (x, y) {
     var vel = this.body.GetLinearVelocity();
     //var pos = this.body.GetPosition();
 
-
-    vel.x = lerp(vel.x, 40 * x / normalVel / (this.velBuffer/10 + 1.5), 0.1);
-    vel.y = lerp(vel.y, 40 * y / normalVel / (this.velBuffer/10 + 1.5), 0.1);
+    var mag = 0.1;
+    if (this.shooting) {
+        mag = 0.001;
+    }
+    vel.x = lerp(vel.x, 30 * x / normalVel / (this.velBuffer/10 + 1.5), mag);
+    vel.y = lerp(vel.y, 30 * y / normalVel / (this.velBuffer/10 + 1.5), mag);
 
     //this.body.SetPosition(pos);
 
