@@ -170,7 +170,7 @@ Player.prototype.resetLevels = function () {
 
     this.AREA = 10000;
     this.radius = Math.sqrt(this.AREA);
-    this.grabRadius = 4 * this.radius;
+    this.grabRadius = 10 * this.radius;
     this.velBuffer = this.radius / 1000;
 };
 
@@ -274,7 +274,7 @@ Player.prototype.shootSelf = function (x, y) {
     this.body.SetLinearVelocity(v);
 
     this.shooting = true;
-    this.shootTimer = 10;
+    this.shootTimer = 20;
 };
 
 
@@ -332,7 +332,7 @@ Player.prototype.addRock = function (rock) {
 Player.prototype.consumeRock = function (rock) {
     this.AREA += rock.AREA * rock.AREA * 100;
     this.radius = Math.sqrt(this.AREA);
-    this.grabRadius = 4 * this.radius;
+    this.grabRadius = 10 * this.radius;
 
     this.maxHealth += 5;
     this.power += 1;
@@ -381,7 +381,7 @@ Player.prototype.move = function (x, y) {
     //var pos = this.body.GetPosition();
 
     var mag = 0.1;
-    if (this.shooting) {
+    if (this.shooting || this.vulnerable) {
         mag = 0.001;
     }
     vel.x = lerp(vel.x, 30 * x / normalVel / (this.velBuffer/10 + 1.5), mag);

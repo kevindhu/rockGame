@@ -339,7 +339,7 @@ GameServer.prototype.createPlayer = function (socket, info) {
 GameServer.prototype.setupCollisionHandler = function () {
     var tryAddRock = function (a, b) {
         if (a instanceof Entity.Rock && b instanceof Entity.PlayerSensor) {
-            if (a.AREA < 1 && !a.owner && !a.fast) {
+            if (a.AREA < 2 && !a.owner && !a.fast) {
                 b.parent.addRock(a);
             }
         }

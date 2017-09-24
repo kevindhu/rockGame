@@ -34,6 +34,7 @@ function Player(reader, client) {
     this.theta = reader.readInt16() / 100; //theta
     this.level = reader.readUInt8(); //level
 
+
     switch (reader.readUInt8()) {    //flags
         case 1:
             this.vulnerable = true;
@@ -81,11 +82,20 @@ Player.prototype.update = function (reader) {
     this.theta = reader.readInt16() / 100; //theta
     this.level = reader.readUInt8(); //level
 
-    var flags = reader.readUInt16();
-
-    this.shooting = Number(String(flags).charAt(0)) === 1;
-    this.vulnerable = Number(String(flags).charAt(1)) === 1;
-    this.colliding = Number(String(flags).charAt(2)) === 1;
+    this.vulnerable = false;
+    this.shooting = false;
+    switch (reader.readUInt8()) {    //flags
+        case 1:
+            this.vulnerable = true;
+            break;
+        case 16:
+            this.shooting = true;
+            break;
+        case 17:
+            this.vulnerable = true;
+            this.shooting = true;
+            break;
+    }
 
 };
 

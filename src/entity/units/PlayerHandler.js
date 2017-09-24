@@ -75,16 +75,11 @@ PlayerHandler.prototype.updateInfo = function () {
     writer.writeUInt8(player.level >>> 0);                  //level
 
     var flags = 0;
-    if (player.shooting) {
-        flags |= 0x100;
-    }
-    if (player.vulnerable) {
-        flags |= 0x010;
-    }
-    if (player.colliding) {
-        flags |= 0x001;
-    }
-    writer.writeUInt16(parseInt(flags.toString(16)) >>> 0);                    //flags
+    if (player.vulnerable)
+        flags |= 0x01;
+    if (player.shooting)
+        flags |= 0x10;
+    writer.writeUInt8(flags >>> 0);                    //flags
 
 
 

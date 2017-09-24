@@ -57,8 +57,8 @@ Rock.prototype.update = function (reader) {
     this.x = reader.readUInt32() / 100;
     this.y = reader.readUInt32() / 100;
 
-    if (this.x !== x && this.y !== y) {
-        this.updateTimer = 20;
+    if (this.x !== x || this.y !== y) {
+        this.updateTimer = 200;
     }
 
     this.health = reader.readInt16();

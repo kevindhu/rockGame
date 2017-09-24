@@ -61,17 +61,17 @@ Rock.prototype.setB2 = function () {
 
 
 Rock.prototype.setLifeTimer = function () {
-    this.lifeTimer = this.AREA * this.AREA * this.AREA * this.AREA;
+    this.lifeTimer = Math.pow(this.AREA, 3);
+    this.lifeTimer += 100;
 };
-
 
 Rock.prototype.calculateArea = function () {
     var total = 0;
 
     for (var i = 0; i < this.vertices.length; i++) {
         var vertex = this.vertices[i];
-        var x = vertex[0] - this.centroid[0];
-        var y = vertex[1] - this.centroid[1];
+        var x = (vertex[0] - this.centroid[0]) * 2;
+        var y = (vertex[1] - this.centroid[1]) * 2;
 
         total += x * x + y * y;
     }
@@ -185,7 +185,7 @@ Rock.prototype.tick = function () {
         this.onDelete();
         return;
     }
-    if (this.lifeTimer <= 0) {
+    if (this.lifeTimer <= 0 && this.body) {
         this.onDelete();
         return;
     }
