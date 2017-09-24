@@ -337,23 +337,51 @@ Rock.prototype.getOrigin = function () {
 
 
 Rock.prototype.split = function () {
+    console.log(this.AREA);
     if (this.AREA < 0.7) {
         this.gameServer.box2d_world.DestroyBody(this.body);
         this.dead = true;
         return;
     }
 
-    var buf = 2;
-
+    var getMaxLength = function (vert, c) {
+        var max = 0;
+        var curr = 0;
+        for (var i = 1; i <= c; i++) {
+            curr = 0;
+            curr += square(vert[i % c].x - vert[(i - 1) % c].x);
+            curr += square(vert[i % c].y - vert[(i - 1) % c].y);
+            if (max < curr) {
+                max = curr;
+            }
+        }
+        return curr;
+    };
     var poly = this.body.GetFixtureList().GetShape();
     var vertices = poly.GetVertices();
     var count = poly.GetVertexCount();
 
+    var maxLength = getMaxLength(vertices, count);
+    console.log("MAX LENGTH: " + maxLength);
+    var middleLength = 0;
 
+    var buf = 0;
     var middle = Math.floor(count / 2) + buf;
-    var factor = getRandom(0.3, 0.7);
 
+    while (middleLength < maxLength / 2) {
+        buf++;
+        middle = Math.floor(count / 2) + buf;
+
+        middleLength = 0;
+        middleLength += square(vertices[(middle - 1) % count].x - vertices[middle % count].x);
+        middleLength += square(vertices[(middle - 1) % count].y - vertices[middle % count].y);
+    }
+
+    console.log("MIDDLE LENGTH: " + middleLength);
+    var factor = getRandom(0.3, 0.7);
     var middleVertex = new B2.b2Vec2();
+
+
     middleVertex.Set(
         vertices[(middle - 1) % count].x * factor + vertices[middle % count].x * (1 - factor),
         vertices[(middle - 1) % count].y * factor + vertices[middle % count].y * (1 - factor)
@@ -456,6 +484,10 @@ function normal(x, y) {
 
 function getRandom(min, max) {
     return Math.random() * (max - min) + min;
+}
+
+function square(x) {
+    return x * x;
 }
 
 function overBoundary(coord) {
