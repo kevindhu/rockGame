@@ -352,7 +352,7 @@ PacketHandler.prototype.sendPackets = function () {
         if (socket.initialized) {
             var player = socket.player;
 
-            //socket.emit('updateEntities', this.masterPacket); //global updates
+            socket.emit('updateEntities', this.masterPacket); //global updates
 
             var packets = [];
             var packet;
