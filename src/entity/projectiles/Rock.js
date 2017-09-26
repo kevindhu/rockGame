@@ -319,10 +319,6 @@ Rock.prototype.decreaseHealth = function (entity, amount) {
 };
 
 
-Rock.prototype.shoot = function (owner, targetX, targetY) {
-    this.addShooting(owner, targetX, targetY);
-};
-
 Rock.prototype.getOrigin = function () {
     var x = this.x;
     var y = this.y;
@@ -337,7 +333,6 @@ Rock.prototype.getOrigin = function () {
 
 
 Rock.prototype.split = function () {
-    console.log(this.AREA);
     if (this.AREA < 0.7) {
         this.gameServer.box2d_world.DestroyBody(this.body);
         this.dead = true;
@@ -362,7 +357,6 @@ Rock.prototype.split = function () {
     var count = poly.GetVertexCount();
 
     var maxLength = getMaxLength(vertices, count);
-    console.log("MAX LENGTH: " + maxLength);
     var middleLength = 0;
 
     var buf = 0;
@@ -377,7 +371,6 @@ Rock.prototype.split = function () {
         middleLength += square(vertices[(middle - 1) % count].y - vertices[middle % count].y);
     }
 
-    console.log("MIDDLE LENGTH: " + middleLength);
     var factor = getRandom(0.3, 0.7);
     var middleVertex = new B2.b2Vec2();
 
