@@ -11,9 +11,11 @@ RockHandler.prototype.addInfo = function () {
     var rock = this.rock;
 
     var ownerId = rock.owner ? rock.owner.id >>> 0 : 0 >>> 0;
+    var hitterId = rock.hitter ? rock.hitter >>> 0 : 0 >>> 0;
 
     writer.writeUInt32(rock.id >>> 0);
     writer.writeUInt32(ownerId);
+    writer.writeUInt32(hitterId);
     writer.writeUInt32(rock.x * 10000 >> 0);
     writer.writeUInt32(rock.y * 10000 >> 0);
 
@@ -45,9 +47,12 @@ RockHandler.prototype.updateInfo = function () {
     var writer = new BinaryWriter();
     var rock = this.rock;
     var ownerId = rock.owner ? rock.owner.id : 0;
+    var hitterId = rock.hitter ? rock.hitter : 0;
 
     writer.writeUInt32(rock.id >>> 0);
     writer.writeUInt32(ownerId >>> 0);
+    writer.writeUInt32(hitterId >>> 0);
+
     writer.writeUInt32(rock.x * 10000 >> 0);
     writer.writeUInt32(rock.y * 10000 >> 0);
 

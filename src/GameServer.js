@@ -351,9 +351,16 @@ GameServer.prototype.setupCollisionHandler = function () {
         var impact = normal(aVel.x - bVel.x,
             aVel.y - bVel.y);
 
-        if (impact > 20) {
-            a.decreaseHealth(b, impact);
-            b.decreaseHealth(a, impact);
+
+        var aImpact = impact;
+        var bImpact = impact;
+
+        if (a.hitter && a.hitter === b.id) {
+            bImpact = impact / 4;
+        }
+        if (aImpact > 20 || bImpact > 20) {
+            a.decreaseHealth(b, aImpact);
+            b.decreaseHealth(a, bImpact);
         }
     };
 
@@ -369,6 +376,10 @@ GameServer.prototype.setupCollisionHandler = function () {
                 contact.SetEnabled(false);
                 return;
             }
+            if (a.hitter) {
+                b.hitter = a.hitter;
+                b.hitTimer = a.hitTimer;
+            }
             doImpact(a, b);
         }
         if (a.neutral) {
@@ -380,10 +391,15 @@ GameServer.prototype.setupCollisionHandler = function () {
     };
 
     var tryWallImpact = function (a, b) { //rock - rock
-        if ((a instanceof Entity.Rock || a instanceof Entity.Player) && b instanceof Entity.Wall) {
+        if ((a instanceof Entity.Player || a instanceof Entity.Rock) && b instanceof Entity.Wall) {
             var vel = a.body.GetLinearVelocity();
             var impact = normal(vel.x, vel.y);
-            doHardImpact(a, impact, 15);
+            if (a instanceof Entity.Player) {
+                doHardImpact(a, impact, 5);
+            }
+            else if (a instanceof Entity.Rock) {
+                doHardImpact(a, impact, 15);
+            }
         }
     };
 
@@ -395,6 +411,8 @@ GameServer.prototype.setupCollisionHandler = function () {
             }
             //a.rotate(getRandom(-0.5,0.5));
             a.setLifeTimer();
+            a.hitter = b.id;
+            a.hitTimer = 50;
             b.slowed = true;
             b.slowTimer = 3;
             doImpact(a, b);

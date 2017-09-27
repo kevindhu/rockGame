@@ -53,7 +53,7 @@ Player.prototype.initB2 = function () {
     this.body = B2Common.createDisk(this.gameServer.box2d_world, this, this.x, this.y, this.radius / 50, this.power);
 
 
-    this.sensor = new PlayerSensor(this, this.grabRadius/100);
+    this.sensor = new PlayerSensor(this, this.grabRadius / 100);
 };
 
 Player.prototype.setVertices = function () {
@@ -183,7 +183,7 @@ Player.prototype.resetLevels = function () {
 
 Player.prototype.decreaseHealth = function (entity, amount) {
     if (this.vulnerable) {
-        amount *= 5;
+        amount *= 10;
     }
     amount *= entity.power;
     if (entity.fast) {
@@ -198,8 +198,11 @@ Player.prototype.decreaseHealth = function (entity, amount) {
 };
 
 Player.prototype.increaseHealth = function (amount) {
-    if (this.health < this.maxHealth) {
+    if (this.health + amount < this.maxHealth) {
         this.health += amount;
+    }
+    else {
+        this.health = this.maxHealth;
     }
 };
 
@@ -249,7 +252,6 @@ Player.prototype.findNeighboringChunks = function () {
 Player.prototype.getTheta = function (target, origin) {
     this.theta = Math.atan2(target.y - origin.y, target.x - origin.x) % (2 * Math.PI);
 };
-
 
 
 Player.prototype.shootSelfDefault = function () {
@@ -340,14 +342,10 @@ Player.prototype.consumeRock = function (rock) {
     this.AREA += rock.AREA * rock.AREA * 100;
     this.radius = Math.sqrt(this.AREA * rock.power);
     this.grabRadius = 10 * this.radius;
+    this.power += rock.AREA / 10;
 
     this.maxHealth += rock.AREA / 10 * rock.power;
-    this.power += 1;
-
     this.increaseHealth(rock.AREA * 10);
-
-    //this.velBuffer = this.radius / 1000;
-
     this.resettingBody = true;
     rock.dead = true;
 };
@@ -393,8 +391,8 @@ Player.prototype.move = function (x, y) {
     }
 
     var slow = this.slowed ? 10 : 1;
-    vel.x = lerp(vel.x, 40 * x / normalVel / (slow * (this.velBuffer/5 + 1.5)), mag);
-    vel.y = lerp(vel.y, 40 * y / normalVel / (slow * (this.velBuffer/5 + 1.5)), mag);
+    vel.x = lerp(vel.x, 40 * x / normalVel / (slow * (this.velBuffer / 5 + 1.5)), mag);
+    vel.y = lerp(vel.y, 40 * y / normalVel / (slow * (this.velBuffer / 5 + 1.5)), mag);
 
     //this.body.SetPosition(pos);
 
@@ -413,7 +411,7 @@ Player.prototype.reset = function () {
 };
 
 Player.prototype.dropAllRocks = function () {
-    for (var i = this.rocks.length - 1; i>= 0; i--) {
+    for (var i = this.rocks.length - 1; i >= 0; i--) {
         var rock = this.rocks[i];
         rock.removeOwner();
     }

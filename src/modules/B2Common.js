@@ -13,9 +13,9 @@ module.exports = {
 
 function createBox(world, user, x, y, width, height) {
     var options = {
-        'density': 5.0,
+        'density': 100.0,
         'friction': 0.1,
-        'restitution': 0.0,
+        'restitution': 1.0,
 
         'linearDamping': 1,
         'angularDamping': 0.0,
@@ -150,7 +150,7 @@ function createRandomPolygon(world, user, vertices, x, y, texture) {
     var options = {
         'density': density,
         'friction': 0.0,
-        'restitution': 0.5,
+        'restitution': 0.6,
 
         'linearDamping': 0.2,
         'angularDamping': 1.0,

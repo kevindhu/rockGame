@@ -11,6 +11,7 @@ function Rock(reader, client) {
     //console.log("NEW ROCK: " + this.id);
 
     this.owner = reader.readUInt32();
+    this.hitter = reader.readUInt32();
     this.x = reader.readUInt32() / 100;
     this.y = reader.readUInt32() / 100;
 
@@ -50,6 +51,7 @@ function Rock(reader, client) {
 
 Rock.prototype.update = function (reader) {
     this.owner = reader.readUInt32();
+    this.hitter = reader.readUInt32();
 
     var x = this.x;
     var y = this.y;
@@ -113,7 +115,8 @@ Rock.prototype.show = function () {
 
 
     ctx.strokeStyle = !this.owner ? "blue" : "green";
-    ctx.strokeStyle = this.fast ? "red" : ctx.strokeStyle;
+    ctx.strokeStyle = this.hitter ? "yellow" : ctx.strokeStyle;
+    //ctx.strokeStyle = this.fast ? "red" : ctx.strokeStyle;
 
 
     ctx.beginPath();

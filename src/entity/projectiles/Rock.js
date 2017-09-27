@@ -133,7 +133,7 @@ Rock.prototype.setDefaultHealth = function () {
     var magnitude = 0;
     switch (this.texture) {
         case 1:
-            magnitude = 20;
+            magnitude = 5;
             break;
         case 2:
             magnitude = 50;
@@ -160,7 +160,7 @@ Rock.prototype.setVertices = function () {
         var theta = 0;
         var delta = 2 * Math.PI / sides;
         for (var i = 0; i < sides; i++) {
-            theta = i * delta + getRandom(-0.2, 0.2);
+            theta = i * delta + getRandom(-0.4, 0.4);
             var x = Math.cos(theta) * this.SCALE;
             var y = Math.sin(theta) * this.SCALE;
 
@@ -198,6 +198,12 @@ Rock.prototype.tick = function () {
     }
     this.lifeTimer -= 1;
 
+    if (this.hitTimer) {
+        this.hitTimer -= 1;
+        if (this.hitTimer <= 0) {
+            this.hitter = null;
+        }
+    }
     if (this.health <= 0 && !this.splitting) {
         this.splitting = true;
         this.splitTimer = 1;
@@ -246,8 +252,8 @@ Rock.prototype.move = function () {
             this.owner.consumeRock(this);
         }
         else {
-            this.x += 0.4 * (playerPosition.x - this.origin.x);
-            this.y += 0.4 * (playerPosition.y - this.origin.y);
+            this.x += 0.2 * (playerPosition.x - this.origin.x);
+            this.y += 0.2 * (playerPosition.y - this.origin.y);
         }
     }
 };
@@ -451,6 +457,13 @@ Rock.prototype.split = function () {
     clone2.body.SetAngularVelocity(ang);
 
     var dmg = 0 - this.health;
+
+    clone1.hitter = this.hitter;
+    clone1.hitTimer = this.hitTimer;
+
+    clone2.hitter = this.hitter;
+    clone2.hitTimer = this.hitTimer;
+
     clone1.decreaseHealth(this, dmg / getRandom(10, 15));
     clone2.decreaseHealth(this, dmg / getRandom(10, 15));
 
