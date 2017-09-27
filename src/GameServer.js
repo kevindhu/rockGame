@@ -358,7 +358,7 @@ GameServer.prototype.setupCollisionHandler = function () {
     };
 
     var doHardImpact = function (a, impact, power) {
-        if (impact > 10) {
+        if (impact > 15) {
             a.decreaseHealth({power: power}, impact);
         }
     };
@@ -383,7 +383,7 @@ GameServer.prototype.setupCollisionHandler = function () {
         if ((a instanceof Entity.Rock || a instanceof Entity.Player) && b instanceof Entity.Wall) {
             var vel = a.body.GetLinearVelocity();
             var impact = normal(vel.x, vel.y);
-            doHardImpact(a, impact, 5);
+            doHardImpact(a, impact, 15);
         }
     };
 

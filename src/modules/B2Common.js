@@ -53,9 +53,9 @@ function createBox(world, user, x, y, width, height) {
 }
 
 
-function createDisk(world, user, x, y, radius) {
+function createDisk(world, user, x, y, radius, power) {
     var options = {
-        'density': 50.0,
+        'density': 50 + power * 10,
         'friction': 0.1,
         'restitution': 0.0,
 
@@ -135,16 +135,16 @@ function createRandomPolygon(world, user, vertices, x, y, texture) {
     var density = 0;
     switch (texture) {
         case 1:
-            density = 0.1;
-            break;
-        case 2:
-            density = 1;
-            break;
-        case 3:
             density = 2;
             break;
-        case 4:
+        case 2:
             density = 4;
+            break;
+        case 3:
+            density = 8;
+            break;
+        case 4:
+            density = 10;
             break;
     }
     var options = {

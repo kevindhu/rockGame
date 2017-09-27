@@ -246,8 +246,8 @@ Rock.prototype.move = function () {
             this.owner.consumeRock(this);
         }
         else {
-            this.x += 0.1 * (playerPosition.x - this.origin.x);
-            this.y += 0.1 * (playerPosition.y - this.origin.y);
+            this.x += 0.4 * (playerPosition.x - this.origin.x);
+            this.y += 0.4 * (playerPosition.y - this.origin.y);
         }
     }
 };
@@ -337,7 +337,7 @@ Rock.prototype.rotate = function (vel) {
 };
 
 Rock.prototype.split = function () {
-    if (this.AREA < 0.7) {
+    if (this.AREA < 1) {
         this.gameServer.box2d_world.DestroyBody(this.body);
         this.dead = true;
         return;
