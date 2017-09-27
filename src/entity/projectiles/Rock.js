@@ -133,20 +133,20 @@ Rock.prototype.setDefaultHealth = function () {
     var magnitude = 0;
     switch (this.texture) {
         case 1:
-            magnitude = 2;
+            magnitude = 20;
             break;
         case 2:
-            magnitude = 5;
+            magnitude = 50;
             break;
         case 3:
-            magnitude = 40;
+            magnitude = 1000;
             break;
         case 4:
-            magnitude = 50;
+            magnitude = 10000;
             break;
     }
 
-    this.maxHealth = 2 * 3 * (1 + magnitude);
+    this.maxHealth = 5 * (magnitude);
     this.health = this.maxHealth;
 };
 
@@ -331,6 +331,10 @@ Rock.prototype.getOrigin = function () {
     return this.origin;
 };
 
+
+Rock.prototype.rotate = function (vel) {
+    this.body.SetAngularVelocity(vel);
+};
 
 Rock.prototype.split = function () {
     if (this.AREA < 0.7) {

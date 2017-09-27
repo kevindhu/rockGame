@@ -105,6 +105,13 @@ Player.prototype.tick = function () {
         //this.resetBody();
     }
 
+    if (this.slowed) {
+        this.slowTimer -= 1;
+        if (this.slowTimer <= 0) {
+            this.slowed = false;
+        }
+    }
+
     if (this.boosting) {
         this.boostTimer -= 1;
         if (this.boostTimer <= 0) {
@@ -384,8 +391,10 @@ Player.prototype.move = function (x, y) {
     if (this.shooting || this.vulnerable) {
         mag = 0.001;
     }
-    vel.x = lerp(vel.x, 30 * x / normalVel / (this.velBuffer/10 + 1.5), mag);
-    vel.y = lerp(vel.y, 30 * y / normalVel / (this.velBuffer/10 + 1.5), mag);
+
+    var slow = this.slowed ? 10 : 1;
+    vel.x = lerp(vel.x, 40 * x / normalVel / (slow * (this.velBuffer/5 + 1.5)), mag);
+    vel.y = lerp(vel.y, 40 * y / normalVel / (slow * (this.velBuffer/5 + 1.5)), mag);
 
     //this.body.SetPosition(pos);
 

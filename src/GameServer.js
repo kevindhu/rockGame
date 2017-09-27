@@ -393,7 +393,10 @@ GameServer.prototype.setupCollisionHandler = function () {
                 contact.SetEnabled(false);
                 return;
             }
+            //a.rotate(getRandom(-0.5,0.5));
             a.setLifeTimer();
+            b.slowed = true;
+            b.slowTimer = 3;
             doImpact(a, b);
         }
     }.bind(this);
@@ -401,6 +404,17 @@ GameServer.prototype.setupCollisionHandler = function () {
 
     var tryPPImpact = function (a, b) {
         if (a instanceof Entity.Player && b instanceof Entity.Player) {
+            if (a.shooting && b.shooting) {
+                a.boosting = true;
+                a.boostTimer = 3;
+
+                b.boosting = true;
+                b.boostTimer = 3;
+
+                a.shooting = false;
+                b.shooting = false;
+            }
+
             if (a.shooting) {
                 b.boosting = true;
                 b.boostTimer = 2;
