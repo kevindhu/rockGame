@@ -17,7 +17,6 @@ function Rock(reader, client) {
 
     this.vertices = [];
     var count = reader.readUInt16();
-    //console.log("COUNT: " + count);
     for (var i = 0; i < count; i++) {
         this.vertices[i] = [];
         this.vertices[i][0] = reader.readInt16() / 1000;
@@ -114,9 +113,12 @@ Rock.prototype.show = function () {
     }
 
 
+    ctx.strokeStyle = this.fast ? "pink" : ctx.strokeStyle;
     ctx.strokeStyle = !this.owner ? "blue" : "green";
-    ctx.strokeStyle = this.hitter ? "yellow" : ctx.strokeStyle;
-    //ctx.strokeStyle = this.fast ? "red" : ctx.strokeStyle;
+
+    if (this.hitter) {
+        ctx.strokeStyle = this.hitter === this.client.SELF_ID ? "green" : "red";
+    }
 
 
     ctx.beginPath();

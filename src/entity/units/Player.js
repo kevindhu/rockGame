@@ -344,7 +344,7 @@ Player.prototype.consumeRock = function (rock) {
     this.grabRadius = 10 * this.radius;
     this.power += rock.AREA / 10;
 
-    this.maxHealth += rock.AREA / 10 * rock.power;
+    this.maxHealth += rock.AREA * rock.power / 100;
     this.increaseHealth(rock.AREA * 10);
     this.resettingBody = true;
     rock.dead = true;

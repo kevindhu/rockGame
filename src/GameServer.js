@@ -358,6 +358,9 @@ GameServer.prototype.setupCollisionHandler = function () {
         if (a.hitter && a.hitter === b.id) {
             bImpact = impact / 4;
         }
+        if (b instanceof Entity.Player && a.hitter !== b.id) {
+            bImpact = impact * 4;
+        }
         if (aImpact > 20 || bImpact > 20) {
             a.decreaseHealth(b, aImpact);
             b.decreaseHealth(a, bImpact);
