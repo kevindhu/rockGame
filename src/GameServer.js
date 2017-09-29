@@ -373,7 +373,7 @@ GameServer.prototype.setupCollisionHandler = function () {
         }
     };
 
-    var tryRRImpact = function (a, b, contact) { //rock - rock
+    var tryRRImpact = function (a, b, contact) {
         if (a instanceof Entity.Rock && b instanceof Entity.Rock) {
             if (a.owner && a.owner === b.owner) {
                 contact.SetEnabled(false);
@@ -393,7 +393,7 @@ GameServer.prototype.setupCollisionHandler = function () {
         }
     };
 
-    var tryWallImpact = function (a, b) { //rock - rock
+    var tryWallImpact = function (a, b) {
         if ((a instanceof Entity.Player || a instanceof Entity.Rock) && b instanceof Entity.Wall) {
             var vel = a.body.GetLinearVelocity();
             var impact = normal(vel.x, vel.y);
@@ -406,7 +406,7 @@ GameServer.prototype.setupCollisionHandler = function () {
         }
     };
 
-    var tryRPImpact = function (a, b, contact) { //rock - player
+    var tryRPImpact = function (a, b, contact) {
         if (a instanceof Entity.Rock && b instanceof Entity.Player) {
             if (a.owner === b) {
                 contact.SetEnabled(false);

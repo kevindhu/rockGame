@@ -127,6 +127,7 @@ Player.prototype.tick = function () {
         }
     }
     if (this.shooting) {
+        this.shoot();
         this.shootTimer -= 1;
         if (this.shootTimer <= 0) {
             this.shooting = false;
@@ -262,8 +263,19 @@ Player.prototype.shootSelf = function (x, y) {
     if (this.reloadTimer > 0) {
         return;
     }
+    this.shooting = true;
+    this.shootTimer = 30;
     this.reloadTimer = 50;
 
+    this.shoot(x, y);
+};
+
+
+Player.prototype.shoot = function (x, y) {
+    if (!x && !y) {
+        x = this.x + this.realMover.x;
+        y = this.y + this.realMover.y;
+    }
     var target = {
         x: x,
         y: y
@@ -278,12 +290,9 @@ Player.prototype.shootSelf = function (x, y) {
     this.getTheta(target, origin);
 
     var v = this.body.GetLinearVelocity();
-    v.x = 80 * Math.cos(this.theta);
-    v.y = 80 * Math.sin(this.theta);
+    v.x = (50 + (40 - 2 * this.shootTimer)) * Math.cos(this.theta);
+    v.y = (50 + (40 - 2 * this.shootTimer)) * Math.sin(this.theta);
     this.body.SetLinearVelocity(v);
-
-    this.shooting = true;
-    this.shootTimer = 20;
 };
 
 
@@ -391,8 +400,8 @@ Player.prototype.move = function (x, y) {
     }
 
     var slow = this.slowed ? 10 : 1;
-    vel.x = lerp(vel.x, 40 * x / normalVel / (slow * (this.velBuffer / 5 + 1.5)), mag);
-    vel.y = lerp(vel.y, 40 * y / normalVel / (slow * (this.velBuffer / 5 + 1.5)), mag);
+    vel.x = lerp(vel.x, 45 * x / normalVel / (slow * (this.velBuffer / 5 + 1.5)), mag);
+    vel.y = lerp(vel.y, 45 * y / normalVel / (slow * (this.velBuffer / 5 + 1.5)), mag);
 
     //this.body.SetPosition(pos);
 

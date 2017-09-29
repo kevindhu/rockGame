@@ -150,7 +150,7 @@ function createRandomPolygon(world, user, vertices, x, y, texture) {
     var options = {
         'density': density,
         'friction': 0.0,
-        'restitution': 0.6,
+        'restitution': 0.3,
 
         'linearDamping': 0.2,
         'angularDamping': 1.0,
