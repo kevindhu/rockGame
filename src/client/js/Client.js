@@ -430,22 +430,17 @@ Client.prototype.updateStep = function () {
     var stepRange = this.lastStep - this.currStep;
     var update;
 
-    if (!stepRange) {
+    if (!stepRange || this.currStep > this.lastStep) {
         //console.log("STEP RANGE TOO SMALL: SERVER TOO SLOW");
         return;
     }
-
     if (this.currStep < this.initialStep) {
         this.currStep += 1;
         return;
     }
-    if (this.currStep > this.lastStep) {
-        //console.log("STEP RANGE TOO SMALL: SERVER TOO SLOW");
-        return;
-    }
 
     while (this.lastStep - this.currStep > 5 + this.currPing / 50) {
-        console.log("STEP RANGE TOO LARGE: CLIENT IS TOO SLOW FOR STEP: " + this.currStep);
+        //console.log("STEP RANGE TOO LARGE: CLIENT IS TOO SLOW FOR STEP: " + this.currStep);
         update = this.findUpdatePacket(this.currStep);
         if (!update) {
             console.log("UPDATE NOT FOUND!!!!");
