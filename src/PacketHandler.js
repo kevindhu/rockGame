@@ -346,7 +346,6 @@ PacketHandler.prototype.sendPing = function (timestamp) {
 PacketHandler.prototype.buildLeaderBoardPacket = function () {
     var writer = new BinaryWriter();
     writer.writeUInt8(this.gameServer.playerCount);
-    console.log("PLAYERCOUNT: "  + this.gameServer.playerCount);
     for (var i in this.gameServer.PLAYER_LIST) {
         var player = this.gameServer.PLAYER_LIST[i];
         writer.writeUInt32(player.id);
