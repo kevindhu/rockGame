@@ -31,6 +31,7 @@ function GameServer() {
 
     this.step = 0;
     this.rockCount = 0;
+    this.playerCount = 0;
 }
 
 /** SERVER INIT METHODS **/
@@ -237,8 +238,11 @@ GameServer.prototype.start = function () {
 
         socket.on('newPlayer', function (data) {
             player = this.createPlayer(socket, data);
-            socket.player = player;
-            this.packetHandler.addChatPackets("SERVER", player.name + " has connected!");
+            if (player) {
+                this.playerCount ++;
+                socket.player = player;
+                this.packetHandler.addChatPackets("SERVER", player.name + " has connected!");
+            }
         }.bind(this));
 
 
@@ -317,6 +321,7 @@ GameServer.prototype.start = function () {
             console.log("Client #" + socket.id + " has left the server");
             if (player) {
                 player.onDelete();
+                this.playerCount -= 1;
             }
             delete this.SOCKET_LIST[socket.id];
         }.bind(this));

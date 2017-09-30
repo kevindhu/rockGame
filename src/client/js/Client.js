@@ -27,6 +27,7 @@ Client.prototype.initSocket = function () {
 
     this.socket.on('updateEntities', this.handlePacket.bind(this));
     this.socket.on('updateBinary', this.handleBinary.bind(this));
+    this.socket.on('updateLB', this.handleUpdateLB.bind(this));
 
 
     this.socket.on('chatMessage', this.mainUI);
@@ -175,9 +176,6 @@ Client.prototype.applyUpdate = function (reader) {
     }
 
     var playerLength = reader.readUInt8(); //add players
-    if (playerLength > 0) {
-        console.log("ATTEMPTING ADD NEW PLAYER");
-    }
     for (i = 0; i < playerLength; i++) {
         player = new Entity.Player(reader, this);
         if (player.id === this.SELF_ID) {
@@ -285,6 +283,40 @@ Client.prototype.handleBinary = function (data) {
 };
 
 
+Client.prototype.handleUpdateLB = function (data) {
+    var reader = new BinaryReader(data);
+
+    var count = reader.readUInt8();
+    var id;
+    for (var i = 0; i < count; i++) {
+        id = reader.readUInt32();
+        var player = this.PLAYER_LIST[id];
+        var radius = reader.readUInt16();
+
+        var nameLength = reader.readUInt8();
+        var name = "";
+        for (var j = 0; j < nameLength; j++) {
+            var char = String.fromCharCode(reader.readUInt8());
+            name += char;
+        }
+        if (!player) {
+            player = new Entity.Player(null, this);
+            player.id = id;
+            player.radius = radius;
+            player.name = name;
+
+            this.PLAYER_LIST[player.id] = player;
+
+            if (this.PLAYER_ARRAY.indexOf(player.id) === -1) {
+                this.PLAYER_ARRAY.push(player.id);
+            }
+            player.fake = true;
+        }
+    }
+
+};
+
+
 Client.prototype.handlePacket = function (data) {
     var packet, i;
     for (i = 0; i < data.length; i++) {
@@ -352,7 +384,6 @@ Client.prototype.drawScene = function (data) {
         this.mainCtx.scale(this.scaleFactor, this.scaleFactor);
         this.mainCtx.translate(-this.SELF_PLAYER.x, -this.SELF_PLAYER.y);
     }.bind(this);
-
 
 
     this.SELF_PLAYER.tick();

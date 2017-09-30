@@ -167,14 +167,12 @@ PacketHandler.prototype.b_addPlayerPackets = function (player, writer) {
 
 PacketHandler.prototype.b_addRockPackets = function (rock, writer) {
     var info = rock.handler.addInfo();
-
     if (!writer) {
         if (!this.B_CHUNK_PACKETS[rock.chunk]) {
             this.B_CHUNK_PACKETS[rock.chunk] = new Packet(this.gameServer);
         }
         writer = this.B_CHUNK_PACKETS[rock.chunk].addRocks;
     }
-
 
     writer.writeBytes(info);
     writer.length++;
@@ -345,12 +343,36 @@ PacketHandler.prototype.sendPing = function (timestamp) {
 };
 
 
+PacketHandler.prototype.buildLeaderBoardPacket = function () {
+    var writer = new BinaryWriter();
+    writer.writeUInt8(this.gameServer.playerCount);
+    console.log("PLAYERCOUNT: "  + this.gameServer.playerCount);
+    for (var i in this.gameServer.PLAYER_LIST) {
+        var player = this.gameServer.PLAYER_LIST[i];
+        writer.writeUInt32(player.id);
+        writer.writeUInt16(player.radius);
+
+        writer.writeUInt8(player.name.length >>> 0);
+        for (var j = 0; j < player.name.length; j++) {
+            var val = player.name.charCodeAt(j);
+            writer.writeUInt8(val >>> 0);              //name
+        }
+    }
+    return writer.toBuffer();
+};
+
+
+
 PacketHandler.prototype.sendPackets = function () {
     var id;
     for (var index in this.gameServer.SOCKET_LIST) {
         var socket = this.gameServer.SOCKET_LIST[index];
         if (socket.initialized) {
             var player = socket.player;
+
+            if (this.gameServer.step % 5 === 0) {
+                socket.emit('updateLB', this.buildLeaderBoardPacket());
+            }
 
             socket.emit('updateEntities', this.masterPacket); //global updates
 
@@ -362,7 +384,6 @@ PacketHandler.prototype.sendPackets = function () {
                     if (packet) {
                         packets.push(packet);
                     }
-                    //socket.emit('updateEntities', this.createChunkPacket(id));
                 }
                 player.chunkAdd = false;
             }
@@ -382,7 +403,6 @@ PacketHandler.prototype.sendPackets = function () {
                 if (packet) {
                     packets.push(packet);
                 }
-
             }
             socket.emit('updateBinary', this.buildAllPackets(packets));
         }
@@ -477,5 +497,14 @@ PacketHandler.prototype.buildAllPackets = function (packets) {
     return writer.toBuffer();
 };
 
+
+
+Object.size = function (obj) {
+    var size = 0, key;
+    for (key in obj) {
+        if (obj.hasOwnProperty(key)) size++;
+    }
+    return size;
+};
 
 module.exports = PacketHandler;

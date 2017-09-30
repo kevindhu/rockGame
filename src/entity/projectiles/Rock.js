@@ -19,15 +19,9 @@ function Rock(x, y, SCALE, gameServer, body, vertices, texture, theta) {
     this.y = y;
     this.SCALE = SCALE;
     this.theta = theta ? theta : getRandom(0, 3);
-
-    this.texture = texture ? texture : this.getRandomTexture();
-    this.getFeed();
-    this.getPower();
-    this.setDefaultHealth();
-    this.setNeutral(100);
-
     this.vertices = vertices;
     this.sides = Math.floor(getRandom(4, 8));
+    this.texture = texture ? texture : this.getRandomTexture();
 
     this.owner = null;
     this.body = body;
@@ -40,6 +34,11 @@ Rock.prototype.init = function () {
     this.setCentroid();
     this.calculateArea();
     this.setLifeTimer();
+
+    this.getFeed();
+    this.getPower();
+    this.setDefaultHealth();
+    this.setNeutral(100);
 
     if (!this.body) {
         this.setB2();
@@ -133,7 +132,7 @@ Rock.prototype.setDefaultHealth = function () {
     var magnitude = 0;
     switch (this.texture) {
         case 1:
-            magnitude = 5;
+            magnitude = 30;
             break;
         case 2:
             magnitude = 50;
@@ -146,7 +145,7 @@ Rock.prototype.setDefaultHealth = function () {
             break;
     }
 
-    this.maxHealth = 5 * (magnitude);
+    this.maxHealth = (magnitude) * this.AREA;
     this.health = this.maxHealth;
 };
 

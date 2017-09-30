@@ -150,6 +150,10 @@ Player.prototype.move = function (x, y) {
 
 
 Player.prototype.show = function () {
+    if (this.fake) {
+        return;
+    }
+
     if (!this.radius) {
         this.radius = 1;
     }

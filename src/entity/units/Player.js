@@ -146,8 +146,8 @@ Player.prototype.tick = function () {
 
 
     if (this.realMover) {
-        this.mover.x = lerp(this.mover.x, this.realMover.x, 0.15);
-        this.mover.y = lerp(this.mover.y, this.realMover.y, 0.15);
+        this.mover.x = lerp(this.mover.x, this.realMover.x, 0.3);
+        this.mover.y = lerp(this.mover.y, this.realMover.y, 0.3);
     }
     this.move(this.mover.x, this.mover.y);
 
@@ -164,7 +164,7 @@ Player.prototype.tickShoot = function () {
             this.endShoot();
         }
         else {
-            this.shootMeter -= 1.5;
+            this.shootMeter -= 3;
         }
     }
     else {
@@ -203,6 +203,9 @@ Player.prototype.decreaseHealth = function (entity, amount) {
 
 
     this.health -= amount / 4;
+    if (amount > this.maxHealth / 3) {
+        this.endShoot();
+    }
     if (this.health <= 0) {
         this.dead = true;
     }
@@ -211,7 +214,7 @@ Player.prototype.decreaseHealth = function (entity, amount) {
 
 Player.prototype.increaseShootMeter = function () {
     if (this.shootMeter < 30) {
-        this.shootMeter+= 0.4;
+        this.shootMeter += 0.4;
     }
 };
 
@@ -301,11 +304,22 @@ Player.prototype.shoot = function (x, y) {
     this.getTheta(target, origin);
 
     var v = this.body.GetLinearVelocity();
-    v.x = (5 + (6 * this.shootMeter)) * Math.cos(this.theta);
-    v.y = (5 + (6 * this.shootMeter)) * Math.sin(this.theta);
+    var newVel = {};
+
+    if (this.shootMeter < 20) {
+        newVel.x = (5 + (4 * this.shootMeter)) * Math.cos(this.theta);
+        newVel.y = (5 + (4 * this.shootMeter)) * Math.sin(this.theta);
+    }
+    else {
+        newVel.x = (7 * this.shootMeter) * Math.cos(this.theta);
+        newVel.y = (7 * this.shootMeter) * Math.sin(this.theta);
+    }
+
+    v.x = lerp(v.x, newVel.x, 0.3);
+    v.y = lerp(v.y, newVel.y, 0.3);
+
     this.body.SetLinearVelocity(v);
 };
-
 
 
 Player.prototype.endShoot = function () {
