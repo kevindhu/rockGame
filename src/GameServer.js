@@ -272,15 +272,21 @@ GameServer.prototype.start = function () {
             }
         }.bind(this));
 
-        socket.on('shootSelf', function (data) {
+        socket.on('startShoot', function (data) {
             var player = this.PLAYER_LIST[data.id];
             if (player) {
                 if (data.x && data.y) {
                     player.shootSelf(player.x + data.x / 100, player.y + data.y / 100);
                 }
-                else {
-                    player.shootSelfDefault();
-                }
+            }
+        }.bind(this));
+
+
+
+        socket.on('endShoot', function (data) {
+            var player = this.PLAYER_LIST[data.id];
+            if (player) {
+                player.endShoot();
             }
         }.bind(this));
 
@@ -290,27 +296,14 @@ GameServer.prototype.start = function () {
                 return;
             }
             switch (data.id) {
-                case 39:
-                case 68:
-                    player.pressingRight = data.state;
-                    break;
-                case 40:
-                case 83:
-                    player.pressingDown = data.state;
-                    break;
-                case 37:
-                case 65:
-                    player.pressingLeft = data.state;
-                    break;
-                case 38:
-                case 87:
-                    player.pressingUp = data.state;
-                    break;
-                case "hehe xd": //swirling motion
-                    if (data.state) {
-                        player.groupAsteroids();
+                case 32:
+                    if (data.state && !player.shooting) {
+                        player.shootSelfDefault();
                     }
-                    break;
+                    else {
+                        player.endShoot();
+                    }
+
             }
         }.bind(this));
 

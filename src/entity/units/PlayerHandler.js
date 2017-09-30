@@ -72,10 +72,7 @@ PlayerHandler.prototype.updateInfo = function () {
     writer.writeUInt16(player.maxHealth >>> 0);           //maxHealth
 
 
-
-    if (player.health > player.maxHealth) {
-        console.log("WTF");
-    }
+    writer.writeUInt8(Math.abs(player.shootMeter));
 
     writer.writeInt16(player.theta * 100 >>> 0);            //theta
     writer.writeUInt8(player.level >>> 0);                  //level

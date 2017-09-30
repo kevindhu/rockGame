@@ -8,13 +8,7 @@ client.start();
 
 document.onkeydown = function (event) {
     client.keys[event.keyCode] = true;
-
-    if (event.keyCode === 32) {
-        console.log("SPACE");
-        client.socket.emit("shootSelf", {
-            id: client.SELF_ID
-        });
-    }
+    client.socket.emit('keyEvent', {id: event.keyCode, state: true});
 }.bind(this);
 
 document.onkeyup = function (event) {

@@ -79,6 +79,8 @@ Player.prototype.update = function (reader) {
     this.health = reader.readUInt16(); //health
     this.maxHealth = reader.readUInt16(); //maxHealth
 
+    this.shootMeter = reader.readUInt8();
+
     this.theta = reader.readInt16() / 100; //theta
     this.level = reader.readUInt8(); //level
 
@@ -242,6 +244,22 @@ Player.prototype.show = function () {
         ctx.beginPath();
         ctx.fillStyle = "green";
         ctx.rect(this.x - 400, this.y + 200, 800 * this.health / this.maxHealth, 100);
+        ctx.fill();
+        ctx.closePath();
+    } //display health bar
+
+
+    if (this.shootMeter) { //health bar
+        ctx.lineWidth = 10;
+        ctx.beginPath();
+        ctx.strokeStyle = "black";
+        ctx.rect(this.x - 400, this.y + 300, 800, 50);
+        ctx.stroke();
+        ctx.closePath();
+
+        ctx.beginPath();
+        ctx.fillStyle = "white";
+        ctx.rect(this.x - 400, this.y + 300, 800 * this.shootMeter / 30, 50);
         ctx.fill();
         ctx.closePath();
     } //display health bar

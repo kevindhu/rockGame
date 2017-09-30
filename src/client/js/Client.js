@@ -61,16 +61,11 @@ Client.prototype.initCanvases = function () {
         var x = ((event.x / this.mainCanvas.offsetWidth * 1000) - this.mainCanvas.width / 2) / this.scaleFactor;
         var y = ((event.y / this.mainCanvas.offsetHeight * 500) - this.mainCanvas.height / 2) / this.scaleFactor;
 
-
-        if (Math.abs(x) + Math.abs(y) < 200) {
-            this.playerClicked = true;
-            this.circleConstruct = [];
-            this.circleStageCount = 0;
-        }
-        else {
-            this.clickTemp = true;
-            this.clickTimer = 0;
-        }
+        this.socket.emit("startShoot", {
+            id: this.SELF_ID,
+            x: x,
+            y: y
+        });
     }.bind(this));
     document.addEventListener("mouseup", function (event) {
         if (!this.SELF_ID) {
@@ -79,15 +74,9 @@ Client.prototype.initCanvases = function () {
         var x = ((event.x / this.mainCanvas.offsetWidth * 1000) - this.mainCanvas.width / 2) / this.scaleFactor;
         var y = ((event.y / this.mainCanvas.offsetHeight * 500) - this.mainCanvas.height / 2) / this.scaleFactor;
 
-        this.socket.emit("shootSelf", {
+        this.socket.emit("endShoot", {
             id: this.SELF_ID,
-            x: x,
-            y: y
         });
-
-        this.clickTemp = false;
-        this.clickTimer = 0;
-
     }.bind(this));
 
 

@@ -19,6 +19,7 @@ function Player(id, name, gameServer) {
 
     this.name = getName(name);
     this.type = "Player";
+    this.shootMeter = 30;
 
     this.handler = new PlayerHandler(this, this.gameServer);
 
@@ -126,21 +127,14 @@ Player.prototype.tick = function () {
             this.stallVelocity();
         }
     }
-    if (this.shooting) {
-        this.shoot();
-        this.shootTimer -= 1;
-        if (this.shootTimer <= 0) {
-            this.shooting = false;
-            //this.stallVelocity();
-        }
-    }
+    this.tickShoot();
+
     if (this.vulnerable) {
         this.vulnerableTimer -= 1;
         if (this.vulnerableTimer <= 0) {
             this.vulnerable = false;
         }
     }
-
 
     this.increaseHealth(0.3);
 
@@ -162,6 +156,22 @@ Player.prototype.tick = function () {
 
     this.packetHandler.b_updatePlayerPackets(this);
 };
+
+Player.prototype.tickShoot = function () {
+    if (this.shooting) {
+        this.shoot();
+        if (this.shootMeter <= 0) {
+            this.endShoot();
+        }
+        else {
+            this.shootMeter -= 1.5;
+        }
+    }
+    else {
+        this.increaseShootMeter();
+    }
+};
+
 
 Player.prototype.setMove = function (x, y) {
     this.realMover = {
@@ -195,6 +205,13 @@ Player.prototype.decreaseHealth = function (entity, amount) {
     this.health -= amount / 4;
     if (this.health <= 0) {
         this.dead = true;
+    }
+};
+
+
+Player.prototype.increaseShootMeter = function () {
+    if (this.shootMeter < 30) {
+        this.shootMeter+= 0.4;
     }
 };
 
@@ -260,13 +277,7 @@ Player.prototype.shootSelfDefault = function () {
 };
 
 Player.prototype.shootSelf = function (x, y) {
-    if (this.reloadTimer > 0) {
-        return;
-    }
     this.shooting = true;
-    this.shootTimer = 30;
-    this.reloadTimer = 50;
-
     this.shoot(x, y);
 };
 
@@ -290,11 +301,16 @@ Player.prototype.shoot = function (x, y) {
     this.getTheta(target, origin);
 
     var v = this.body.GetLinearVelocity();
-    v.x = (50 + (40 - 2 * this.shootTimer)) * Math.cos(this.theta);
-    v.y = (50 + (40 - 2 * this.shootTimer)) * Math.sin(this.theta);
+    v.x = (5 + (6 * this.shootMeter)) * Math.cos(this.theta);
+    v.y = (5 + (6 * this.shootMeter)) * Math.sin(this.theta);
     this.body.SetLinearVelocity(v);
 };
 
+
+
+Player.prototype.endShoot = function () {
+    this.shooting = false;
+};
 
 Player.prototype.addRock = function (rock) {
     if (!this.containsRock(rock) &&
