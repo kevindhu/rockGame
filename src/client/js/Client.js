@@ -218,7 +218,6 @@ Client.prototype.applyUpdate = function (reader) {
 
 
     var player2Length = reader.readUInt8();
-    //console.log("PLAYER UPDATE LENGTH: " + player2Length);
     for (i = 0; i < player2Length; i++) {
         id = reader.readUInt32();
         var player = this.PLAYER_LIST[id];

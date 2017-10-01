@@ -132,10 +132,10 @@ Rock.prototype.setDefaultHealth = function () {
     var magnitude = 0;
     switch (this.texture) {
         case 1:
-            magnitude = 50;
+            magnitude = 100;
             break;
         case 2:
-            magnitude = 100;
+            magnitude = 500;
             break;
         case 3:
             magnitude = 1000;

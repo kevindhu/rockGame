@@ -378,8 +378,14 @@ GameServer.prototype.setupCollisionHandler = function () {
                 return;
             }
             if (a.hitter) {
-                b.hitter = a.hitter;
-                b.hitTimer = a.hitTimer;
+                if (b.hitter && b.hitter.power > a.hitter) {
+                    a.hitter = b.hitter;
+                    a.hitTimer = b.hitTimer;
+                }
+                else {
+                    b.hitter = a.hitter;
+                    b.hitTimer = a.hitTimer;
+                }
             }
             doImpact(a, b);
         }

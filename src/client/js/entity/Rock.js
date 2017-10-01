@@ -117,7 +117,7 @@ Rock.prototype.show = function () {
     ctx.strokeStyle = !this.owner ? "blue" : "green";
 
     if (this.hitter) {
-        ctx.strokeStyle = this.hitter === this.client.SELF_ID ? "green" : "red";
+        ctx.strokeStyle = (this.hitter === this.client.SELF_ID) ? "green" : "red";
     }
 
 
