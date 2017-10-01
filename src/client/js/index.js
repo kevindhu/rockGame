@@ -29,10 +29,10 @@ $(window).bind('mousewheel DOMMouseScroll', function (event) {
         return;
     }
 
-    if(event.originalEvent.wheelDelta /120 > 0 && client.mainScaleFactor < 2) {
+    if(event.originalEvent.wheelDelta /120 > 0 && client.mainScaleFactor < client.upperLimit) {
         client.mainScaleFactor += 0.05;
     }
-    else if (client.mainScaleFactor > 0.25) {
+    else if (client.mainScaleFactor > client.lowerLimit) {
         client.mainScaleFactor -= 0.05;
     }
 });

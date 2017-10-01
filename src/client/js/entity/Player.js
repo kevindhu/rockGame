@@ -71,7 +71,11 @@ Player.prototype.update = function (reader) {
     this.x = reader.readUInt32() / 100; //real x
     this.y = reader.readUInt32() / 100; //real y
 
+    var prev = this.realRadius;
     this.realRadius = reader.readUInt16(); //radius
+    if (prev < this.realRadius && this.id === this.client.SELF_ID) {
+        this.client.decreaseScaleFactor(30/this.realRadius);
+    }
 
     if (this.id === this.client.SELF_ID) {
         //this.client.mainScaleFactor = 50 / this.realRadius;
@@ -102,23 +106,6 @@ Player.prototype.update = function (reader) {
 };
 
 
-Player.prototype.tick = function () {
-    if (this.realMover) {
-        this.mover.x = lerp(this.mover.x, this.realMover.x, 0.15);
-        this.mover.y = lerp(this.mover.y, this.realMover.y, 0.15);
-    }
-    //this.move(this.mover.x, this.mover.y);
-};
-
-
-Player.prototype.setMove = function (x, y) {
-    this.realMover = {
-        x: x,
-        y: y
-    };
-};
-
-
 Player.prototype.getTheta = function (target, origin) {
     this.theta = Math.atan2(target.y - origin.y, target.x - origin.x) % (2 * Math.PI);
 };
@@ -135,7 +122,6 @@ Player.prototype.move = function (x, y) {
 
     this.getTheta(target, origin);
 
-
     var normalVel = normal(x, y);
     if (normalVel < 1) {
         normalVel = 1;
@@ -145,7 +131,6 @@ Player.prototype.move = function (x, y) {
 
     this.x += 100 * x / normalVel / velBuffer;
     this.y += 100 * y / normalVel / velBuffer;
-
 };
 
 
@@ -157,7 +142,11 @@ Player.prototype.show = function () {
     if (!this.radius) {
         this.radius = 1;
     }
+    if (this.radius > this.realRadius) {
+        console.log("Player radius greater than its updated value, bad!");
+    }
     this.radius = lerp(this.radius, this.realRadius, 0.2);
+
     this.updateTimer -= 1;
     if (this.updateTimer <= 0) {
         delete this.client.PLAYER_LIST[this.id];
@@ -208,9 +197,7 @@ Player.prototype.show = function () {
     }
     ctx.fill();
     ctx.stroke();
-
     ctx.rotate(2 * Math.PI - this.theta);
-
 
     if (!this.vulnerable) {
         if (this.health > this.maxHealth / 2) {
@@ -222,16 +209,10 @@ Player.prototype.show = function () {
 
         ctx.arc(0, 0, this.radius * 2, 0, 2 * Math.PI);
         ctx.fill();
-    }
+    } //add shield
 
     ctx.translate(-this.x, -this.y);
-
-
     ctx.closePath();
-
-
-    ctx.fillStyle = "#ff9d60";
-    ctx.fillText(this.name, this.x, this.y + 70);
 
 
     if (this.health && this.maxHealth && this.health > 0) { //health bar
@@ -241,32 +222,42 @@ Player.prototype.show = function () {
         ctx.lineWidth = 10;
         ctx.beginPath();
         ctx.strokeStyle = "black";
-        ctx.rect(this.x - 400, this.y + 200, 800, 100);
+        ctx.rect(this.x - this.radius * 4, this.y + this.radius * 2, this.radius * 8, this.radius);
         ctx.stroke();
         ctx.closePath();
 
         ctx.beginPath();
         ctx.fillStyle = "green";
-        ctx.rect(this.x - 400, this.y + 200, 800 * this.health / this.maxHealth, 100);
+        ctx.rect(this.x - this.radius * 4, this.y + this.radius * 2, this.radius * 8 * this.health / this.maxHealth, this.radius);
         ctx.fill();
         ctx.closePath();
-    } //display health bar
-
-
+    }
     if (this.shootMeter) { //health bar
         ctx.lineWidth = 10;
         ctx.beginPath();
         ctx.strokeStyle = "black";
-        ctx.rect(this.x - 400, this.y + 300, 800, 50);
+        ctx.rect(this.x - this.radius * 4, this.y + this.radius * 3, this.radius * 8, this.radius / 2);
         ctx.stroke();
         ctx.closePath();
 
         ctx.beginPath();
         ctx.fillStyle = "white";
-        ctx.rect(this.x - 400, this.y + 300, 800 * this.shootMeter / 30, 50);
+        ctx.rect(this.x - this.radius * 4, this.y + this.radius * 3, this.radius * 8 * this.shootMeter / 30, this.radius / 2);
         ctx.fill();
         ctx.closePath();
     } //display health bar
+
+    ctx.beginPath();
+    ctx.textAlign = "center";
+    ctx.font = this.radius + "px Sans-serif";
+
+    ctx.strokeStyle = "black";
+    ctx.lineWidth = this.radius / 10;
+    ctx.strokeText(this.name, this.x, this.y + (this.radius * 0.8) + this.radius * 2);
+
+    ctx.fillStyle = "white";
+    ctx.fillText(this.name, this.x, this.y + (this.radius * 0.8) + this.radius * 2);
+    ctx.closePath();
 
 
     ctx.closePath();
@@ -276,7 +267,6 @@ Player.prototype.show = function () {
 function getRandom(min, max) {
     return Math.random() * (max - min) + min;
 }
-
 
 function normal(x, y) {
     return Math.sqrt(x * x + y * y);

@@ -50,9 +50,8 @@ Player.prototype.init = function () {
 
 Player.prototype.initB2 = function () {
     this.setVertices();
-    //this.body = B2Common.createRandomPolygon(this.gameServer.box2d_world, this, this.vertices, this.x, this.y, "bronze");
     this.body = B2Common.createDisk(this.gameServer.box2d_world, this, this.x, this.y, this.radius / 50, this.power);
-
+    console.log(this.radius/2);
 
     this.sensor = new PlayerSensor(this, this.grabRadius / 100);
 };
@@ -103,7 +102,7 @@ Player.prototype.tick = function () {
     }
     if (this.resettingBody) {
         this.resettingBody = false;
-        //this.resetBody();
+        this.resetBody();
     }
 
     if (this.slowed) {
@@ -394,8 +393,8 @@ Player.prototype.resetBody = function () {
     var vel = this.body.GetLinearVelocity();
     this.gameServer.box2d_world.DestroyBody(this.body);
     this.initB2();
-    vel.x *= 3;
-    vel.y *= 3;
+    //vel.x *= 1;
+    //vel.y *= 1;
     this.body.SetLinearVelocity(vel);
 };
 

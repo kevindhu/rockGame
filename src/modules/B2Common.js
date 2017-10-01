@@ -194,7 +194,7 @@ function createRandomPolygon(world, user, vertices, x, y, texture) {
 
 function createPolygonSplit(world, body, v1, v2) {
     var options = {
-        'density': body.GetFixtureList().GetDensity(),
+        'density': 4,
         'friction': 0.0,
         'restitution': 0.5,
 

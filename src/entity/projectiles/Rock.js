@@ -132,10 +132,10 @@ Rock.prototype.setDefaultHealth = function () {
     var magnitude = 0;
     switch (this.texture) {
         case 1:
-            magnitude = 30;
+            magnitude = 50;
             break;
         case 2:
-            magnitude = 50;
+            magnitude = 100;
             break;
         case 3:
             magnitude = 1000;
@@ -145,7 +145,7 @@ Rock.prototype.setDefaultHealth = function () {
             break;
     }
 
-    this.maxHealth = (magnitude) * this.AREA;
+    this.maxHealth = magnitude;
     this.health = this.maxHealth;
 };
 

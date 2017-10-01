@@ -111,8 +111,6 @@ Client.prototype.initCanvases = function () {
                 x: x,
                 y: y
             });
-
-            this.SELF_PLAYER.setMove(x, y);
         }
     }.bind(this));
 };
@@ -152,7 +150,10 @@ Client.prototype.initLists = function () {
 Client.prototype.initViewers = function () {
     this.keys = [];
     this.scaleFactor = 1;
-    this.mainScaleFactor = 0.5;
+    this.mainScaleFactor = 0.3;
+    this.lowerLimit = this.mainScaleFactor;
+    this.upperLimit = this.mainScaleFactor * 4;
+
     this.mainUI = new MainUI(this, this.socket);
     this.mainUI.playerNamerUI.open();
 };
@@ -165,6 +166,12 @@ Client.prototype.verify = function (data) {
     }
 };
 
+Client.prototype.decreaseScaleFactor = function (amount) {
+    this.mainScaleFactor = amount;
+    console.log(this.mainScaleFactor);
+    this.lowerLimit = this.mainScaleFactor;
+    this.upperLimit = this.mainScaleFactor * 4;
+};
 
 Client.prototype.applyUpdate = function (reader) {
     var i;
@@ -384,9 +391,6 @@ Client.prototype.drawScene = function (data) {
         this.mainCtx.scale(this.scaleFactor, this.scaleFactor);
         this.mainCtx.translate(-this.SELF_PLAYER.x, -this.SELF_PLAYER.y);
     }.bind(this);
-
-
-    this.SELF_PLAYER.tick();
 
 
     translateScene();
