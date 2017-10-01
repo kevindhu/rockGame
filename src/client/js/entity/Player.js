@@ -73,11 +73,7 @@ Player.prototype.update = function (reader) {
     var prev = this.realRadius;
     this.realRadius = reader.readUInt16(); //radius
     if (prev < this.realRadius && this.id === this.client.SELF_ID) {
-        this.client.decreaseScaleFactor(30/this.realRadius);
-    }
-
-    if (this.id === this.client.SELF_ID) {
-        //this.client.mainScaleFactor = 50 / this.realRadius;
+        this.client.decreaseScaleFactor(20/this.realRadius);
     }
     this.health = reader.readUInt16(); //health
     this.maxHealth = reader.readUInt16(); //maxHealth

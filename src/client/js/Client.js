@@ -150,7 +150,7 @@ Client.prototype.initLists = function () {
 Client.prototype.initViewers = function () {
     this.keys = [];
     this.scaleFactor = 1;
-    this.mainScaleFactor = 0.3;
+    this.mainScaleFactor = 0.2;
     this.lowerLimit = this.mainScaleFactor;
     this.upperLimit = this.mainScaleFactor * 4;
 

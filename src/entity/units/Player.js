@@ -51,7 +51,6 @@ Player.prototype.init = function () {
 Player.prototype.initB2 = function () {
     this.setVertices();
     this.body = B2Common.createDisk(this.gameServer.box2d_world, this, this.x, this.y, this.radius / 50, this.power);
-
     this.sensor = new PlayerSensor(this, this.grabRadius / 100);
 };
 
@@ -441,8 +440,8 @@ Player.prototype.move = function (x, y) {
     }
 
     var slow = this.slowed ? 10 : 1;
-    vel.x = lerp(vel.x, 45 * x / normalVel / (slow * (this.velBuffer / 5 + 1.5)), mag);
-    vel.y = lerp(vel.y, 45 * y / normalVel / (slow * (this.velBuffer / 5 + 1.5)), mag);
+    vel.x = lerp(vel.x, 30 * x / normalVel / (slow * (this.velBuffer / 5 + 1.5)), mag);
+    vel.y = lerp(vel.y, 30 * y / normalVel / (slow * (this.velBuffer / 5 + 1.5)), mag);
 
     //this.body.SetPosition(pos);
 
@@ -455,7 +454,7 @@ Player.prototype.onDeath = function () {
     this.gameServer.box2d_world.DestroyBody(this.body);
     this.radius = 0;
     this.fullReset = true;
-    this.deathTimer = 100;
+    this.deathTimer = 70;
 };
 
 Player.prototype.reset = function () {
