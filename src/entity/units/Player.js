@@ -51,7 +51,6 @@ Player.prototype.init = function () {
 Player.prototype.initB2 = function () {
     this.setVertices();
     this.body = B2Common.createDisk(this.gameServer.box2d_world, this, this.x, this.y, this.radius / 50, this.power);
-    console.log(this.radius/2);
 
     this.sensor = new PlayerSensor(this, this.grabRadius / 100);
 };
@@ -93,18 +92,23 @@ module.exports = Player;
 
 
 Player.prototype.tick = function () {
-    if (this.reloadTimer > 0) {
-        this.reloadTimer -= 1;
+    if (this.fullReset) {
+        this.deathTimer -= 1;
+        if (this.deathTimer <= 0) {
+            this.fullReset = false;
+            this.reset();
+        }
+        return;
     }
+
     if (this.dead || overBoundary(this.body.GetPosition().x) || overBoundary(this.body.GetPosition().y)) {
         this.dead = false;
-        this.reset();
+        this.onDeath();
     }
     if (this.resettingBody) {
         this.resettingBody = false;
         this.resetBody();
     }
-
     if (this.slowed) {
         this.slowTimer -= 1;
         if (this.slowTimer <= 0) {
@@ -112,28 +116,11 @@ Player.prototype.tick = function () {
         }
     }
 
-    if (this.boosting) {
-        this.boostTimer -= 1;
-        if (this.boostTimer <= 0) {
-            this.boosting = false;
-            this.boostVelocity();
-        }
-    }
-    if (this.stalling) {
-        this.stallTimer -= 1;
-        if (this.stallTimer <= 0) {
-            this.stalling = false;
-            this.stallVelocity();
-        }
-    }
+    this.tickBoosting();
+    this.tickStalling();
     this.tickShoot();
+    this.tickVulnerable();
 
-    if (this.vulnerable) {
-        this.vulnerableTimer -= 1;
-        if (this.vulnerableTimer <= 0) {
-            this.vulnerable = false;
-        }
-    }
 
     this.increaseHealth(0.3);
 
@@ -142,7 +129,6 @@ Player.prototype.tick = function () {
         this.chunkTimer = 5;
         this.updateChunk();
     }
-
 
     if (this.realMover) {
         this.mover.x = lerp(this.mover.x, this.realMover.x, 0.3);
@@ -156,6 +142,24 @@ Player.prototype.tick = function () {
     this.packetHandler.b_updatePlayerPackets(this);
 };
 
+Player.prototype.tickBoosting = function () {
+    if (this.boosting) {
+        this.boostTimer -= 1;
+        if (this.boostTimer <= 0) {
+            this.boosting = false;
+            this.boostVelocity();
+        }
+    }
+};
+Player.prototype.tickStalling = function () {
+    if (this.stalling) {
+        this.stallTimer -= 1;
+        if (this.stallTimer <= 0) {
+            this.stalling = false;
+            this.stallVelocity();
+        }
+    }
+};
 Player.prototype.tickShoot = function () {
     if (this.shooting) {
         this.shoot();
@@ -168,6 +172,14 @@ Player.prototype.tickShoot = function () {
     }
     else {
         this.increaseShootMeter();
+    }
+};
+Player.prototype.tickVulnerable = function () {
+    if (this.vulnerable) {
+        this.vulnerableTimer -= 1;
+        if (this.vulnerableTimer <= 0) {
+            this.vulnerable = false;
+        }
     }
 };
 
@@ -377,8 +389,8 @@ Player.prototype.addRock = function (rock) {
 };
 
 Player.prototype.consumeRock = function (rock) {
-    this.AREA += rock.AREA * rock.AREA * 100;
-    this.radius = Math.sqrt(this.AREA * rock.power);
+    this.AREA += square(rock.AREA * rock.power) * 100;
+    this.radius = Math.sqrt(this.AREA);
     this.grabRadius = 10 * this.radius;
     this.power += rock.AREA / 10;
 
@@ -437,15 +449,20 @@ Player.prototype.move = function (x, y) {
     this.body.SetLinearVelocity(vel);
 };
 
-Player.prototype.reset = function () {
+Player.prototype.onDeath = function () {
     this.split();
+    this.dropAllRocks();
+    this.gameServer.box2d_world.DestroyBody(this.body);
+    this.radius = 0;
+    this.fullReset = true;
+    this.deathTimer = 100;
+};
 
+Player.prototype.reset = function () {
     this.x = entityConfig.WIDTH / 2;
     this.y = entityConfig.WIDTH / 2;
-
     this.resetLevels();
     this.resetBody();
-    this.dropAllRocks();
 };
 
 Player.prototype.dropAllRocks = function () {
@@ -526,6 +543,9 @@ function normal(x, y) {
     return Math.sqrt(x * x + y * y);
 }
 
+function square(x) {
+    return x * x;
+}
 
 function onBoundary(coord) {
     return coord <= entityConfig.BORDER_WIDTH ||

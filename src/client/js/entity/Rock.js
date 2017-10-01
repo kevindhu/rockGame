@@ -1,6 +1,5 @@
 function Rock(reader, client) {
     if (!reader) {
-        console.log("MAKING NEW FAKE ROCK");
         this.client = client;
         return; //for fake rock purposes
     }

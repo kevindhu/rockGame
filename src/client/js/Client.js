@@ -204,7 +204,6 @@ Client.prototype.applyUpdate = function (reader) {
         }
         else {
             console.log("MAKING NEW FAKE ROCK " + id);
-
             var fakeRock = new Entity.Rock(null, this);
             fakeRock.update(reader);
 
@@ -221,11 +220,10 @@ Client.prototype.applyUpdate = function (reader) {
     for (i = 0; i < player2Length; i++) {
         id = reader.readUInt32();
         var player = this.PLAYER_LIST[id];
-        if (player) {
+        if (player && !player.fake) {
             player.update(reader);
         }
         else {
-            //console.log("NO PLAYER ADDED: " + id);
             var fakePlayer = new Entity.Player(null, this);
             fakePlayer.update(reader);
 
@@ -234,8 +232,6 @@ Client.prototype.applyUpdate = function (reader) {
             this.socket.emit("getPlayer", {
                 id: id
             });
-
-            console.log("EMITTING GETPLAYER");
         }
     }
 
@@ -250,8 +246,6 @@ Client.prototype.applyUpdate = function (reader) {
     var player3Length = reader.readUInt8();
     for (i = 0; i < player3Length; i++) {
         id = reader.readUInt32();
-
-        console.log("DELETING PLAYER: " + id);
 
         delete this.PLAYER_LIST[id];
         var index = this.PLAYER_ARRAY.indexOf(id);
@@ -350,7 +344,6 @@ Client.prototype.addEntities = function (packet) {
     switch (packet.class) {
         case "tileInfo":
             addEntity(packet, this.TILE_LIST, Entity.Tile);
-            console.log("ADDED TILE");
             break;
         case "selfId":
             if (!this.SELF_ID) {
@@ -416,16 +409,12 @@ Client.prototype.drawScene = function (data) {
 Client.prototype.clientUpdate = function () {
     this.updateStep();
 
-
+    this.SELF_PLAYER = this.PLAYER_LIST[this.SELF_ID];
     if (!this.SELF_PLAYER) {
-        if (this.SELF_ID) {
-            this.SELF_PLAYER = this.PLAYER_LIST[this.SELF_ID];
-            return;
-        }
-        else {
-            return;
-        }
+        console.log("NO SELF PLAYER");
+        return;
     }
+
     this.drawScene();
 };
 

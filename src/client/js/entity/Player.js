@@ -1,6 +1,5 @@
 function Player(reader, client) {
     if (!reader) {
-        console.log("MAKING NEW FAKE PLAYER");
         this.client = client;
         return; //for fake rock purposes
     }
@@ -138,10 +137,10 @@ Player.prototype.show = function () {
     if (this.fake) {
         return;
     }
-
-    if (!this.radius) {
-        this.radius = 1;
+    if (!this.radius || this.radius <= 0) {
+        this.radius = 100;
     }
+
     if (this.radius > this.realRadius) {
         console.log("Player radius greater than its updated value, bad!");
     }
@@ -149,6 +148,7 @@ Player.prototype.show = function () {
 
     this.updateTimer -= 1;
     if (this.updateTimer <= 0) {
+        console.log("DELETING PLAYER VIA TIMEOUT");
         delete this.client.PLAYER_LIST[this.id];
     }
 
@@ -217,7 +217,7 @@ Player.prototype.show = function () {
 
     if (this.health && this.maxHealth && this.health > 0) { //health bar
         if (this.health > this.maxHealth) {
-            console.log("PLAYER HAS TOO MUCH HEALTH: " + this.health, this.maxHealth);
+            //console.log("PLAYER HAS TOO MUCH HEALTH: " + this.health, this.maxHealth);
         }
         ctx.lineWidth = 10;
         ctx.beginPath();

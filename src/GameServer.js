@@ -343,89 +343,6 @@ GameServer.prototype.setupCollisionHandler = function () {
         }
     };
 
-    var doImpact = function (a, b) {
-        var aVel = a.body.GetLinearVelocity();
-        var bVel = b.body.GetLinearVelocity();
-        var impact = normal(aVel.x - bVel.x,
-            aVel.y - bVel.y);
-
-
-        var aImpact = impact;
-        var bImpact = impact;
-
-        if (a.hitter && a.hitter === b.id) {
-            bImpact = impact / 4;
-        }
-        if (b instanceof Entity.Player && a.hitter !== b.id) {
-            bImpact = impact * 4;
-        }
-        if (aImpact > 20 || bImpact > 20) {
-            a.decreaseHealth(b, aImpact);
-            b.decreaseHealth(a, bImpact);
-        }
-    };
-
-    var doHardImpact = function (a, impact, power) {
-        if (impact > 15) {
-            a.decreaseHealth({power: power}, impact);
-        }
-    };
-
-    var tryRRImpact = function (a, b, contact) {
-        if (a instanceof Entity.Rock && b instanceof Entity.Rock) {
-            if (a.owner && a.owner === b.owner) {
-                contact.SetEnabled(false);
-                return;
-            }
-            if (a.hitter) {
-                if (b.hitter && b.hitter.power > a.hitter) {
-                    a.hitter = b.hitter;
-                    a.hitTimer = b.hitTimer;
-                }
-                else {
-                    b.hitter = a.hitter;
-                    b.hitTimer = a.hitTimer;
-                }
-            }
-            doImpact(a, b);
-        }
-        if (a.neutral) {
-            a.startChange = true;
-        }
-        if (b.neutral) {
-            b.startChange = true;
-        }
-    };
-
-    var tryWallImpact = function (a, b) {
-        if ((a instanceof Entity.Player || a instanceof Entity.Rock) && b instanceof Entity.Wall) {
-            var vel = a.body.GetLinearVelocity();
-            var impact = normal(vel.x, vel.y);
-            if (a instanceof Entity.Player) {
-                doHardImpact(a, impact, 5);
-            }
-            else if (a instanceof Entity.Rock) {
-                doHardImpact(a, impact, 15);
-            }
-        }
-    };
-
-    var tryRPImpact = function (a, b, contact) {
-        if (a instanceof Entity.Rock && b instanceof Entity.Player) {
-            if (a.owner === b) {
-                contact.SetEnabled(false);
-                return;
-            }
-            //a.rotate(getRandom(-0.5,0.5));
-            a.setLifeTimer();
-            a.hitter = b.id;
-            a.hitTimer = 50;
-            b.slowed = true;
-            b.slowTimer = 3;
-            doImpact(a, b);
-        }
-    }.bind(this);
-
 
     var tryPPImpact = function (a, b) {
         if (a instanceof Entity.Player && b instanceof Entity.Player) {
@@ -460,7 +377,86 @@ GameServer.prototype.setupCollisionHandler = function () {
             }
         }
     };
+    var tryRRImpact = function (a, b, contact) {
+        if (a instanceof Entity.Rock && b instanceof Entity.Rock) {
+            if (a.owner && a.owner === b.owner) {
+                contact.SetEnabled(false);
+                return;
+            }
+            if (a.hitter) {
+                if (b.hitter && b.hitter.power > a.hitter) {
+                    a.hitter = b.hitter;
+                    a.hitTimer = b.hitTimer;
+                }
+                else {
+                    b.hitter = a.hitter;
+                    b.hitTimer = a.hitTimer;
+                }
+            }
+            doImpact(a, b);
+        }
+        if (a.neutral) {
+            a.startChange = true;
+        }
+        if (b.neutral) {
+            b.startChange = true;
+        }
+    };
+    var tryRPImpact = function (a, b, contact) {
+        if (a instanceof Entity.Rock && b instanceof Entity.Player) {
+            if (a.owner === b) {
+                contact.SetEnabled(false);
+                return;
+            }
+            //a.rotate(getRandom(-0.5,0.5));
+            a.setLifeTimer();
+            a.hitter = b.id;
+            a.hitTimer = 50;
+            b.slowed = true;
+            b.slowTimer = 3;
+            doImpact(a, b);
+        }
+    };
 
+    var tryWallImpact = function (a, b) {
+        if ((a instanceof Entity.Player || a instanceof Entity.Rock) && b instanceof Entity.Wall) {
+            var vel = a.body.GetLinearVelocity();
+            var impact = normal(vel.x, vel.y);
+            if (a instanceof Entity.Player) {
+                doHardImpact(a, impact, 5);
+            }
+            else if (a instanceof Entity.Rock) {
+                doHardImpact(a, impact, 15);
+            }
+        }
+    };
+
+    var doImpact = function (a, b) {
+        var aVel = a.body.GetLinearVelocity();
+        var bVel = b.body.GetLinearVelocity();
+        var impact = normal(aVel.x - bVel.x,
+            aVel.y - bVel.y);
+
+
+        var aImpact = impact;
+        var bImpact = impact;
+
+        if (a.hitter && a.hitter === b.id) {
+            bImpact = impact / 4;
+        }
+        if (b instanceof Entity.Player && a.hitter !== b.id) {
+            bImpact = impact * 4;
+        }
+        if (aImpact > 20 || bImpact > 20) {
+            a.decreaseHealth(b, aImpact);
+            b.decreaseHealth(a, bImpact);
+        }
+    };
+    var doHardImpact = function (a, impact, power) {
+        if (impact > 15) {
+            a.decreaseHealth({power: power}, impact);
+        }
+    };
 
     B2.b2ContactListener.prototype.BeginContact = function (contact) {
         var a = contact.GetFixtureA().GetUserData();
@@ -480,16 +476,14 @@ GameServer.prototype.setupCollisionHandler = function () {
         tryAddRock(a, b);
         tryAddRock(b, a);
     }.bind(this);
-
     B2.b2ContactListener.prototype.PreSolve = function (contact) {
         var a = contact.GetFixtureA().GetUserData();
         var b = contact.GetFixtureB().GetUserData();
     }.bind(this);
-
     B2.b2ContactListener.prototype.EndContact = function (contact) {
         var a = contact.GetFixtureA().GetUserData();
         var b = contact.GetFixtureB().GetUserData();
-    };
+    }.bind(this);
 };
 
 
