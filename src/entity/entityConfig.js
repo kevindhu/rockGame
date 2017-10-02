@@ -6,7 +6,7 @@ var BORDER_WIDTH = 0;
 
 
 var small = function () {
-    CHUNKS = 9;
+    CHUNKS = 1;
     WIDTH = 200;
     TILES_INPUT = 30;
     ROCKS = 5;

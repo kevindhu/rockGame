@@ -166,7 +166,7 @@ Player.prototype.tickShoot = function () {
             this.endShoot();
         }
         else {
-            this.shootMeter -= 3;
+            this.shootMeter -= 0.5;
         }
     }
     else {
@@ -198,6 +198,7 @@ Player.prototype.resetLevels = function () {
 
     this.AREA = 10000;
     this.radius = Math.sqrt(this.AREA);
+    this.lastRadius = this.radius;
     this.grabRadius = 10 * this.radius;
     this.velBuffer = this.radius / 1000;
 };
@@ -316,14 +317,8 @@ Player.prototype.shoot = function (x, y) {
     var v = this.body.GetLinearVelocity();
     var newVel = {};
 
-    if (this.shootMeter < 20) {
-        newVel.x = (5 + (4 * this.shootMeter)) * Math.cos(this.theta);
-        newVel.y = (5 + (4 * this.shootMeter)) * Math.sin(this.theta);
-    }
-    else {
-        newVel.x = (7 * this.shootMeter) * Math.cos(this.theta);
-        newVel.y = (7 * this.shootMeter) * Math.sin(this.theta);
-    }
+    newVel.x = 30 * Math.cos(this.theta);
+    newVel.y = 30 * Math.sin(this.theta);
 
     v.x = lerp(v.x, newVel.x, 0.3);
     v.y = lerp(v.y, newVel.y, 0.3);
@@ -395,7 +390,10 @@ Player.prototype.consumeRock = function (rock) {
 
     this.maxHealth += rock.AREA * rock.power / 100;
     this.increaseHealth(rock.AREA * 10);
-    this.resettingBody = true;
+    if (this.radius - this.lastRadius > 10) {
+        this.lastRadius = this.radius;
+        this.resettingBody = true;
+    }
     rock.dead = true;
 };
 
