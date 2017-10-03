@@ -104,7 +104,7 @@ Rock.prototype.getPower = function () {
             this.realPower = 3;
             break;
         case 4:
-            this.realPower = 200;
+            this.realPower = 5;
             break;
     }
     this.power = this.realPower;
@@ -133,7 +133,7 @@ Rock.prototype.setDefaultHealth = function () {
     var magnitude = 0;
     switch (this.texture) {
         case 1:
-            magnitude = 100;
+            magnitude = 50;
             break;
         case 2:
             magnitude = 500;
@@ -464,8 +464,8 @@ Rock.prototype.split = function () {
     clone2.hitter = this.hitter;
     clone2.hitTimer = this.hitTimer;
 
-    clone1.decreaseHealth(this, dmg / getRandom(10, 15));
-    clone2.decreaseHealth(this, dmg / getRandom(10, 15));
+    clone1.decreaseHealth(this, dmg / getRandom(2, 4));
+    clone2.decreaseHealth(this, dmg / getRandom(2, 4));
 
     this.onDelete();
 
