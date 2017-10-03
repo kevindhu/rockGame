@@ -32,6 +32,7 @@ function Player(id, name, gameServer) {
     };
 
     this.chunkTimer = 0;
+    this.shootTimer = 0;
     this.rocks = [];
 
     this.resetLevels();
@@ -160,16 +161,19 @@ Player.prototype.tickStalling = function () {
     }
 };
 Player.prototype.tickShoot = function () {
-    if (this.shooting) {
+    if (this.shooting && this.shootTimer <= 0) {
         this.shoot();
+        this.stallVelocity();
+        this.shootTimer = 1;
         if (this.shootMeter <= 0) {
             this.endShoot();
         }
         else {
-            this.shootMeter -= 0.5;
+            this.shootMeter -= 0.1;
         }
     }
     else {
+        this.decreaseShootTimer();
         this.increaseShootMeter();
     }
 };
@@ -219,6 +223,12 @@ Player.prototype.decreaseHealth = function (entity, amount) {
     }
     if (this.health <= 0) {
         this.dead = true;
+    }
+};
+
+Player.prototype.decreaseShootTimer = function () {
+    if (this.shootTimer > 0) {
+        this.shootTimer --;
     }
 };
 
@@ -286,13 +296,9 @@ Player.prototype.getTheta = function (target, origin) {
 };
 
 
-Player.prototype.shootSelfDefault = function () {
-    this.shootSelf(this.x + this.realMover.x, this.y + this.realMover.y);
-};
 
-Player.prototype.shootSelf = function (x, y) {
+Player.prototype.startShoot = function () {
     this.shooting = true;
-    this.shoot(x, y);
 };
 
 
@@ -313,17 +319,13 @@ Player.prototype.shoot = function (x, y) {
 
 
     this.getTheta(target, origin);
+    var rock =  new Rock(this.x, this.y, 4, this.gameServer);
+    //rock.owner = this;
+    var v = rock.body.GetLinearVelocity();
+    v.x = 50 * Math.cos(this.theta);
+    v.y = 50 * Math.sin(this.theta);
 
-    var v = this.body.GetLinearVelocity();
-    var newVel = {};
-
-    newVel.x = 30 * Math.cos(this.theta);
-    newVel.y = 30 * Math.sin(this.theta);
-
-    v.x = lerp(v.x, newVel.x, 0.3);
-    v.y = lerp(v.y, newVel.y, 0.3);
-
-    this.body.SetLinearVelocity(v);
+    rock.body.SetLinearVelocity(v);
 };
 
 

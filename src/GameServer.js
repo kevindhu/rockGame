@@ -279,9 +279,7 @@ GameServer.prototype.start = function () {
         socket.on('startShoot', function (data) {
             var player = this.PLAYER_LIST[data.id];
             if (player) {
-                if (data.x && data.y) {
-                    player.shootSelf(player.x + data.x / 100, player.y + data.y / 100);
-                }
+                player.startShoot();
             }
         }.bind(this));
 
@@ -338,7 +336,7 @@ GameServer.prototype.setupCollisionHandler = function () {
     var tryAddRock = function (a, b) {
         if (a instanceof Entity.Rock && b instanceof Entity.PlayerSensor) {
             if (a.AREA < 2 && !a.owner && !a.fast) {
-                b.parent.addRock(a);
+                //b.parent.addRock(a);
             }
         }
     };
@@ -379,10 +377,6 @@ GameServer.prototype.setupCollisionHandler = function () {
     };
     var tryRRImpact = function (a, b, contact) {
         if (a instanceof Entity.Rock && b instanceof Entity.Rock) {
-            if (a.owner && a.owner === b.owner) {
-                contact.SetEnabled(false);
-                return;
-            }
             if (a.hitter) {
                 if (b.hitter && b.hitter.power > a.hitter) {
                     a.hitter = b.hitter;
@@ -394,12 +388,6 @@ GameServer.prototype.setupCollisionHandler = function () {
                 }
             }
             doImpact(a, b);
-        }
-        if (a.neutral) {
-            a.startChange = true;
-        }
-        if (b.neutral) {
-            b.startChange = true;
         }
     };
     var tryRPImpact = function (a, b, contact) {

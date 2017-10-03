@@ -104,6 +104,8 @@ Player.prototype.update = function (reader) {
 };
 
 
+
+
 Player.prototype.getTheta = function (target, origin) {
     this.theta = Math.atan2(target.y - origin.y, target.x - origin.x) % (2 * Math.PI);
 };

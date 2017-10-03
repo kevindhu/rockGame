@@ -248,7 +248,7 @@ Rock.prototype.move = function () {
 
         if (inBounds(this.origin.x, playerPosition.x, 3) &&
             inBounds(this.origin.y, playerPosition.y, 3)) {
-            this.owner.consumeRock(this);
+            //this.owner.consumeRock(this);
         }
         else {
             this.x += 0.2 * (playerPosition.x - this.origin.x);
