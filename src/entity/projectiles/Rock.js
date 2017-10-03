@@ -6,7 +6,7 @@ var entityConfig = require('../entityConfig');
 var RockHandler = require('./RockHandler');
 var lerp = require('lerp');
 
-function Rock(x, y, SCALE, gameServer, body, vertices, texture, theta) {
+function Rock(x, y, SCALE, gameServer, body, vertices, texture, theta, isBullet) {
     this.gameServer = gameServer;
     this.packetHandler = gameServer.packetHandler;
 
@@ -22,6 +22,7 @@ function Rock(x, y, SCALE, gameServer, body, vertices, texture, theta) {
     this.vertices = vertices;
     this.sides = Math.floor(getRandom(4, 8));
     this.texture = texture ? texture : this.getRandomTexture();
+    this.isBullet = isBullet;
 
     this.owner = null;
     this.body = body;
@@ -53,7 +54,7 @@ Rock.prototype.init = function () {
 };
 
 Rock.prototype.setB2 = function () {
-    this.body = B2Common.createRandomPolygon(this.gameServer.box2d_world, this, this.vertices, this.x, this.y, this.texture);
+    this.body = B2Common.createRandomPolygon(this.gameServer.box2d_world, this, this.vertices, this.x, this.y, this.texture, this.isBullet);
     this.body.SetAngle(this.theta);
     this.getRandomVelocity();
 };
@@ -103,7 +104,7 @@ Rock.prototype.getPower = function () {
             this.realPower = 3;
             break;
         case 4:
-            this.realPower = 4;
+            this.realPower = 6;
             break;
     }
     this.power = this.realPower;

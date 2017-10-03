@@ -84,11 +84,13 @@ function createDisk(world, user, x, y, radius, power) {
     fix_def.shape = new B2.b2CircleShape();
     fix_def.shape.m_radius = radius;
 
+    fix_def.filter.categoryBits = 0x0004;
+    fix_def.filter.maskBits = 0x0001; //only rocks, not bullets
+
     fix_def.userData = options.userData;
 
     var b = world.CreateBody(body_def);
     b.CreateFixture(fix_def);
-
 
     return b;
 
@@ -131,20 +133,20 @@ function createSensorDefault(x, y, radius, world, user) {
     return body;
 }
 
-function createRandomPolygon(world, user, vertices, x, y, texture) {
+function createRandomPolygon(world, user, vertices, x, y, texture, isBullet) {
     var density = 0;
     switch (texture) {
         case 1:
             density = 2;
             break;
         case 2:
-            density = 4;
+            density = 2;
             break;
         case 3:
-            density = 8;
+            density = 3;
             break;
         case 4:
-            density = 10;
+            density = 200;
             break;
     }
     var options = {
@@ -186,7 +188,16 @@ function createRandomPolygon(world, user, vertices, x, y, texture) {
 
     fix_def.shape = polygon;
     fix_def.userData = options.userData;
-    //fix_def.filter.maskBits = 0x0000; //nothing can collide with this
+
+    if (isBullet) {
+        fix_def.filter.categoryBits = 0x0002;
+        fix_def.filter.maskBits = 0x0001;
+    }
+    else {
+        fix_def.filter.categoryBits = 0x0001;
+        fix_def.filter.maskBits = 0x0001 | 0x0002 | 0x0004;
+    }
+
     var body = world.CreateBody(body_def);
     body.CreateFixture(fix_def);
     return body;

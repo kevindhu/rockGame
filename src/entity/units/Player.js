@@ -164,12 +164,12 @@ Player.prototype.tickShoot = function () {
     if (this.shooting && this.shootTimer <= 0) {
         this.shoot();
         this.stallVelocity();
-        this.shootTimer = 1;
+        this.shootTimer = 6;
         if (this.shootMeter <= 0) {
             this.endShoot();
         }
         else {
-            this.shootMeter -= 0.1;
+            this.shootMeter -= 0.4;
         }
     }
     else {
@@ -319,7 +319,7 @@ Player.prototype.shoot = function (x, y) {
 
 
     this.getTheta(target, origin);
-    var rock =  new Rock(this.x, this.y, 4, this.gameServer);
+    var rock =  new Rock(this.x, this.y, 1, this.gameServer, null, null, 4, null, true);
     //rock.owner = this;
     var v = rock.body.GetLinearVelocity();
     v.x = 50 * Math.cos(this.theta);
