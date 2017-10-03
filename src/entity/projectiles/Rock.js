@@ -104,7 +104,7 @@ Rock.prototype.getPower = function () {
             this.realPower = 3;
             break;
         case 4:
-            this.realPower = 6;
+            this.realPower = 200;
             break;
     }
     this.power = this.realPower;

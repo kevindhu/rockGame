@@ -319,7 +319,7 @@ Player.prototype.shoot = function (x, y) {
 
 
     this.getTheta(target, origin);
-    var rock =  new Rock(this.x, this.y, 1, this.gameServer, null, null, 4, null, true);
+    var rock =  new Rock(this.x, this.y, 2, this.gameServer, null, null, 4, null, true);
     //rock.owner = this;
     var v = rock.body.GetLinearVelocity();
     v.x = 50 * Math.cos(this.theta);

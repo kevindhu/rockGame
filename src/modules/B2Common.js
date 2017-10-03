@@ -146,7 +146,7 @@ function createRandomPolygon(world, user, vertices, x, y, texture, isBullet) {
             density = 3;
             break;
         case 4:
-            density = 200;
+            density = 400;
             break;
     }
     var options = {
