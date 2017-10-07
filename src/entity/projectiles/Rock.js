@@ -185,6 +185,13 @@ Rock.prototype.tick = function () {
         this.onDelete();
         return;
     }
+    if (this.dying) {
+        this.dyingTimer -= 1;
+        if (this.dyingTimer <= 0) {
+            this.dead = true;
+        }
+    }
+
     if (this.lifeTimer <= 0 && this.body) {
         this.onDelete();
         return;
@@ -249,7 +256,7 @@ Rock.prototype.move = function () {
 
         if (inBounds(this.origin.x, playerPosition.x, 3) &&
             inBounds(this.origin.y, playerPosition.y, 3)) {
-            //this.owner.consumeRock(this);
+            this.owner.consumeRock(this);
         }
         else {
             this.x += 0.2 * (playerPosition.x - this.origin.x);
@@ -286,6 +293,12 @@ Rock.prototype.addOwner = function (owner) {
     this.owner = owner;
     this.deletingBody = true;
 };
+
+Rock.prototype.startDying = function () {
+    this.dying = true;
+    this.dyingTimer = 5;
+};
+
 
 Rock.prototype.removeOwner = function () {
     if (!this.owner) {

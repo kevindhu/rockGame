@@ -335,8 +335,8 @@ GameServer.prototype.createPlayer = function (socket, info) {
 GameServer.prototype.setupCollisionHandler = function () {
     var tryAddRock = function (a, b) {
         if (a instanceof Entity.Rock && b instanceof Entity.PlayerSensor) {
-            if (a.AREA < 2 && !a.owner && !a.fast) {
-                //b.parent.addRock(a);
+            if (a.AREA < 2 && !a.owner && !a.fast && !a.isBullet) {
+                b.parent.addRock(a);
             }
         }
     };
@@ -388,7 +388,15 @@ GameServer.prototype.setupCollisionHandler = function () {
                 }
             }
             doImpact(a, b);
+
+            if (a.isBullet && !a.dying) {
+                a.startDying();
+            }
+            if (b.isBullet && !b.dying) {
+                b.startDying();
+            }
         }
+
     };
     var tryRPImpact = function (a, b, contact) {
         if (a instanceof Entity.Rock && b instanceof Entity.Player) {
