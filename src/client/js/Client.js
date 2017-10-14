@@ -150,7 +150,7 @@ Client.prototype.initLists = function () {
 Client.prototype.initViewers = function () {
     this.keys = [];
     this.scaleFactor = 1;
-    this.SetDefaultScaleFactor();
+    this.setDefaultScaleFactor();
 
     this.mainUI = new MainUI(this, this.socket);
     this.mainUI.playerNamerUI.open();
@@ -164,17 +164,15 @@ Client.prototype.verify = function (data) {
     }
 };
 
-Client.prototype.decreaseScaleFactor = function (amount) {
+Client.prototype.setScaleFactor = function (amount) {
     this.mainScaleFactor = amount;
     console.log(this.mainScaleFactor);
     this.lowerLimit = this.mainScaleFactor;
     this.upperLimit = this.mainScaleFactor * 4;
 };
 
-Client.prototype.SetDefaultScaleFactor = function () {
-    this.mainScaleFactor = 0.2;
-    this.lowerLimit = this.mainScaleFactor;
-    this.upperLimit = this.mainScaleFactor * 4;
+Client.prototype.setDefaultScaleFactor = function () {
+    this.setScaleFactor(0.4);
 };
 
 

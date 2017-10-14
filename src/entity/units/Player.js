@@ -161,7 +161,7 @@ Player.prototype.tickStalling = function () {
     }
 };
 Player.prototype.tickShoot = function () {
-    if (this.shooting) {
+    if (this.shooting && this.shootTimer <= 0) {
         this.shootMag += 1;
         if (this.shootMeter - 1 <= 0) {
             this.endShoot();
@@ -172,6 +172,7 @@ Player.prototype.tickShoot = function () {
         }
     }
     else {
+        this.decreaseShootTimer();
         this.increaseShootMeter();
     }
 };
@@ -305,12 +306,15 @@ Player.prototype.getTheta = function (target, origin) {
 
 
 Player.prototype.startShoot = function () {
-    this.shootMag = 0;
-    this.shooting = true;
+    if (this.shootTimer <= 0) {
+        this.shootMag = 0;
+        this.shooting = true;
+    }
 };
 
 
 Player.prototype.shoot = function (x, y, mag) {
+    this.shootTimer = 5;
     if (!x && !y) {
         x = this.x + this.realMover.x;
         y = this.y + this.realMover.y;

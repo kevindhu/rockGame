@@ -56,6 +56,10 @@ Rock.prototype.init = function () {
 Rock.prototype.setB2 = function () {
     this.body = B2Common.createRandomPolygon(this.gameServer.box2d_world, this,
         this.vertices, this.x, this.y, this.texture, this.bulletOwner);
+    if (!this.body) {
+        this.dead = true;
+        return;
+    }
     this.body.SetAngle(this.theta);
     this.getRandomVelocity();
 };

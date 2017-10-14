@@ -404,7 +404,6 @@ GameServer.prototype.setupCollisionHandler = function () {
                 contact.SetEnabled(false);
                 return;
             }
-            //a.rotate(getRandom(-0.5,0.5));
             a.setLifeTimer();
             a.hitter = b.id;
             a.hitTimer = 50;
