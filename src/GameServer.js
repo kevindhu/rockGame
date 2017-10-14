@@ -335,7 +335,7 @@ GameServer.prototype.createPlayer = function (socket, info) {
 GameServer.prototype.setupCollisionHandler = function () {
     var tryAddRock = function (a, b) {
         if (a instanceof Entity.Rock && b instanceof Entity.PlayerSensor) {
-            if (a.AREA < 2 && !a.owner && !a.fast && !a.isBullet) {
+            if (a.AREA < 2 && !a.owner && !a.fast && !a.bulletOwner) {
                 b.parent.addRock(a);
             }
         }
@@ -389,10 +389,10 @@ GameServer.prototype.setupCollisionHandler = function () {
             }
             doImpact(a, b);
 
-            if (a.isBullet && !a.dying) {
+            if (a.bulletOwner && !a.dying) {
                 a.startDying();
             }
-            if (b.isBullet && !b.dying) {
+            if (b.bulletOwner && !b.dying) {
                 b.startDying();
             }
         }
@@ -400,7 +400,7 @@ GameServer.prototype.setupCollisionHandler = function () {
     };
     var tryRPImpact = function (a, b, contact) {
         if (a instanceof Entity.Rock && b instanceof Entity.Player) {
-            if (a.owner === b) {
+            if (a.owner === b || a.bulletOwner === b.id) {
                 contact.SetEnabled(false);
                 return;
             }
@@ -411,6 +411,10 @@ GameServer.prototype.setupCollisionHandler = function () {
             b.slowed = true;
             b.slowTimer = 3;
             doImpact(a, b);
+
+            if (a.bulletOwner && !a.dying) {
+                a.startDying();
+            }
         }
     };
 
@@ -423,10 +427,12 @@ GameServer.prototype.setupCollisionHandler = function () {
             }
             else if (a instanceof Entity.Rock) {
                 doHardImpact(a, impact, 15);
+                if (a.bulletOwner && !a.dying) {
+                    a.startDying();
+                }
             }
         }
     };
-
     var doImpact = function (a, b) {
         var aVel = a.body.GetLinearVelocity();
         var bVel = b.body.GetLinearVelocity();

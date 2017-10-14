@@ -55,7 +55,7 @@ function createBox(world, user, x, y, width, height) {
 
 function createDisk(world, user, x, y, radius, power) {
     var options = {
-        'density': 50 + power * 10,
+        'density': 1 + power,
         'friction': 0.1,
         'restitution': 0.0,
 
@@ -85,7 +85,7 @@ function createDisk(world, user, x, y, radius, power) {
     fix_def.shape.m_radius = radius;
 
     fix_def.filter.categoryBits = 0x0004;
-    fix_def.filter.maskBits = 0x0001; //only rocks, not bullets
+    fix_def.filter.maskBits = 0x0001 | 0x0002; //only rocks, not bullets
 
     fix_def.userData = options.userData;
 
@@ -133,7 +133,7 @@ function createSensorDefault(x, y, radius, world, user) {
     return body;
 }
 
-function createRandomPolygon(world, user, vertices, x, y, texture, isBullet) {
+function createRandomPolygon(world, user, vertices, x, y, texture, bulletOwner) {
     var density = 0;
     switch (texture) {
         case 1:
@@ -189,9 +189,9 @@ function createRandomPolygon(world, user, vertices, x, y, texture, isBullet) {
     fix_def.shape = polygon;
     fix_def.userData = options.userData;
 
-    if (isBullet) {
+    if (bulletOwner) {
         fix_def.filter.categoryBits = 0x0002;
-        fix_def.filter.maskBits = 0x0001;
+        fix_def.filter.maskBits = 0x0001 | 0x0004;
     }
     else {
         fix_def.filter.categoryBits = 0x0001;
@@ -199,8 +199,13 @@ function createRandomPolygon(world, user, vertices, x, y, texture, isBullet) {
     }
 
     var body = world.CreateBody(body_def);
-    body.CreateFixture(fix_def);
-    return body;
+    if (body) {
+        body.CreateFixture(fix_def);
+        return body;
+    }
+    else {
+        console.log("RANDOM POLYGON NOT CORRECTLY INITIALIZED!");
+    }
 }
 
 function createPolygonSplit(world, body, v1, v2) {

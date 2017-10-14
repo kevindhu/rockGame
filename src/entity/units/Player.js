@@ -161,19 +161,17 @@ Player.prototype.tickStalling = function () {
     }
 };
 Player.prototype.tickShoot = function () {
-    if (this.shooting && this.shootTimer <= 0) {
-        if (this.shootMeter <= 0) {
+    if (this.shooting) {
+        this.shootMag += 1;
+        if (this.shootMeter - 1 <= 0) {
             this.endShoot();
         }
         else {
-            this.shoot();
             //this.stallVelocity();
-            this.shootTimer = 6;
-            this.decreaseShootMeter(10);
+            this.decreaseShootMeter(1);
         }
     }
     else {
-        this.decreaseShootTimer();
         this.increaseShootMeter();
     }
 };
@@ -200,7 +198,7 @@ Player.prototype.resetLevels = function () {
 
     this.power = 1;
 
-    this.AREA = 10000;
+    this.AREA = 5000;
     this.radius = Math.sqrt(this.AREA);
     this.lastRadius = this.radius;
     this.grabRadius = 10 * this.radius;
@@ -307,11 +305,12 @@ Player.prototype.getTheta = function (target, origin) {
 
 
 Player.prototype.startShoot = function () {
+    this.shootMag = 0;
     this.shooting = true;
 };
 
 
-Player.prototype.shoot = function (x, y) {
+Player.prototype.shoot = function (x, y, mag) {
     if (!x && !y) {
         x = this.x + this.realMover.x;
         y = this.y + this.realMover.y;
@@ -328,18 +327,22 @@ Player.prototype.shoot = function (x, y) {
 
 
     this.getTheta(target, origin);
-    var rock = new Rock(this.x, this.y, 1, this.gameServer, null, null, 4, null, true);
+    var rock = new Rock(this.x, this.y, 1, this.gameServer, null, null, 4, null, this.id);
     //rock.owner = this;
     var v = rock.body.GetLinearVelocity();
-    v.x = 50 * Math.cos(this.theta);
-    v.y = 50 * Math.sin(this.theta);
+
+    v.x = mag * Math.cos(this.theta);
+    v.y = mag * Math.sin(this.theta);
 
     rock.body.SetLinearVelocity(v);
 };
 
 
 Player.prototype.endShoot = function () {
-    this.shooting = false;
+    if (this.shooting) {
+        this.shoot(null, null, this.shootMag * 10);
+        this.shooting = false;
+    }
 };
 
 Player.prototype.addRock = function (rock) {
@@ -449,8 +452,8 @@ Player.prototype.move = function (x, y) {
     }
 
     var slow = this.slowed ? 10 : 1;
-    vel.x = lerp(vel.x, 30 * x / normalVel / (slow * (this.velBuffer / 5 + 1.5)), mag);
-    vel.y = lerp(vel.y, 30 * y / normalVel / (slow * (this.velBuffer / 5 + 1.5)), mag);
+    vel.x = lerp(vel.x, 40 * x / normalVel / (slow * (this.velBuffer / 5 + 1.5)), mag);
+    vel.y = lerp(vel.y, 40 * y / normalVel / (slow * (this.velBuffer / 5 + 1.5)), mag);
 
     //this.body.SetPosition(pos);
 

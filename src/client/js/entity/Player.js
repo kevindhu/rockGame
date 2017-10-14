@@ -185,11 +185,11 @@ Player.prototype.show = function () {
 
     if (this.vertices) {
         var v = this.vertices;
-        ctx.moveTo(v[0][0] * this.radius, v[0][1] * this.radius);
+        ctx.moveTo(v[0][0] * 100, v[0][1] * 100);
         for (i = 1; i < v.length; i++) {
-            ctx.lineTo(v[i][0] * this.radius, v[i][1] * this.radius);
+            ctx.lineTo(v[i][0] * 100, v[i][1] * 100);
         }
-        ctx.lineTo(v[0][0] * this.radius, v[0][1] * this.radius);
+        ctx.lineTo(v[0][0] * 100, v[0][1] * 100);
         ctx.fill();
         ctx.stroke();
     }
@@ -233,7 +233,7 @@ Player.prototype.show = function () {
         ctx.fill();
         ctx.closePath();
     }
-    if (this.shootMeter) { //health bar
+    if (this.shootMeter) { //shoot meter
         ctx.lineWidth = 10;
         ctx.beginPath();
         ctx.strokeStyle = "black";

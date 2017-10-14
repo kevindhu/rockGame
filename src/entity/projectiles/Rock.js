@@ -6,7 +6,7 @@ var entityConfig = require('../entityConfig');
 var RockHandler = require('./RockHandler');
 var lerp = require('lerp');
 
-function Rock(x, y, SCALE, gameServer, body, vertices, texture, theta, isBullet) {
+function Rock(x, y, SCALE, gameServer, body, vertices, texture, theta, owner) {
     this.gameServer = gameServer;
     this.packetHandler = gameServer.packetHandler;
 
@@ -22,7 +22,7 @@ function Rock(x, y, SCALE, gameServer, body, vertices, texture, theta, isBullet)
     this.vertices = vertices;
     this.sides = Math.floor(getRandom(4, 8));
     this.texture = texture ? texture : this.getRandomTexture();
-    this.isBullet = isBullet;
+    this.bulletOwner = owner;
 
     this.owner = null;
     this.body = body;
@@ -54,7 +54,8 @@ Rock.prototype.init = function () {
 };
 
 Rock.prototype.setB2 = function () {
-    this.body = B2Common.createRandomPolygon(this.gameServer.box2d_world, this, this.vertices, this.x, this.y, this.texture, this.isBullet);
+    this.body = B2Common.createRandomPolygon(this.gameServer.box2d_world, this,
+        this.vertices, this.x, this.y, this.texture, this.bulletOwner);
     this.body.SetAngle(this.theta);
     this.getRandomVelocity();
 };
@@ -394,7 +395,7 @@ Rock.prototype.split = function () {
         middleLength += square(vertices[(middle - 1) % count].y - vertices[middle % count].y);
     }
 
-    var factor = getRandom(0.3, 0.7);
+    var factor = getRandom(0.25, 0.75);
     var middleVertex = new B2.b2Vec2();
 
 
