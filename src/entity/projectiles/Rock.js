@@ -66,8 +66,13 @@ Rock.prototype.setB2 = function () {
 
 
 Rock.prototype.setLifeTimer = function () {
-    this.lifeTimer = Math.pow(this.AREA, 3);
-    this.lifeTimer += 100;
+    if (this.bulletOwner) {
+        this.lifeTimer = 1000;
+    }
+    else {
+        this.lifeTimer = Math.pow(this.AREA, 3);
+        this.lifeTimer += 100;
+    }
 };
 
 Rock.prototype.calculateArea = function () {

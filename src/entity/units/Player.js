@@ -62,8 +62,8 @@ Player.prototype.setVertices = function () {
     var delta = 2 * Math.PI / sides;
     for (var i = 0; i < sides; i++) {
         theta = i * delta;
-        var x = Math.cos(theta) * this.radius / 100;
-        var y = Math.sin(theta) * this.radius / 100;
+        var x = Math.cos(theta);
+        var y = Math.sin(theta);
         vertices[i] = [x, y];
     }
     this.vertices = vertices;
@@ -199,7 +199,7 @@ Player.prototype.resetLevels = function () {
 
     this.power = 1;
 
-    this.AREA = 5000;
+    this.AREA = 50000;
     this.radius = Math.sqrt(this.AREA);
     this.lastRadius = this.radius;
     this.grabRadius = 10 * this.radius;
@@ -452,7 +452,7 @@ Player.prototype.move = function (x, y) {
 
     var mag = 0.1;
     if (this.shooting || this.vulnerable) {
-        mag = 0.001;
+        mag = 0.01;
     }
 
     var slow = this.slowed ? 10 : 1;
