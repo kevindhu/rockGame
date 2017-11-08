@@ -162,7 +162,7 @@ Player.prototype.tickStalling = function () {
 };
 Player.prototype.tickShoot = function () {
     if (this.shooting && this.shootTimer <= 0) {
-        this.shootMag += 1;
+        this.shootMag += 0.5;
         if (this.shootMeter - 1 <= 0) {
             this.endShoot();
         }
@@ -199,10 +199,10 @@ Player.prototype.resetLevels = function () {
 
     this.power = 1;
 
-    this.AREA = 50000;
+    this.AREA = 3000;
     this.radius = Math.sqrt(this.AREA);
     this.lastRadius = this.radius;
-    this.grabRadius = 10 * this.radius;
+    this.grabRadius = 2 * this.radius;
     this.velBuffer = this.radius / 1000;
 };
 
@@ -307,7 +307,7 @@ Player.prototype.getTheta = function (target, origin) {
 
 Player.prototype.startShoot = function () {
     if (this.shootTimer <= 0) {
-        this.shootMag = 0;
+        this.shootMag = 1;
         this.shooting = true;
     }
 };
@@ -331,12 +331,11 @@ Player.prototype.shoot = function (x, y, mag) {
 
 
     this.getTheta(target, origin);
-    var rock = new Rock(this.x, this.y, 1, this.gameServer, null, null, 4, null, this.id);
-    //rock.owner = this;
+    var rock = new Rock(this.x, this.y, 0.5, this.gameServer, null, null, 4, null, this.id, 100);
     var v = rock.body.GetLinearVelocity();
 
-    v.x = mag * Math.cos(this.theta);
-    v.y = mag * Math.sin(this.theta);
+    v.x = 0.5 * mag * Math.cos(this.theta);
+    v.y = 0.5 * mag * Math.sin(this.theta);
 
     rock.body.SetLinearVelocity(v);
 };
@@ -450,14 +449,14 @@ Player.prototype.move = function (x, y) {
     var vel = this.body.GetLinearVelocity();
     //var pos = this.body.GetPosition();
 
-    var mag = 0.1;
+    var mag = 0.4;
     if (this.shooting || this.vulnerable) {
         mag = 0.01;
     }
 
     var slow = this.slowed ? 10 : 1;
-    vel.x = lerp(vel.x, 40 * x / normalVel / (slow * (this.velBuffer / 5 + 1.5)), mag);
-    vel.y = lerp(vel.y, 40 * y / normalVel / (slow * (this.velBuffer / 5 + 1.5)), mag);
+    vel.x = lerp(vel.x, 10 * x / normalVel / (slow * (this.velBuffer / 5 + 1.5)), mag);
+    vel.y = lerp(vel.y, 10 * y / normalVel / (slow * (this.velBuffer / 5 + 1.5)), mag);
 
     //this.body.SetPosition(pos);
 

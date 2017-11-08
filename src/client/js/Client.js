@@ -166,13 +166,12 @@ Client.prototype.verify = function (data) {
 
 Client.prototype.setScaleFactor = function (amount) {
     this.mainScaleFactor = amount;
-    console.log(this.mainScaleFactor);
     this.lowerLimit = this.mainScaleFactor;
     this.upperLimit = this.mainScaleFactor * 4;
 };
 
 Client.prototype.setDefaultScaleFactor = function () {
-    this.setScaleFactor(0.4);
+    this.setScaleFactor(0.25);
 };
 
 

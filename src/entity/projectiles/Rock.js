@@ -6,7 +6,7 @@ var entityConfig = require('../entityConfig');
 var RockHandler = require('./RockHandler');
 var lerp = require('lerp');
 
-function Rock(x, y, SCALE, gameServer, body, vertices, texture, theta, owner) {
+function Rock(x, y, SCALE, gameServer, body, vertices, texture, theta, bulletOwner, power) {
     this.gameServer = gameServer;
     this.packetHandler = gameServer.packetHandler;
 
@@ -22,7 +22,9 @@ function Rock(x, y, SCALE, gameServer, body, vertices, texture, theta, owner) {
     this.vertices = vertices;
     this.sides = Math.floor(getRandom(4, 8));
     this.texture = texture ? texture : this.getRandomTexture();
-    this.bulletOwner = owner;
+    this.bulletOwner = bulletOwner;
+    this.realPower = power;
+
 
     this.owner = null;
     this.body = body;
@@ -70,7 +72,7 @@ Rock.prototype.setLifeTimer = function () {
         this.lifeTimer = 1000;
     }
     else {
-        this.lifeTimer = Math.pow(this.AREA, 3);
+        this.lifeTimer = Math.pow(this.AREA * 100, 3);
         this.lifeTimer += 100;
     }
 };
@@ -103,6 +105,11 @@ Rock.prototype.getRandomTexture = function () {
 
 
 Rock.prototype.getPower = function () {
+    if (this.realPower) {
+        return;
+    }
+
+
     switch (this.texture) {
         case 1:
             this.realPower = 1;
@@ -266,7 +273,8 @@ Rock.prototype.move = function () {
 
         if (inBounds(this.origin.x, playerPosition.x, 3) &&
             inBounds(this.origin.y, playerPosition.y, 3)) {
-            this.owner.consumeRock(this);
+            //this.owner.consumeRock(this);
+            this.dead = true;
         }
         else {
             this.x += 0.2 * (playerPosition.x - this.origin.x);

@@ -73,7 +73,7 @@ Player.prototype.update = function (reader) {
     var prev = this.realRadius;
     this.realRadius = reader.readUInt16(); //radius
     if (prev < this.realRadius && this.id === this.client.SELF_ID) {
-        this.client.setScaleFactor(20 / this.realRadius);
+        this.client.setScaleFactor(10 / this.realRadius);
     }
     if (this.radius === 100 || this.radius < prev) {
         this.client.setDefaultScaleFactor();
