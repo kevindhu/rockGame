@@ -206,6 +206,10 @@ Player.prototype.resetLevels = function () {
     this.velBuffer = this.radius / 1000;
 };
 
+Player.prototype.startDecreaseHealth = function (entity, amount) {
+    this.decreaseHealth(entity, amount);
+};
+
 Player.prototype.decreaseHealth = function (entity, amount) {
     if (this.vulnerable) {
         amount *= 10;

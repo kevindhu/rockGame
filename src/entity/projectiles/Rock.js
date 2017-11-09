@@ -25,6 +25,8 @@ function Rock(x, y, SCALE, gameServer, body, vertices, texture, theta, bulletOwn
     this.bulletOwner = bulletOwner;
     this.realPower = power;
 
+    this.reductions = [];
+
 
     this.owner = null;
     this.body = body;
@@ -228,11 +230,13 @@ Rock.prototype.tick = function () {
             this.hitter = null;
         }
     }
+
+    this.tickDecreaseHealth();
+
     if (this.health <= 0) {
         this.split();
         return;
     }
-
 
     this.updateBody();
     this.move();
@@ -341,8 +345,26 @@ Rock.prototype.decayVelocity = function () {
 };
 
 
-Rock.prototype.decreaseHealth = function (entity, amount) {
+Rock.prototype.startDecreaseHealth = function (entity, amount) {
     this.setLifeTimer();
+    this.reductions.push([3, entity, amount]);
+};
+
+
+Rock.prototype.tickDecreaseHealth = function () {
+    var array;
+    for (var i = 0; i < this.reductions.length; i++) {
+        array = this.reductions[i];
+        array[0] -= 1;
+        if (array[0] <= 0) {
+            this.decreaseHealth(array[1], array[2]);
+            this.reductions.splice(i, 1);
+        }
+    }
+};
+
+
+Rock.prototype.decreaseHealth = function (entity, amount) {
     this.health -= amount * entity.power;
 };
 
@@ -365,7 +387,7 @@ Rock.prototype.rotate = function (vel) {
 };
 
 Rock.prototype.split = function () {
-    if (this.AREA < 0.5) {
+    if (this.AREA < 0.5 || !this.body) {
         this.gameServer.box2d_world.DestroyBody(this.body);
         this.dead = true;
         return;

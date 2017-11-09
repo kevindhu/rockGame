@@ -449,8 +449,8 @@ GameServer.prototype.setupCollisionHandler = function () {
             bImpact = impact * 4;
         }
         if (aImpact > 20 || bImpact > 20) {
-            a.decreaseHealth(b, aImpact);
-            b.decreaseHealth(a, bImpact);
+            a.startDecreaseHealth(b, aImpact);
+            b.startDecreaseHealth(a, bImpact);
         }
     };
     var doHardImpact = function (a, impact, power) {
