@@ -171,7 +171,7 @@ Client.prototype.setScaleFactor = function (amount) {
 };
 
 Client.prototype.setDefaultScaleFactor = function () {
-    this.setScaleFactor(0.25);
+    this.setScaleFactor(0.22);
 };
 
 

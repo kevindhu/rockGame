@@ -72,7 +72,7 @@ Rock.prototype.setLifeTimer = function () {
         this.lifeTimer = 1000;
     }
     else {
-        this.lifeTimer = Math.pow(this.AREA * 100, 3);
+        this.lifeTimer = Math.pow(this.AREA * 3, 3);
         this.lifeTimer += 100;
     }
 };
@@ -228,18 +228,9 @@ Rock.prototype.tick = function () {
             this.hitter = null;
         }
     }
-    if (this.health <= 0 && !this.splitting) {
-        this.splitting = true;
-        this.splitTimer = 1;
-    }
-    if (this.splitting && this.body) {
-        if (this.splitTimer > 0) {
-            this.splitTimer -= 1;
-        }
-        else {
-            this.split();
-            return;
-        }
+    if (this.health <= 0) {
+        this.split();
+        return;
     }
 
 
@@ -314,7 +305,7 @@ Rock.prototype.addOwner = function (owner) {
 
 Rock.prototype.startDying = function () {
     this.dying = true;
-    this.dyingTimer = 5;
+    this.dyingTimer = 6;
 };
 
 
@@ -374,7 +365,7 @@ Rock.prototype.rotate = function (vel) {
 };
 
 Rock.prototype.split = function () {
-    if (this.AREA < 1) {
+    if (this.AREA < 0.5) {
         this.gameServer.box2d_world.DestroyBody(this.body);
         this.dead = true;
         return;
@@ -454,30 +445,31 @@ Rock.prototype.split = function () {
     var x = Math.floor(this.body.GetPosition().x);
     var y = Math.floor(this.body.GetPosition().y);
 
-
     //var bodies = B2Common.createPolygonSplit(this.gameServer.box2d_world, this.body, vertices1, vertices2);
 
     var clone1 = new Rock(x, y, this.SCALE * 3 / 5, this.gameServer, null, vertices1, this.texture, this.body.GetAngle());
     var clone2 = new Rock(x, y, this.SCALE * 3 / 5, this.gameServer, null, vertices2, this.texture, this.body.GetAngle());
 
-
-    clone1.body.GetFixtureList().SetUserData(clone1);
-    clone2.body.GetFixtureList().SetUserData(clone2);
+    //clone1.body.GetFixtureList().SetUserData(clone1);
+    //clone2.body.GetFixtureList().SetUserData(clone2);
 
     clone1.body.SetAngularVelocity(this.body.GetAngularVelocity());
     clone2.body.SetAngularVelocity(this.body.GetAngularVelocity());
 
 
-    var theta = Math.atan2(this.body.GetLinearVelocity().y, this.body.GetLinearVelocity().x);
-    var normalVel = normal(this.body.GetLinearVelocity().y, this.body.GetLinearVelocity().x);
+    var oldV = this.body.GetLinearVelocity();
+
+    var normalVel = normal(oldV.y, oldV.x);
+    var theta = Math.atan2(oldV.y, oldV.x);
+
     var v1 = clone1.body.GetLinearVelocity();
     var v2 = clone2.body.GetLinearVelocity();
 
-    v1.x = normalVel * Math.cos(theta + 0.1);
-    v1.y = normalVel * Math.sin(theta + 0.1);
+    v1.x = normalVel * Math.cos(theta + 0.05);
+    v1.y = normalVel * Math.sin(theta + 0.05);
 
-    v2.x = normalVel * Math.cos(theta - 0.1);
-    v2.y = normalVel * Math.sin(theta - 0.1);
+    v2.x = normalVel * Math.cos(theta - 0.05);
+    v2.y = normalVel * Math.sin(theta - 0.05);
 
     clone1.body.SetLinearVelocity(v1);
     clone2.body.SetLinearVelocity(v2);
