@@ -347,7 +347,7 @@ Rock.prototype.decayVelocity = function () {
 
 Rock.prototype.startDecreaseHealth = function (entity, amount) {
     this.setLifeTimer();
-    this.reductions.push([3, entity, amount]);
+    this.reductions.push([10, entity, amount]);
 };
 
 

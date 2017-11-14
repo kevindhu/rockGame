@@ -53,7 +53,7 @@ function createBox(world, user, x, y, width, height) {
 }
 
 
-function createDisk(world, user, x, y, radius, power) {
+function createDisk(world, user, x, y, radius, power) { //player
     var options = {
         'density': 1 + power,
         'friction': 0.1,
@@ -93,8 +93,6 @@ function createDisk(world, user, x, y, radius, power) {
     b.CreateFixture(fix_def);
 
     return b;
-
-
 }
 
 function createSensorDefault(x, y, radius, world, user) {
