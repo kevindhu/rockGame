@@ -1,10 +1,10 @@
-## rockGame
+## rockServer
 
-***rockGame is currently being updated constantly and may perform unexpectantly. If you want to play-test this game, be aware there may be  bugs that can cause the server to crash!***
+***rockServer is currently being updated constantly and may perform unexpectantly. If you want to play-test this game, be aware there may be  bugs that can cause the server to crash!***
 
 
 ## Setup
-rockGame requires some version of Node.js
+rockServer requires some version of Node.js
 
 1. Go to the root directory.
 2. To install, run:
@@ -15,4 +15,4 @@ npm install
 ```
 npm start
 ```
-4. Open `localhost:2000`, and have fun!
+4. Open `localhost:2000`, and a local client/server should load
