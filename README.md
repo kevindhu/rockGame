@@ -1,6 +1,6 @@
 ## rockServer
 
-***rockServer is currently being updated constantly and may perform unexpectantly. If you want to play-test this game, be aware there may be  bugs that can cause the server to crash!***
+***rockServer is currently in development and may encounter unstable builds where things can go wrong or crash. Please file any bugs/fixes into new issues**
 
 
 ## Setup
